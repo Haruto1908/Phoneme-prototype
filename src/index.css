@@ -1,0 +1,61 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Segoe UI Rounded', 'Nunito', 'Quicksand', 'Trebuchet MS', ui-rounded, system-ui, sans-serif;
+  --font-ipa: 'Charis SIL', 'Doulos SIL', 'Gentium Plus', 'Segoe UI', serif;
+
+  --color-ink: #2b3545;
+  --color-muted: #6c7a8f;
+  --color-page-a: #eef5ff;
+  --color-page-b: #fff7ec;
+
+  /* tile palettes: bg / ink / edge (bottom shadow) */
+  --color-mint-bg: #d9f5e6;      --color-mint-ink: #1f7a53;      --color-mint-edge: #a9dfc3;
+  --color-teal-bg: #d3f0f0;      --color-teal-ink: #1b6f73;      --color-teal-edge: #a1d9da;
+  --color-coral-bg: #ffe0d6;     --color-coral-ink: #b8452d;     --color-coral-edge: #f5b9a8;
+  --color-lavender-bg: #e8e0ff;  --color-lavender-ink: #6a4bc4;  --color-lavender-edge: #c7b8f5;
+  --color-sun-bg: #fff2c2;       --color-sun-ink: #a3730a;       --color-sun-edge: #f1d98a;
+  --color-sky-bg: #d9ecff;       --color-sky-ink: #1f5fa8;       --color-sky-edge: #a9cdf5;
+  --color-peach-bg: #ffe6cc;     --color-peach-ink: #b35c12;     --color-peach-edge: #f5c89a;
+
+  --radius-tile: 32px;
+
+  --animate-wiggle: wiggle 0.5s ease-in-out;
+  --animate-bars: bars 0.7s ease-in-out infinite;
+  --animate-pop: pop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  @keyframes wiggle {
+    0%, 100% { transform: rotate(0deg) scale(1); }
+    25% { transform: rotate(-2.5deg) scale(1.03); }
+    75% { transform: rotate(2.5deg) scale(1.03); }
+  }
+  @keyframes bars {
+    0%, 100% { transform: scaleY(0.4); }
+    50% { transform: scaleY(1); }
+  }
+  @keyframes pop {
+    from { transform: scale(0.6); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--color-ink);
+  background:
+    radial-gradient(1200px 600px at 10% -10%, #ffffff 0%, transparent 60%),
+    linear-gradient(160deg, var(--color-page-a), var(--color-page-b));
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation; /* no double-tap zoom on tiles */
+  overscroll-behavior: none;
+}
+
+/* prevent accidental text selection while kids tap around */
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}

@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "defaultSymbolSystem": "blast",
+  "symbolSystems": [
+    { "id": "blast", "name": "Blast (demo)" },
+    { "id": "alt1", "name": "Symbol system B (placeholder)" },
+    { "id": "alt2", "name": "Symbol system C (placeholder)" }
+  ],
+  "host": {
+    "name": "Brooke",
+    "portrait": null
+  },
+  "sounds": [
+    {
+      "id": "th_voiceless",
+      "ipa": "θ",
+      "symbols": { "blast": "th", "alt1": "θ", "alt2": "th" },
+      "exampleWord": "think",
+      "cue": "thumb",
+      "color": "mint",
+      "audio": "audio/th_voiceless.mp3",
+      "audioWindow": [1.0, 2.0],
+      "articulation": "Tongue tip between the teeth, air only, no voice."
+    },
+    {
+      "id": "th_voiced",
+      "ipa": "ð",
+      "symbols": { "blast": "th", "alt1": "ð", "alt2": "dh" },
+      "exampleWord": "this",
+      "cue": "feather",
+      "color": "teal",
+      "audio": "audio/th_voiced.mp3",
+      "audioWindow": [1.0, 2.0],
+      "articulation": "Same position as soft th, with voice.",
+      "voiced": true
+    },
+    {
+      "id": "r",
+      "ipa": "ɹ",
+      "symbols": { "blast": "r", "alt1": "ɹ", "alt2": "r" },
+      "exampleWord": "red",
+      "cue": "rabbit",
+      "color": "coral",
+      "audio": "audio/r.mp3",
+      "audioWindow": [1.0, 2.0],
+      "articulation": "Tongue bunched and pulled back, tip touching nothing."
+    },
+    {
+      "id": "k",
+      "ipa": "k",
+      "symbols": { "blast": "k", "alt1": "k", "alt2": "c" },
+      "exampleWord": "cat",
+      "cue": "key",
+      "color": "lavender",
+      "audio": "audio/k.mp3",
+      "audioWindow": [1.0, 2.0],
+      "articulation": "Back of the tongue lifts to the soft palate and releases."
+    },
+    {
+      "id": "ae",
+      "ipa": "æ",
+      "symbols": { "blast": "a", "alt1": "æ", "alt2": "ă" },
+      "exampleWord": "cat",
+      "cue": "apple",
+      "color": "sun",
+      "audio": "audio/ae.mp3",
+      "audioWindow": [1.0, 2.0],
+      "articulation": "Jaw open, tongue low and forward."
+    },
+    {
+      "id": "t",
+      "ipa": "t",
+      "symbols": { "blast": "t", "alt1": "t", "alt2": "t" },
+      "exampleWord": "cat",
+      "cue": "turtle",
+      "color": "sky",
+      "audio": "audio/t.mp3",
+      "audioWindow": [1.0, 2.0],
+      "articulation": "Tongue tip taps the ridge behind the upper teeth."
+    }
+  ],
+  "words": [
+    {
+      "id": "cat",
+      "word": "cat",
+      "sequence": ["k", "ae", "t"],
+      "cue": "cat",
+      "color": "peach",
+      "audio": null
+    }
+  ]
+}
