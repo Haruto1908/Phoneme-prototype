@@ -1,75 +1,45 @@
-import { useEffect, useState } from 'react'
 import type { Manifest } from '../types'
-import { Tile } from './Tile'
-import * as audio from '../lib/audio'
+import { asset } from '../lib/media'
+import { cardLabel } from '../lib/plan'
+import { t, type Lang } from '../lib/i18n'
+import { SoundCard } from './SoundCard'
 
 interface SoundChartProps {
   manifest: Manifest
-  symbolSystem: string
+  lang: Lang
+  /** Id of the sound currently playing (card wiggles), if any. */
+  playingId: string | null
+  /** True while a Word Builder block is waiting for a sound. */
+  armed: boolean
+  /** Called synchronously from the tap so the player can start media inside the user gesture. */
+  onPress: (id: string) => void
 }
 
-/**
- * The seven-tile chart: six sounds plus the "cat" word tile.
- * Tapping a tile plays its audio (the word tile plays its sounds in sequence).
- * The mouth close-up and tongue view that follow a tap are the next build step and hook in at onPress.
- */
-export function SoundChart({ manifest, symbolSystem }: SoundChartProps) {
-  const [playingId, setPlayingId] = useState<string | null>(null)
-
-  // Preload every clip once so the first tap is instant on iPad.
-  useEffect(() => {
-    audio.preload([...manifest.sounds.map((s) => s.audio), ...manifest.words.map((w) => w.audio)])
-    return () => audio.stop()
-  }, [manifest])
-
-  const soundById = new Map(manifest.sounds.map((s) => [s.id, s]))
-
-  async function press(id: string) {
-    const sound = soundById.get(id)
-    const word = manifest.words.find((w) => w.id === id)
-    const clipOf = (s?: { audio: string | null; audioWindow?: [number, number] | null }): audio.Clip[] =>
-      s?.audio ? [{ src: s.audio, window: s.audioWindow }] : []
-    const clips: audio.Clip[] = sound
-      ? clipOf(sound)
-      : word
-        ? [...word.sequence.flatMap((sid) => clipOf(soundById.get(sid))), ...clipOf(word)]
-        : []
-
-    setPlayingId(id)
-    await audio.play(clips)
-    setPlayingId((cur) => (cur === id ? null : cur))
-  }
-
+/** Composition 2: the sound cards — /th/ /th/ /r/ /k/ /æ/ /t/. A tap plays the sound; a drag puts it in the Word Builder. */
+export function SoundChart({ manifest, lang, playingId, armed, onPress }: SoundChartProps) {
   return (
-    <div className="grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-4" role="group" aria-label="Sound chart">
-      {manifest.sounds.map((s) => (
-        <Tile
-          key={s.id}
-          id={s.id}
-          symbol={s.symbols[symbolSystem] ?? s.symbols[manifest.defaultSymbolSystem] ?? s.ipa}
-          detail={`/${s.ipa}/`}
-          cue={s.cue}
-          color={s.color}
-          playing={playingId === s.id}
-          voiced={s.voiced}
-          ariaLabel={`${s.exampleWord} sound, ${s.ipa}`}
-          onPress={press}
-        />
-      ))}
-      {manifest.words.map((w) => (
-        <Tile
-          key={w.id}
-          id={w.id}
-          symbol={w.word}
-          detail={w.sequence.map((sid) => soundById.get(sid)?.symbols[symbolSystem] ?? sid).join(' · ')}
-          cue={w.cue}
-          color={w.color}
-          playing={playingId === w.id}
-          wide
-          ariaLabel={`the word ${w.word}`}
-          onPress={press}
-        />
-      ))}
-    </div>
+    <section className="flex h-full flex-col gap-3 rounded-[28px] bg-white/55 p-4 shadow-[0_10px_30px_-18px_rgba(43,53,69,0.45)] sm:p-5" aria-label={t('sounds', lang)}>
+      <div className="no-select flex items-baseline gap-3">
+        <h2 className="text-lg font-extrabold text-ink">{t('sounds', lang)}</h2>
+        <p className="text-sm font-medium text-muted">{t('tapHint', lang)}</p>
+      </div>
+      <div className="grid flex-1 grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5" role="group" aria-label={t('sounds', lang)}>
+        {manifest.sounds.map((s) => (
+          <SoundCard
+            key={s.id}
+            id={s.id}
+            label={cardLabel(s)}
+            word={s.exampleWord}
+            figure={s.figure ? asset(s.figure) : null}
+            color={s.color}
+            playing={playingId === s.id}
+            armed={armed}
+            voiced={s.voiced}
+            ariaLabel={`${cardLabel(s)} ${s.exampleWord}`}
+            onPress={onPress}
+          />
+        ))}
+      </div>
+    </section>
   )
 }
