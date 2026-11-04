@@ -183,25 +183,25 @@ const HOLD_T = [
   [107.0, 171.5], [117.0, 167.0], [126.5, 160.5], [135.0, 153.5], [141.5, 147.0], [145.5, 140.5], [148.0, 134.0],
 ]
 // /k/: jaw +2.5°. Tip stays down behind the lower incisors; the back of the tongue humps up and seals against the
-// back of the hard palate / front of the velum (points 6–8 lie on the oval's roof, x 111–121).
+// roof of the cavity (points 6–9 lie 0.4 mm inside CAVITY_OVAL's roof, x 109–121, so the seal is on the dark roof).
 const HOLD_K = [
-  [145.8, 145.0], [144.0, 142.4], [140.3, 138.3], [136.5, 133.6], [131.5, 128.6], [126.0, 124.6], [120.5, 122.3],
-  [115.5, 122.5], [111.0, 125.0], [107.0, 131.5], [104.5, 139.5], [102.0, 148.0], [100.0, 157.0], [100.5, 166.0],
+  [145.8, 145.0], [144.0, 142.4], [140.3, 138.3], [136.5, 133.6], [131.5, 128.6], [126.0, 124.6], [121.1, 125.7],
+  [117.3, 127.5], [113.7, 129.6], [108.8, 133.3], [104.5, 139.5], [102.0, 148.0], [100.0, 157.0], [100.5, 166.0],
   [107.0, 170.0], [117.0, 166.5], [126.5, 160.0], [134.5, 153.5], [138.5, 151.0], [142.0, 148.8], [144.6, 147.2],
 ]
 // /ɹ/: jaw +2.5°. Tip curled up and back toward the post-alveolar palate, NOT touching (≈3 mm of dark above it);
 // body bunched and pulled back, root retracted toward the throat.
 const HOLD_R = [
   [142.0, 125.9], [139.5, 127.0], [136.0, 128.3], [132.5, 128.3], [128.0, 128.5], [123.5, 129.8], [119.0, 132.3],
-  [114.5, 136.0], [110.5, 140.5], [106.5, 146.0], [103.0, 152.5], [100.5, 159.0], [98.5, 165.0], [100.0, 171.0],
+  [114.5, 136.0], [110.5, 140.5], [106.5, 146.0], [103.0, 152.5], [100.5, 159.0], [98.8, 164.8], [100.0, 171.0],
   [107.0, 172.0], [117.0, 168.0], [126.5, 162.0], [135.0, 156.0], [141.5, 149.0], [145.2, 139.0], [144.5, 129.2],
 ]
 // /æ/: jaw +5° (mouth open). Tongue low and forward: tip behind the lower incisors, dorsum flat and low, leaving a
 // big open space under the palate.
 const HOLD_AE = [
   [144.3, 148.0], [142.5, 145.5], [139.5, 142.5], [135.5, 140.0], [130.5, 138.6], [125.0, 138.5], [119.5, 139.8],
-  [114.5, 142.5], [110.5, 146.5], [107.0, 151.5], [104.0, 157.0], [101.5, 162.5], [99.5, 168.0], [101.5, 175.0],
-  [109.0, 177.0], [119.0, 173.5], [128.5, 167.5], [136.0, 161.0], [141.5, 155.5], [144.0, 151.5], [144.8, 149.7],
+  [114.5, 142.5], [110.5, 146.5], [107.0, 151.5], [104.0, 157.0], [101.5, 162.5], [100.6, 167.1], [101.5, 175.0],
+  [109.0, 177.0], [119.2, 171.6], [128.5, 167.5], [136.0, 161.0], [141.5, 155.5], [144.0, 151.5], [144.8, 149.7],
 ]
 const TONGUE_FRONT_IDX = new Set([0, 1, 2, 3, 18, 19, 20])  // blade/tip: lag a little, so the teeth part before the tip moves
 const TONGUE_HI_RANGE = [1, 8]                                // moist highlight runs along the blade and dorsum between these points
@@ -213,37 +213,41 @@ const TONGUE_HI_INSET = 1.4
 // `release` (the burst) to the half-way posture `released`, then relax from holdEnd. steps[] are the 4 captions.
 const T_TH = { moveStart: 1.05, reach: 1.28, holdEnd: 2.2, rest: 2.6, soundOn: 1.3, soundOff: 1.7, end: 2.7 }
 const T_STOP = { moveStart: 0.98, reach: 1.2, release: 1.37, holdEnd: 1.85, rest: 2.25, soundOn: 1.376, soundOff: 1.62, end: 2.7 }
+// One dark oral cavity for every sound (the /θ/ one), so the inside of the mouth never changes shape or place
+// between sounds; the holds are fitted to it (the /k/ hump seals on its roof). Only the small lip opening in
+// front (`front`) differs, following how far the jaw opens.
+const CAVITY_OVAL = { cx: 124, cy: 147.5, a: 31, b: 21, deg: 36 }
 export const SOUNDS = {
   'θ': {
     voiced: false, word: 'think', hint: 'Blow air softly over the tongue.', kind: 'hold', hold: HOLD_TH, jawOpen: 2,
-    oval: { cx: 124, cy: 147.5, a: 31, b: 21, deg: 36 }, front: { cx: 154.5, cy: 140, rx: 6.5, ry: 3.4 }, timing: T_TH,
+    oval: CAVITY_OVAL, front: { cx: 154.5, cy: 140, rx: 6.5, ry: 3.4 }, timing: T_TH,
     steps: [['Ready', 'Mouth relaxed, tongue inside.'], ['Peek', 'Tongue tip slides out between the teeth.'], ['Blow', 'Blow air softly over the tongue.'], ['Back', 'Tongue goes back inside.']],
   },
   'ð': {
     voiced: true, word: 'this', hint: 'Hum! Feel the buzz in your throat.', kind: 'hold', hold: HOLD_TH, jawOpen: 2,
-    oval: { cx: 124, cy: 147.5, a: 31, b: 21, deg: 36 }, front: { cx: 154.5, cy: 140, rx: 6.5, ry: 3.4 }, timing: T_TH,
+    oval: CAVITY_OVAL, front: { cx: 154.5, cy: 140, rx: 6.5, ry: 3.4 }, timing: T_TH,
     steps: [['Ready', 'Mouth relaxed, tongue inside.'], ['Peek', 'Tongue tip slides out between the teeth.'], ['Buzz', 'Hum! Feel the buzz in your throat.'], ['Back', 'Tongue goes back inside.']],
   },
   'ɹ': {
     voiced: true, word: 'red', hint: 'Curl the tip up — don’t let it touch!', kind: 'hold', hold: HOLD_R, jawOpen: 2.5,
-    oval: { cx: 124, cy: 146, a: 31, b: 22, deg: 34 }, front: { cx: 154.5, cy: 140.3, rx: 6.5, ry: 3.6 },
+    oval: CAVITY_OVAL, front: { cx: 154.5, cy: 140.3, rx: 6.5, ry: 3.6 },
     timing: { moveStart: 0.9, reach: 1.14, holdEnd: 1.95, rest: 2.35, soundOn: 1.16, soundOff: 1.84, end: 2.7 },
     steps: [['Ready', 'Mouth relaxed, tongue inside.'], ['Curl', 'Tip curls up and back; the tongue bunches up.'], ['Hum', 'Say “rrr” — the tip touches nothing.'], ['Back', 'Tongue relaxes.']],
   },
   'k': {
     voiced: false, word: 'cat', hint: 'Back of the tongue pops off the roof.', kind: 'stop', hold: HOLD_K, jawOpen: 2.5, released: 0.45,
-    oval: { cx: 121, cy: 144, a: 31, b: 22, deg: 28 }, front: { cx: 154.5, cy: 140.3, rx: 6.5, ry: 3.6 }, timing: T_STOP,
+    oval: CAVITY_OVAL, front: { cx: 154.5, cy: 140.3, rx: 6.5, ry: 3.6 }, timing: T_STOP,
     steps: [['Ready', 'Mouth relaxed, tongue inside.'], ['Lift', 'Back of the tongue lifts up to the roof.'], ['Pop!', 'Air bursts out as it lets go.'], ['Back', 'Tongue relaxes.']],
   },
   'æ': {
     voiced: true, word: 'cat', hint: 'Open wide, tongue low and flat.', kind: 'hold', hold: HOLD_AE, jawOpen: 5,
-    oval: { cx: 125, cy: 151, a: 32, b: 24, deg: 32 }, front: { cx: 154.5, cy: 141.3, rx: 6.5, ry: 4.6 },
+    oval: CAVITY_OVAL, front: { cx: 154.5, cy: 141.3, rx: 6.5, ry: 4.6 },
     timing: { moveStart: 0.95, reach: 1.2, holdEnd: 1.9, rest: 2.3, soundOn: 1.22, soundOff: 1.78, end: 2.7 },
     steps: [['Ready', 'Mouth relaxed, tongue inside.'], ['Open', 'Jaw drops; the tongue lies low and forward.'], ['Say “a”', 'Voice on — like “apple”.'], ['Back', 'Mouth closes.']],
   },
   't': {
     voiced: false, word: 'top', hint: 'Tip taps the bump behind the top teeth.', kind: 'stop', hold: HOLD_T, jawOpen: 1, released: 0.45,
-    oval: { cx: 124.5, cy: 146, a: 32, b: 22, deg: 34 }, front: { cx: 154.5, cy: 139.7, rx: 6.5, ry: 2.8 }, timing: T_STOP,
+    oval: CAVITY_OVAL, front: { cx: 154.5, cy: 139.7, rx: 6.5, ry: 2.8 }, timing: T_STOP,
     steps: [['Ready', 'Mouth relaxed, tongue inside.'], ['Tip up', 'Tongue tip presses the ridge behind the top teeth.'], ['Tap!', 'Air pops out as the tip lets go.'], ['Back', 'Tongue relaxes.']],
   },
 }
