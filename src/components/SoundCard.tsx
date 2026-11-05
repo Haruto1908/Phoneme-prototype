@@ -19,13 +19,15 @@ interface SoundCardProps {
   voiced?: boolean
   ariaLabel: string
   onPress: (id: string) => void
+  /** Staggers the entrance animation. */
+  delayMs?: number
 }
 
 /**
  * One sound card. Sized for a small finger on an iPad: the whole card is the button; it can also be dragged into
  * the Word Builder. Colour classes come from palette.ts so Tailwind can see them spelled out.
  */
-export function SoundCard({ id, label, word, figure, color, playing, armed, voiced, ariaLabel, onPress }: SoundCardProps) {
+export function SoundCard({ id, label, word, figure, color, playing, armed, voiced, ariaLabel, onPress, delayMs = 0 }: SoundCardProps) {
   const c = palette[color]
   const onDragStart = (e: DragEvent<HTMLButtonElement>) => {
     e.dataTransfer.setData(CARD_DRAG_TYPE, id)
@@ -49,20 +51,27 @@ export function SoundCard({ id, label, word, figure, color, playing, armed, voic
       aria-pressed={playing}
       onClick={() => onPress(id)}
       className={[
-        'no-select group relative flex min-h-[190px] flex-col items-center justify-center gap-3 rounded-tile p-4 sm:min-h-[220px] sm:p-5',
-        'transition-transform duration-150 ease-out',
-        'active:translate-y-[4px] active:scale-[0.985]',
+        'no-select group animate-rise relative flex min-h-[190px] flex-col items-center justify-center gap-3 overflow-hidden rounded-tile p-4 sm:min-h-[220px] sm:p-5',
+        'ring-1 ring-white/60 dark:ring-white/10',
+        'transition-[transform,box-shadow] duration-200 ease-out',
+        'hover:-translate-y-1 active:translate-y-[4px] active:scale-[0.985]',
         'focus:outline-none focus-visible:ring-4 focus-visible:ring-offset-2 focus-visible:ring-ink/40',
-        'shadow-[0_8px_0_0_var(--edge),0_14px_28px_-12px_rgba(43,53,69,0.35)]',
-        'active:shadow-[0_3px_0_0_var(--edge),0_6px_14px_-10px_rgba(43,53,69,0.35)]',
+        'shadow-tile active:shadow-tile-pressed',
         c.bg,
-        playing ? 'animate-wiggle ring-4 ring-white/80' : '',
+        playing ? 'animate-wiggle' : '',
         armed ? 'ring-4 ring-ink/30 ring-offset-2' : '',
       ].join(' ')}
-      style={{ ['--edge' as string]: c.edgeVar }}
+      style={{ ['--edge' as string]: c.edgeVar, animationDelay: playing ? undefined : `${delayMs}ms` }}
     >
+      {/* soft highlight so the tile reads as a physical card */}
+      <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_80%_at_20%_0%,rgba(255,255,255,0.55),transparent_55%)] dark:bg-[radial-gradient(120%_80%_at_20%_0%,rgba(255,255,255,0.08),transparent_55%)]" aria-hidden="true" />
+
       {/* picture cue on top: a white sticker so the figure pops on the coloured card */}
-      <span data-sticker className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-[22px] bg-white shadow-[0_4px_0_0_var(--edge)] transition-transform group-active:scale-95 sm:h-28 sm:w-28" aria-hidden="true">
+      <span
+        data-sticker
+        className="relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-[22px] bg-white shadow-[0_4px_0_0_var(--edge),0_10px_20px_-10px_rgba(0,0,0,0.35)] transition-transform duration-200 group-hover:scale-[1.04] group-active:scale-95 sm:h-28 sm:w-28"
+        aria-hidden="true"
+      >
         {figure ? (
           <img src={figure} alt="" draggable={false} className="h-full w-full object-cover" />
         ) : (
@@ -70,15 +79,15 @@ export function SoundCard({ id, label, word, figure, color, playing, armed, voic
         )}
       </span>
       {/* pronunciation under the picture, with the cue word in small type */}
-      <span className={`flex min-w-0 flex-col items-center gap-0.5 ${c.ink}`}>
+      <span className={`relative flex min-w-0 flex-col items-center gap-1 ${c.ink}`}>
         <span className="flex items-center gap-2">
           <span className="font-ipa text-4xl font-bold leading-none sm:text-5xl">{label}</span>
           {voiced && <BuzzBadge className="h-6 w-6 opacity-80" />}
         </span>
-        <span className="text-sm font-semibold opacity-60">{word}</span>
+        <span className="text-xs font-extrabold uppercase tracking-[0.18em] opacity-70">{word}</span>
       </span>
       {armed && (
-        <span className={`absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-xl font-black ${c.ink}`} aria-hidden="true">
+        <span className={`absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-xl font-black shadow-raise ${c.ink}`} aria-hidden="true">
           +
         </span>
       )}

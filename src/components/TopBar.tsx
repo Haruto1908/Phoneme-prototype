@@ -1,6 +1,8 @@
 import type { Presenter } from '../types'
 import { t, type Lang } from '../lib/i18n'
+import type { Theme } from '../lib/theme'
 import { SpeakerIcon } from './icons'
+import { AccountMenu, IconButton, LangToggle, ThemeToggle } from './controls'
 
 interface TopBarProps {
   hostName: string
@@ -8,48 +10,58 @@ interface TopBarProps {
   avatar: string | null
   lang: Lang
   onLang: (lang: Lang) => void
+  theme: Theme
+  onTheme: (theme: Theme) => void
   presenter: Presenter
   onPresenter: (p: Presenter) => void
   muted: boolean
   onMuted: (muted: boolean) => void
   practice: boolean
   onPractice: (on: boolean) => void
+  email: string
+  onLogout: () => void
 }
 
 const PRESENTERS: Presenter[] = ['avatar', 'human', 'both']
 
 /**
- * Composition 1: avatar + title on the left; the big Avatar / Human / Both toggle in the middle; language toggle,
- * sound button and Practice toggle on the right. Below lg the toggle drops to its own full-width row.
+ * Composition 1: brand (avatar + title) on the left; the Avatar / Human / Both control in the middle; on the
+ * right the language switch, sound, Practice, theme toggle and the account menu. Below lg the mode control
+ * drops to its own full-width row.
  */
-export function TopBar({ hostName, avatar, lang, onLang, presenter, onPresenter, muted, onMuted, practice, onPractice }: TopBarProps) {
+export function TopBar({ hostName, avatar, lang, onLang, theme, onTheme, presenter, onPresenter, muted, onMuted, practice, onPractice, email, onLogout }: TopBarProps) {
+  const selected = PRESENTERS.indexOf(presenter)
   return (
-    <header className="no-select grid grid-cols-1 items-center gap-x-4 gap-y-3 rounded-[28px] bg-white/70 px-4 py-3 shadow-[0_10px_30px_-18px_rgba(43,53,69,0.45)] sm:px-5 md:grid-cols-[1fr_auto] lg:grid-cols-[1fr_auto_1fr]">
-      {/* left: avatar + title */}
+    <header className="no-select panel animate-rise relative z-20 grid grid-cols-1 items-center gap-x-4 gap-y-3 rounded-panel px-4 py-3 sm:px-5 md:grid-cols-[minmax(0,1fr)_auto] lg:grid-cols-[minmax(0,1fr)_auto_auto] xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
+      {/* brand */}
       <div className="flex min-w-0 items-center gap-3 sm:gap-4">
-        <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-mint-bg ring-4 ring-white sm:h-20 sm:w-20" role="img" aria-label={hostName}>
-          {avatar ? (
-            <img src={avatar} alt="" className="h-full w-full object-cover" />
-          ) : (
-            <svg viewBox="0 0 64 64" className="h-10 w-10 text-ink/40" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" aria-hidden="true">
-              <circle cx="32" cy="24" r="11" />
-              <path d="M12 56c3-11 11-16 20-16s17 5 20 16" />
-            </svg>
-          )}
+        <div className="relative shrink-0">
+          <span className="absolute -inset-1 rounded-full bg-[conic-gradient(from_120deg,var(--color-coral-ink),var(--color-sun-ink),var(--color-mint-ink),var(--color-sky-ink),var(--color-lavender-ink),var(--color-coral-ink))] opacity-80 blur-[1px]" aria-hidden="true" />
+          <div className="relative flex h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-mint-bg ring-[3px] ring-panel-strong sm:h-16 sm:w-16" role="img" aria-label={hostName}>
+            {avatar ? (
+              <img src={avatar} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <svg viewBox="0 0 64 64" className="h-9 w-9 text-ink/40" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" aria-hidden="true">
+                <circle cx="32" cy="24" r="11" />
+                <path d="M12 56c3-11 11-16 20-16s17 5 20 16" />
+              </svg>
+            )}
+          </div>
         </div>
         <div className="min-w-0">
-          <h1 className="truncate text-2xl font-extrabold tracking-tight text-ink">{t('title', lang)}</h1>
-          <p className="mt-0.5 truncate text-sm font-medium text-muted">{t('subtitle', lang, { host: hostName })}</p>
+          <h1 className="truncate text-xl font-black tracking-tight text-ink sm:text-2xl">{t('title', lang)}</h1>
+          <p className="mt-0.5 truncate text-sm font-semibold text-muted">{t('subtitle', lang, { host: hostName })}</p>
         </div>
       </div>
 
-      {/* middle: Avatar / Human / Both — the main experiment switch, so it is big */}
-      <div
-        className="order-last col-span-full flex justify-center lg:order-none lg:col-span-1"
-        role="radiogroup"
-        aria-label={t('presenter', lang)}
-      >
-        <div className="flex rounded-full bg-ink/8 p-1.5 shadow-inner">
+      {/* Avatar / Human / Both — the main experiment switch, with a sliding pill */}
+      <div className="order-last col-span-full flex justify-center lg:order-none lg:col-span-1" role="radiogroup" aria-label={t('presenter', lang)}>
+        <div className="relative grid grid-cols-3 rounded-full bg-sunk p-1.5 ring-1 ring-line">
+          <span
+            aria-hidden="true"
+            className="absolute inset-y-1.5 w-[calc((100%-0.75rem)/3)] rounded-full bg-accent shadow-[0_6px_16px_-6px_var(--color-accent)] transition-[left] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+            style={{ left: `calc(0.375rem + ${selected} * (100% - 0.75rem) / 3)` }}
+          />
           {PRESENTERS.map((p) => {
             const on = presenter === p
             return (
@@ -59,7 +71,7 @@ export function TopBar({ hostName, avatar, lang, onLang, presenter, onPresenter,
                 role="radio"
                 aria-checked={on}
                 onClick={() => onPresenter(p)}
-                className={`h-14 min-w-[6.5rem] rounded-full px-5 text-lg font-extrabold transition-all sm:min-w-[7.5rem] sm:text-xl ${on ? 'bg-coral-ink text-white shadow-[0_6px_14px_-6px_rgba(184,69,45,0.7)] scale-105' : 'text-ink/60 hover:text-ink'}`}
+                className={`relative z-10 h-12 min-w-[6.25rem] rounded-full px-4 text-base font-extrabold transition-colors sm:min-w-[7.25rem] sm:text-lg ${on ? 'text-on-accent' : 'text-muted hover:text-ink'}`}
               >
                 {t(p, lang)}
               </button>
@@ -68,34 +80,15 @@ export function TopBar({ hostName, avatar, lang, onLang, presenter, onPresenter,
         </div>
       </div>
 
-      {/* right: EN/JP, sound, Practice */}
-      <div className="flex flex-wrap items-center gap-2 sm:gap-3 md:justify-end">
-        <div className="flex rounded-full bg-white p-1 shadow-inner" role="group" aria-label={t('langLabel', lang)}>
-          {(['en', 'jp'] as const).map((l) => (
-            <button
-              key={l}
-              type="button"
-              aria-pressed={lang === l}
-              onClick={() => onLang(l)}
-              className={`h-10 min-w-12 rounded-full px-3 text-sm font-extrabold uppercase transition-colors ${lang === l ? 'bg-ink text-white' : 'text-muted hover:text-ink'}`}
-            >
-              {l === 'en' ? 'EN' : 'JP'}
-            </button>
-          ))}
-        </div>
+      {/* controls */}
+      <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-2.5 lg:flex-nowrap">
+        <LangToggle lang={lang} onLang={onLang} />
 
-        <button
-          type="button"
-          aria-label={muted ? t('soundOff', lang) : t('soundOn', lang)}
-          aria-pressed={!muted}
-          title={muted ? t('soundOff', lang) : t('soundOn', lang)}
-          onClick={() => onMuted(!muted)}
-          className={`flex h-12 w-12 items-center justify-center rounded-full shadow-[0_4px_0_0_rgba(43,53,69,0.12)] transition-transform active:translate-y-[2px] ${muted ? 'bg-coral-bg text-coral-ink' : 'bg-white text-ink'}`}
-        >
-          <SpeakerIcon level={muted ? 0 : 2} />
-        </button>
+        <IconButton label={muted ? t('soundOff', lang) : t('soundOn', lang)} pressed={!muted} onClick={() => onMuted(!muted)} className={muted ? 'text-accent' : ''}>
+          <SpeakerIcon level={muted ? 0 : 2} className="h-6 w-6" />
+        </IconButton>
 
-        <label className="flex cursor-pointer items-center gap-2 rounded-full bg-white py-1.5 pl-3 pr-1.5 shadow-[0_4px_0_0_rgba(43,53,69,0.12)]" title={t('practiceHint', lang)}>
+        <label className="flex h-11 cursor-pointer items-center gap-2 rounded-full bg-panel-strong py-1 pl-3.5 pr-1.5 shadow-raise ring-1 ring-line" title={t('practiceHint', lang)}>
           <span className="text-sm font-extrabold text-ink">{t('practice', lang)}</span>
           <button
             type="button"
@@ -103,11 +96,14 @@ export function TopBar({ hostName, avatar, lang, onLang, presenter, onPresenter,
             aria-checked={practice}
             aria-label={t('practice', lang)}
             onClick={() => onPractice(!practice)}
-            className={`relative h-9 w-16 rounded-full transition-colors ${practice ? 'bg-mint-ink' : 'bg-ink/20'}`}
+            className={`relative h-8 w-14 rounded-full transition-colors ${practice ? 'bg-mint-ink' : 'bg-ink/20'}`}
           >
-            <span className={`absolute top-1 h-7 w-7 rounded-full bg-white shadow transition-[left] ${practice ? 'left-8' : 'left-1'}`} />
+            <span className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow transition-[left] duration-200 ${practice ? 'left-7' : 'left-1'}`} />
           </button>
         </label>
+
+        <ThemeToggle theme={theme} onTheme={onTheme} lang={lang} />
+        <AccountMenu email={email} lang={lang} theme={theme} onTheme={onTheme} onLang={onLang} onLogout={onLogout} />
       </div>
     </header>
   )

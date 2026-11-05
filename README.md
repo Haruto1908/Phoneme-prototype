@@ -20,7 +20,46 @@ npm run dev        # http://localhost:5173  (also reachable from an iPad on the 
 npm run build      # static build in dist/
 ```
 
-Stack: React 19, TypeScript, Vite, Tailwind 4. No UI framework.
+Stack: React 19, TypeScript, Vite, Tailwind 4. No UI framework. Sign-in API: Vercel
+serverless functions in `api/` (MongoDB, bcrypt, JWT cookie); `npm run dev` mounts the same
+handler at `/api/auth/*`, so one dev server serves both.
+
+## Accounts and environment variables
+
+The site sits behind a login / sign-up page. Sign-up takes an email and a password (8+
+characters), stores `{ email, passwordHash, createdAt }` in MongoDB (`Phoneme-prototype` →
+`UsersTable`) and signs the user straight in; no email verification. Login sets an httpOnly
+cookie for 30 days. The account button in the top bar shows the email, language and theme
+switches, and Log out.
+
+Local: put these in `phoneme-prototype/.env.local` (git-ignored). On Vercel: Project →
+Settings → Environment Variables. Never commit the values.
+
+| Variable | Required | Purpose |
+|---|---|---|
+| `MONGODB_URI` | yes | Atlas connection string (user + password included). |
+| `JWT_SECRET` | yes in production | Signs the session cookie. Any long random string. |
+| `MONGODB_DB`, `USERS_COLLECTION` | no | Defaults `Phoneme-prototype`, `UsersTable`. |
+| `MONGODB_DNS` | no | Dev only, e.g. `1.1.1.1,8.8.8.8` when the local DNS refuses the Atlas SRV lookup. |
+
+Vercel: framework preset **Vite**, root directory `phoneme-prototype`, build `npm run build`,
+output `dist`. The `api/` folder is picked up automatically as serverless functions.
+
+## Theme
+
+Light and dark themes; the sun/moon button in the top bar (and on the sign-in page) switches,
+the choice is saved on the device, and the first visit follows the OS setting. All colours are
+CSS tokens in `src/index.css` (`:root` / `.dark`) exposed to Tailwind as `text-ink`, `bg-panel`,
+`bg-mint-bg`, `shadow-raise` …, so components never hard-code a colour.
+
+## Practice mode and pronunciation score
+
+In practice mode the lesson pop-up is split: the mouth close-up and side view on the left, a
+microphone on the right. The recording (≤ 3 s) is compared with the host's clip in the
+browser (log-mel features + DTW, vocal-tract-length warps) and shown as 0–100 with a short
+reason, plus a *Compare* button that plays the child then the host. It is an acoustic
+similarity heuristic, not a phonetic assessment; `src/lib/pronounce/` is isolated so it can
+be swapped for a speech-assessment API later.
 
 ## Operator settings (URL params)
 

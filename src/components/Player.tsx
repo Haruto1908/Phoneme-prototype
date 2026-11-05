@@ -12,7 +12,8 @@ export interface PlayerHandle {
   stop(): void
 }
 
-type Phase = 'idle' | 'mouth' | 'tongue' | 'done'
+/** `ask`: the close-up has finished and we are asking whether to show the side view. */
+type Phase = 'idle' | 'mouth' | 'ask' | 'tongue' | 'done'
 
 /**
  * Framing of the side view (image px): nose to chin around the cutaway, filling the stage. With "slice" a wide
@@ -52,6 +53,8 @@ export function Player({ ref, lang, muted, volume, variant, idle, onClose, onPla
   const clipEndRef = useRef<number | null>(null)
   const clipTimerRef = useRef<number | null>(null)
   const clipDoneRef = useRef(false)
+  /** When the capped clip actually started playing, so a short clip still fills its whole slot. */
+  const clipStartRef = useRef<number | null>(null)
   const [items, setItems] = useState<PlayItem[]>([])
   const [index, setIndex] = useState(0)
   const [phase, setPhase] = useState<Phase>('idle')
@@ -108,6 +111,7 @@ export function Player({ ref, lang, muted, volume, variant, idle, onClose, onPla
     clipDoneRef.current = false
     clearClipTimer()
     clipEndRef.current = null
+    clipStartRef.current = null
     const clip = item.clips[i]
     setWho(clip.who)
     if (clip.poster) v.poster = asset(clip.poster)
@@ -139,6 +143,7 @@ export function Player({ ref, lang, muted, volume, variant, idle, onClose, onPla
   function armClipTimer() {
     const v = videoRef.current
     const end = clipEndRef.current
+    if (v && !v.paused && clipStartRef.current === null) clipStartRef.current = performance.now()
     clearClipTimer()
     if (!v || end === null || v.paused) return
     if (Number.isFinite(v.duration) && end >= v.duration - 0.1) return // the clip ends there anyway
@@ -203,9 +208,26 @@ export function Player({ ref, lang, muted, volume, variant, idle, onClose, onPla
     if (!item || clipDoneRef.current) return
     clipDoneRef.current = true
     clearClipTimer()
-    if (clipRef.current + 1 < item.clips.length) playClip(clipRef.current + 1)
-    else if (item.tongue) startTongue()
-    else nextItem()
+    const advance = () => {
+      if (clipRef.current + 1 < item.clips.length) playClip(clipRef.current + 1)
+      else if (item.tongue) askTongue()
+      else nextItem()
+    }
+    // a capped clip owns its whole slot: a clip shorter than the slot holds its last frame for the rest
+    const started = clipStartRef.current
+    const hold = item.seconds && started !== null ? item.seconds * 1000 - (performance.now() - started) : 0
+    if (hold <= 20) return advance()
+    const clip = clipRef.current
+    clipTimerRef.current = window.setTimeout(() => {
+      clipTimerRef.current = null
+      if (itemsRef.current[indexRef.current] === item && clipRef.current === clip) advance()
+    }, hold)
+  }
+
+  /** The close-up is over: pause on its last frame and ask whether to show the side view. */
+  function askTongue() {
+    videoRef.current?.pause()
+    setPhase('ask')
   }
 
   function start(list: PlayItem[]) {
@@ -265,7 +287,7 @@ export function Player({ ref, lang, muted, volume, variant, idle, onClose, onPla
           {item ? item.label : <span className="text-2xl font-sans text-ink">{t('watch', lang)}</span>}
         </span>
         {items.length > 1 && (
-          <span className="rounded-full bg-white/80 px-3 py-1 text-sm font-bold text-muted">
+          <span className="rounded-full bg-panel-strong/80 px-3 py-1 text-sm font-bold text-muted ring-1 ring-line">
             {index + 1} / {items.length}
           </span>
         )}
@@ -277,7 +299,7 @@ export function Player({ ref, lang, muted, volume, variant, idle, onClose, onPla
         )}
       </header>
 
-      <div className="relative aspect-video w-full overflow-hidden rounded-[24px] bg-white shadow-[0_10px_30px_-12px_rgba(43,53,69,0.35)]">
+      <div className="relative aspect-video w-full overflow-hidden rounded-[24px] bg-panel-strong shadow-float ring-1 ring-line">
         <video
           ref={videoRef}
           playsInline
@@ -295,16 +317,40 @@ export function Player({ ref, lang, muted, volume, variant, idle, onClose, onPla
         />
         {phase === 'idle' && idle && <div className="absolute inset-0">{idle}</div>}
         {who && !showTongue && phase !== 'idle' && (
-          <span className={`no-select absolute left-3 top-3 rounded-full bg-white/85 px-3 py-1 text-sm font-extrabold shadow ${c.ink}`}>
+          <span className={`no-select absolute left-3 top-3 rounded-full bg-panel-strong/90 px-3 py-1 text-sm font-extrabold shadow-raise ${c.ink}`}>
             {who === 'human' ? t('human', lang) : t('avatar', lang)}
           </span>
+        )}
+        {phase === 'ask' && (
+          <div className="no-select absolute inset-x-0 bottom-0 flex justify-center p-3 sm:p-4" role="group" aria-label={t('askSideView', lang)}>
+            <div className={`animate-pop flex w-full max-w-md flex-col items-center gap-3 rounded-[24px] bg-panel-strong/95 px-4 py-4 text-center shadow-float ring-1 ring-line backdrop-blur ${c.ink}`}>
+              <p className={`font-extrabold text-ink ${compact ? 'text-base' : 'text-lg sm:text-xl'}`}>{t('askSideView', lang)}</p>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={startTongue}
+                  className={`flex h-12 min-w-28 items-center justify-center gap-2 rounded-full bg-accent px-5 text-lg font-extrabold text-on-accent shadow-raise transition-[transform,background-color] hover:bg-accent-hover active:translate-y-[2px] active:shadow-none ${compact ? '' : 'h-14 text-xl'}`}
+                >
+                  <TongueIcon className="h-6 w-6" />
+                  {t('yes', lang)}
+                </button>
+                <button
+                  type="button"
+                  onClick={nextItem}
+                  className={`flex h-12 min-w-24 items-center justify-center rounded-full bg-panel-strong px-5 text-lg font-extrabold text-ink shadow-raise ring-1 ring-line transition-transform active:translate-y-[2px] active:shadow-none ${compact ? '' : 'h-14 text-xl'}`}
+                >
+                  {t('no', lang)}
+                </button>
+              </div>
+            </div>
+          </div>
         )}
         {needsTap && (
           <button
             type="button"
             aria-label={t('tapToPlay', lang)}
             onClick={() => videoRef.current?.play().then(() => setNeedsTap(false), () => {})}
-            className={`absolute inset-0 m-auto flex h-24 w-24 items-center justify-center rounded-full bg-white/90 shadow-lg ${c.ink}`}
+            className={`absolute inset-0 m-auto flex h-24 w-24 items-center justify-center rounded-full bg-panel-strong/90 shadow-float ${c.ink}`}
           >
             <PlayIcon className="ml-1 h-12 w-12" />
           </button>
@@ -332,11 +378,11 @@ export function Player({ ref, lang, muted, volume, variant, idle, onClose, onPla
 
 /** Two-step indicator (mouth, then tongue) so an adult can see where the lesson is. */
 function Steps({ phase, showTongue, hasTongue, compact, className }: { phase: Phase; showTongue: boolean; hasTongue: boolean; compact: boolean; className?: string }) {
-  const mouthOn = phase === 'mouth' || (phase === 'done' && !showTongue)
+  const mouthOn = phase === 'mouth' || phase === 'ask' || (phase === 'done' && !showTongue)
   const tongueOn = phase === 'tongue' || (phase === 'done' && showTongue)
   const size = compact ? 'h-9 w-12' : 'h-12 w-16'
   const pill = (on: boolean, dim: boolean) =>
-    `flex ${size} items-center justify-center rounded-full transition-all ${on ? 'bg-white shadow-md scale-105' : 'bg-white/40'} ${dim ? 'opacity-30' : ''}`
+    `flex ${size} items-center justify-center rounded-full transition-all ${on ? 'bg-panel-strong shadow-raise scale-105' : 'bg-panel-strong/40'} ${dim ? 'opacity-30' : ''}`
   return (
     <div className={`flex items-center gap-2 ${className ?? ''} ${phase === 'idle' ? 'opacity-0' : ''}`} aria-hidden="true">
       <span className={pill(mouthOn, false)}>
@@ -356,7 +402,7 @@ function RoundButton({ label, onClick, className, children }: { label: string; o
       type="button"
       aria-label={label}
       onClick={onClick}
-      className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white/85 shadow-[0_6px_0_0_rgba(43,53,69,0.12)] transition-transform active:translate-y-[3px] ${className ?? ''}`}
+      className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-panel-strong/90 shadow-raise ring-1 ring-line transition-transform hover:-translate-y-px active:translate-y-[3px] active:shadow-none ${className ?? ''}`}
     >
       {children}
     </button>
@@ -370,7 +416,7 @@ function BigButton({ label, onClick, className, compact, children }: { label: st
       aria-label={label}
       title={label}
       onClick={onClick}
-      className={`animate-pop flex items-center justify-center rounded-full bg-white shadow-[0_6px_0_0_rgba(43,53,69,0.14),0_14px_24px_-12px_rgba(43,53,69,0.35)] transition-transform active:translate-y-[4px] ${compact ? 'h-14 w-14' : 'h-20 w-20'} ${className ?? ''}`}
+      className={`animate-pop flex items-center justify-center rounded-full bg-panel-strong shadow-raise ring-1 ring-line transition-transform hover:-translate-y-px active:translate-y-[4px] active:shadow-none ${compact ? 'h-14 w-14' : 'h-20 w-20'} ${className ?? ''}`}
     >
       {children}
     </button>

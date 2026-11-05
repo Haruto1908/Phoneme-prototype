@@ -21,6 +21,28 @@ export function ReplayIcon({ className }: IconProps) {
     </svg>
   )
 }
+export function MicIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className ?? 'h-8 w-8'} {...stroke} aria-hidden="true">
+      <rect x="11.5" y="4" width="9" height="15" rx="4.5" />
+      <path d="M7 15.5a9 9 0 0018 0M16 24.5V29M11 29h10" />
+    </svg>
+  )
+}
+export function StopIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className ?? 'h-8 w-8'} fill="currentColor" aria-hidden="true">
+      <rect x="8" y="8" width="16" height="16" rx="3" />
+    </svg>
+  )
+}
+export function CompareIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className ?? 'h-8 w-8'} {...stroke} aria-hidden="true">
+      <path d="M4 16h6l3-8 4 16 3-8h8" />
+    </svg>
+  )
+}
 export function CloseIcon({ className }: IconProps) {
   return (
     <svg viewBox="0 0 32 32" className={className ?? 'h-7 w-7'} {...stroke} aria-hidden="true">
@@ -83,6 +105,68 @@ export function MinusIcon({ className }: IconProps) {
   return (
     <svg viewBox="0 0 32 32" className={className ?? 'h-6 w-6'} {...stroke} aria-hidden="true">
       <path d="M8 16h16" />
+    </svg>
+  )
+}
+export function SunIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className ?? 'h-6 w-6'} {...stroke} strokeWidth={2.8} aria-hidden="true">
+      <circle cx="16" cy="16" r="6" />
+      <path d="M16 3v3M16 26v3M3 16h3M26 16h3M6.8 6.8l2.1 2.1M23.1 23.1l2.1 2.1M6.8 25.2l2.1-2.1M23.1 8.9l2.1-2.1" />
+    </svg>
+  )
+}
+export function MoonIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className ?? 'h-6 w-6'} {...stroke} strokeWidth={2.8} aria-hidden="true">
+      <path d="M26 19.5A11 11 0 0112.5 6 11 11 0 1026 19.5z" />
+    </svg>
+  )
+}
+export function UserIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className ?? 'h-6 w-6'} {...stroke} strokeWidth={2.8} aria-hidden="true">
+      <circle cx="16" cy="11.5" r="5.5" />
+      <path d="M6 27c1.5-5.5 5.5-8 10-8s8.5 2.5 10 8" />
+    </svg>
+  )
+}
+export function MailIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className ?? 'h-6 w-6'} {...stroke} strokeWidth={2.6} aria-hidden="true">
+      <rect x="4" y="7" width="24" height="18" rx="4" />
+      <path d="M5 10l11 8 11-8" />
+    </svg>
+  )
+}
+export function LockIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className ?? 'h-6 w-6'} {...stroke} strokeWidth={2.6} aria-hidden="true">
+      <rect x="6" y="14" width="20" height="14" rx="4" />
+      <path d="M10.5 14v-4a5.5 5.5 0 0111 0v4M16 20v3" />
+    </svg>
+  )
+}
+export function EyeIcon({ className, off }: IconProps & { off?: boolean }) {
+  return (
+    <svg viewBox="0 0 32 32" className={className ?? 'h-6 w-6'} {...stroke} strokeWidth={2.6} aria-hidden="true">
+      <path d="M3 16c3.5-6 8-9 13-9s9.5 3 13 9c-3.5 6-8 9-13 9S6.5 22 3 16z" />
+      <circle cx="16" cy="16" r="4" />
+      {off && <path d="M6 26L26 6" />}
+    </svg>
+  )
+}
+export function LogoutIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className ?? 'h-6 w-6'} {...stroke} strokeWidth={2.8} aria-hidden="true">
+      <path d="M13 5H8a3 3 0 00-3 3v16a3 3 0 003 3h5M20 10l6 6-6 6M26 16H12" />
+    </svg>
+  )
+}
+export function CheckIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className ?? 'h-6 w-6'} {...stroke} aria-hidden="true">
+      <path d="M6 17l7 7L26 9" />
     </svg>
   )
 }

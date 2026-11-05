@@ -9,31 +9,30 @@ import { SoundChart } from './components/SoundChart'
 import { WordBuilder } from './components/WordBuilder'
 import { Player, type PlayerHandle } from './components/Player'
 import { Modal } from './components/Modal'
+import { Recorder, type RecorderTarget } from './components/Recorder'
+import { SETTINGS_KEY } from './lib/settings'
+import type { Theme } from './lib/theme'
+import type { User } from './lib/auth'
 
-const SETTINGS_KEY = 'soundchart.settings'
 interface Settings {
-  lang: Lang
   /** Avatar / Human / Both: whose mouth close-up plays. */
   presenter: Presenter
   muted: boolean
   volume: number
   practice: boolean
 }
-const DEFAULTS: Settings = { lang: 'en', presenter: 'avatar', muted: false, volume: 1, practice: true }
+const DEFAULTS: Settings = { presenter: 'avatar', muted: false, volume: 1, practice: true }
 const PRESENTERS: Presenter[] = ['avatar', 'human', 'both']
 /** Word Builder plays each sound for this long (the clips are cut to a window around the sound). */
-const WORD_SECONDS = 1
+const WORD_SECONDS = 2
 
-/** Saved settings, overridable per session with ?lang=en|jp and ?mode=avatar|human|both. */
+/** Saved settings, overridable per session with ?mode=avatar|human|both. */
 function loadSettings(): Settings {
   try {
     const raw = localStorage.getItem(SETTINGS_KEY)
     const s = raw ? (JSON.parse(raw) as Partial<Settings>) : {}
-    const params = new URLSearchParams(window.location.search)
-    const lang = params.get('lang') === 'jp' ? 'jp' : params.get('lang') === 'en' ? 'en' : s.lang
-    const mode = params.get('mode') ?? s.presenter
+    const mode = new URLSearchParams(window.location.search).get('mode') ?? s.presenter
     return {
-      lang: lang === 'jp' ? 'jp' : 'en',
       presenter: PRESENTERS.includes(mode as Presenter) ? (mode as Presenter) : 'avatar',
       muted: !!s.muted,
       volume: typeof s.volume === 'number' ? Math.min(1, Math.max(0, s.volume)) : 1,
@@ -45,11 +44,20 @@ function loadSettings(): Settings {
 }
 
 /**
- * Layout: top bar (avatar, title, EN/JP, sound, Practice) · below it the sound cards (2/3) and, on the right,
- * the watch panel over the Word Builder (1/3). Practice on: a card opens the pop-up player; off: it plays in
- * the panel. The Word Builder always plays its blocks in the pop-up.
+ * Layout: top bar (brand, mode, language, sound, Practice, theme, account) · below it the sound cards (2/3)
+ * and, on the right, the watch panel over the Word Builder (1/3). Practice on: a card opens the pop-up player;
+ * off: it plays in the panel. The Word Builder always plays its blocks in the pop-up.
  */
-export default function App() {
+interface AppProps {
+  user: User
+  lang: Lang
+  onLang: (l: Lang) => void
+  theme: Theme
+  onTheme: (t: Theme) => void
+  onLogout: () => void
+}
+
+export default function App({ user, lang, onLang, theme, onTheme, onLogout }: AppProps) {
   const state = useManifest()
   const [settings, setSettings] = useState<Settings>(loadSettings)
   const [slots, setSlots] = useState<Array<string | null>>([null, null, null, null])
@@ -57,17 +65,19 @@ export default function App() {
   const [modalOpen, setModalOpen] = useState(false)
   const [modalLabel, setModalLabel] = useState('')
   const [modalColor, setModalColor] = useState<TileColor>('mint')
+  /** Sound to practise with the microphone (right half of the pop-up); null for Word Builder playback. */
+  const [recTarget, setRecTarget] = useState<RecorderTarget | null>(null)
   const [playingId, setPlayingId] = useState<string | null>(null)
   const panel = useRef<PlayerHandle>(null)
   const modal = useRef<PlayerHandle>(null)
 
   useEffect(() => {
     try {
-      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...settings, lang }))
     } catch {
       /* private mode */
     }
-  }, [settings])
+  }, [settings, lang])
 
   useEffect(() => {
     if (state.status !== 'ready') return
@@ -84,13 +94,14 @@ export default function App() {
   if (state.status === 'error') return <Centered>Could not load the sound chart ({state.message}).</Centered>
 
   const { manifest } = state
-  const { lang, presenter, muted, volume, practice } = settings
+  const { presenter, muted, volume, practice } = settings
   const set = <K extends keyof Settings>(k: K, v: Settings[K]) => setSettings((s) => ({ ...s, [k]: v }))
 
-  function openModal(items: PlayItem[], label = items.map((i) => i.label).join(' ')) {
+  function openModal(items: PlayItem[], label = items.map((i) => i.label).join(' '), rec: RecorderTarget | null = null) {
     panel.current?.stop()
     setModalLabel(label)
     setModalColor(items[0].color)
+    setRecTarget(rec)
     setModalOpen(true)
     modal.current?.start(items)
   }
@@ -107,15 +118,18 @@ export default function App() {
     }
     const item = itemFor(manifest, id, lang, presenter)
     if (!item) return
-    if (practice) openModal([item])
-    else {
+    if (practice) {
+      const s = manifest.sounds.find((x) => x.id === id)
+      const rec: RecorderTarget | null = s?.audio ? { id, label: item.label, color: item.color, audio: s.audio, audioWindow: s.audioWindow ?? null } : null
+      openModal([item], item.label, rec)
+    } else {
       if (modalOpen) closeModal()
       panel.current?.start([item])
     }
   }
 
   /**
-   * Word Builder: the filled blocks in order, one second per sound, close-ups only. In Both mode the avatar
+   * Word Builder: the filled blocks in order, two seconds per sound, close-ups only. In Both mode the avatar
    * reads the whole row first, then the human reads it.
    */
   function onBuildPlay() {
@@ -132,8 +146,8 @@ export default function App() {
 
   const avatar = manifest.host.portrait ? asset(manifest.host.portrait) : null
   const idle = (
-    <div className="no-select flex h-full w-full flex-col items-center justify-center gap-3 bg-gradient-to-b from-white to-mint-bg/60 p-4 text-center">
-      {avatar && <img src={avatar} alt="" className="h-24 w-24 rounded-full object-cover ring-4 ring-white shadow-md" />}
+    <div className="no-select flex h-full w-full flex-col items-center justify-center gap-3 bg-[radial-gradient(circle_at_50%_30%,var(--color-mint-bg),transparent_70%)] p-4 text-center">
+      {avatar && <img src={avatar} alt="" className="h-24 w-24 rounded-full object-cover shadow-raise ring-4 ring-panel-strong" />}
       <p className="text-sm font-semibold text-muted">{t('idlePanel', lang)}</p>
     </div>
   )
@@ -144,21 +158,25 @@ export default function App() {
         hostName={manifest.host.name}
         avatar={avatar}
         lang={lang}
-        onLang={(l) => set('lang', l)}
+        onLang={onLang}
+        theme={theme}
+        onTheme={onTheme}
         presenter={presenter}
         onPresenter={(p) => set('presenter', p)}
         muted={muted}
         onMuted={(m) => set('muted', m)}
         practice={practice}
         onPractice={(p) => set('practice', p)}
+        email={user.email}
+        onLogout={onLogout}
       />
 
       <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+        <div className="animate-rise lg:col-span-2 [animation-delay:60ms]">
           <SoundChart manifest={manifest} lang={lang} playingId={playingId} armed={armed !== null} onPress={onCardPress} />
         </div>
         <div className="flex flex-col gap-4 sm:gap-5">
-          <section className="rounded-[28px] bg-white/70 p-4 shadow-[0_10px_30px_-18px_rgba(43,53,69,0.45)]" aria-label={t('watch', lang)}>
+          <section className="panel animate-rise rounded-panel p-4 [animation-delay:120ms]" aria-label={t('watch', lang)}>
             <Player
               ref={panel}
               variant="panel"
@@ -171,29 +189,35 @@ export default function App() {
               }}
             />
           </section>
-          <WordBuilder
-            manifest={manifest}
-            lang={lang}
-            slots={slots}
-            onSlots={setSlots}
-            armed={armed}
-            onArmed={setArmed}
-            volume={volume}
-            onVolume={(delta) => setSettings((s) => ({ ...s, volume: Math.min(1, Math.max(0, +(s.volume + delta).toFixed(2))) }))}
-            onPlay={onBuildPlay}
-          />
+          <div className="animate-rise [animation-delay:180ms]">
+            <WordBuilder
+              manifest={manifest}
+              lang={lang}
+              slots={slots}
+              onSlots={setSlots}
+              armed={armed}
+              onArmed={setArmed}
+              volume={volume}
+              onVolume={(delta) => setSettings((s) => ({ ...s, volume: Math.min(1, Math.max(0, +(s.volume + delta).toFixed(2))) }))}
+              onPlay={onBuildPlay}
+            />
+          </div>
         </div>
       </div>
 
-      <footer className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-2 text-xs text-muted">
+      <footer className="no-select mt-auto flex flex-wrap items-center justify-between gap-2 px-1 pt-1 text-xs font-medium text-muted">
         <span>
           {t('avatar', lang)}: {manifest.host.name}
-          {manifest.host.humanName ? ` · ${t('human', lang)}: ${manifest.host.humanName}` : ''} · {t('footerNote', lang)}
+          {manifest.host.humanName ? ` · ${t('human', lang)}: ${manifest.host.humanName}` : ''}
         </span>
+        <span>{t('footerNote', lang)}</span>
       </footer>
 
-      <Modal open={modalOpen} label={modalLabel} color={modalColor} onClose={closeModal}>
-        <Player ref={modal} variant="modal" lang={lang} muted={muted} volume={volume} onClose={closeModal} onPlaying={setPlayingId} />
+      <Modal open={modalOpen} label={modalLabel} color={modalColor} onClose={closeModal} wide={!!recTarget}>
+        <div className={recTarget ? 'grid gap-4 lg:grid-cols-[3fr_2fr]' : ''}>
+          <Player ref={modal} variant="modal" lang={lang} muted={muted} volume={volume} onClose={closeModal} onPlaying={setPlayingId} />
+          {recTarget && modalOpen && <Recorder key={recTarget.id} lang={lang} host={manifest.host.name} target={recTarget} muted={muted} volume={volume} />}
+        </div>
       </Modal>
     </main>
   )

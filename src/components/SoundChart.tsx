@@ -18,13 +18,14 @@ interface SoundChartProps {
 /** Composition 2: the sound cards — /th/ /th/ /r/ /k/ /æ/ /t/. A tap plays the sound; a drag puts it in the Word Builder. */
 export function SoundChart({ manifest, lang, playingId, armed, onPress }: SoundChartProps) {
   return (
-    <section className="flex h-full flex-col gap-3 rounded-[28px] bg-white/55 p-4 shadow-[0_10px_30px_-18px_rgba(43,53,69,0.45)] sm:p-5" aria-label={t('sounds', lang)}>
-      <div className="no-select flex items-baseline gap-3">
-        <h2 className="text-lg font-extrabold text-ink">{t('sounds', lang)}</h2>
-        <p className="text-sm font-medium text-muted">{t('tapHint', lang)}</p>
+    <section className="panel flex h-full flex-col gap-4 rounded-panel p-4 sm:p-5" aria-label={t('sounds', lang)}>
+      <div className="no-select flex flex-wrap items-center gap-x-3 gap-y-1">
+        <h2 className="text-lg font-black tracking-tight text-ink">{t('sounds', lang)}</h2>
+        <span className="rounded-full bg-sunk px-2.5 py-0.5 text-xs font-extrabold text-muted ring-1 ring-line">{manifest.sounds.length}</span>
+        <p className="basis-full text-sm font-semibold text-muted sm:ml-auto sm:basis-auto">{t('tapHint', lang)}</p>
       </div>
       <div className="grid flex-1 grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5" role="group" aria-label={t('sounds', lang)}>
-        {manifest.sounds.map((s) => (
+        {manifest.sounds.map((s, i) => (
           <SoundCard
             key={s.id}
             id={s.id}
@@ -37,6 +38,7 @@ export function SoundChart({ manifest, lang, playingId, armed, onPress }: SoundC
             voiced={s.voiced}
             ariaLabel={`${cardLabel(s)} ${s.exampleWord}`}
             onPress={onPress}
+            delayMs={i * 40}
           />
         ))}
       </div>

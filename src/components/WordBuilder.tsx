@@ -73,9 +73,9 @@ export function WordBuilder({ manifest, lang, slots, onSlots, armed, onArmed, vo
   const steps = Math.round(1 / VOLUME_STEP)
 
   return (
-    <section className="no-select flex flex-col gap-3 rounded-[28px] bg-white/70 p-4 shadow-[0_10px_30px_-18px_rgba(43,53,69,0.45)]" aria-label={t('wordBuilder', lang)}>
+    <section className="no-select flex flex-col gap-3 panel rounded-panel p-4" aria-label={t('wordBuilder', lang)}>
       <div className="flex items-center gap-2">
-        <h2 className="text-lg font-extrabold text-ink">{t('wordBuilder', lang)}</h2>
+        <h2 className="text-lg font-black tracking-tight text-ink">{t('wordBuilder', lang)}</h2>
         <div className="ml-auto flex items-center gap-1.5">
           <SmallButton label={t('quieter', lang)} onClick={() => onVolume(-VOLUME_STEP)} disabled={volume <= 0}>
             <VolumeDownIcon className="h-6 w-6" />
@@ -96,7 +96,7 @@ export function WordBuilder({ manifest, lang, slots, onSlots, armed, onArmed, vo
             onClick={() => {
               if (filled.length) onPlay()
             }}
-            className={`ml-1 flex h-12 w-12 items-center justify-center rounded-full text-white shadow-[0_5px_0_0_rgba(43,53,69,0.18)] transition-transform active:translate-y-[2px] ${filled.length ? 'bg-coral-ink' : 'bg-ink/25'}`}
+            className={`ml-1 flex h-12 w-12 items-center justify-center rounded-full shadow-raise transition-[transform,background-color] hover:-translate-y-px active:translate-y-[2px] active:shadow-none ${filled.length ? 'bg-accent text-on-accent' : 'bg-ink/20 text-canvas'}`}
           >
             <PlayIcon className="ml-0.5 h-7 w-7" />
           </button>
@@ -104,7 +104,7 @@ export function WordBuilder({ manifest, lang, slots, onSlots, armed, onArmed, vo
       </div>
 
       <div className="flex items-center gap-2">
-        <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto py-1" role="group" aria-label={t('wordBuilder', lang)}>
+        <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto px-0.5 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="group" aria-label={t('wordBuilder', lang)}>
           {slots.map((id, i) => {
             const s = id ? soundById.get(id) : undefined
             const c = s ? palette[s.color] : null
@@ -124,7 +124,7 @@ export function WordBuilder({ manifest, lang, slots, onSlots, armed, onArmed, vo
                 onDrop={(e) => onDrop(e, i)}
                 className={[
                   'flex h-[88px] w-16 shrink-0 flex-col items-center justify-center gap-1 rounded-2xl font-bold transition-all sm:h-24 sm:w-[76px]',
-                  s && c ? `${c.bg} ${c.ink} shadow-[0_5px_0_0_var(--edge)]` : 'border-[3px] border-dashed border-ink/25 bg-white/60 text-ink/30',
+                  s && c ? `${c.bg} ${c.ink} shadow-[0_5px_0_0_var(--edge)] ring-1 ring-white/50 dark:ring-white/10` : 'border-[3px] border-dashed border-ink/20 bg-sunk text-ink/30',
                   isArmed ? 'scale-105 border-ink/60 ring-4 ring-ink/20' : '',
                   over === i ? 'scale-105 ring-4 ring-mint-ink/50' : '',
                 ].join(' ')}
@@ -133,7 +133,7 @@ export function WordBuilder({ manifest, lang, slots, onSlots, armed, onArmed, vo
                 {shown ? (
                   <span className={`pointer-events-none flex flex-col items-center gap-1 ${s ? '' : 'opacity-50'}`} aria-hidden={!s}>
                     {shown.figure ? (
-                      <img src={asset(shown.figure)} alt="" draggable={false} className="h-10 w-10 rounded-xl bg-white object-cover sm:h-12 sm:w-12" />
+                      <img src={asset(shown.figure)} alt="" draggable={false} className="h-10 w-10 rounded-xl bg-white object-cover shadow-sm sm:h-12 sm:w-12" />
                     ) : null}
                     <span className={`font-ipa text-base leading-none sm:text-lg ${s ? '' : 'text-ink/60'}`}>{cardLabel(shown)}</span>
                   </span>
@@ -167,7 +167,7 @@ function SmallButton({ label, onClick, disabled, children }: { label: string; on
       title={label}
       disabled={disabled}
       onClick={onClick}
-      className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-ink shadow-[0_4px_0_0_rgba(43,53,69,0.12)] transition-transform active:translate-y-[2px] disabled:opacity-35 disabled:active:translate-y-0"
+      className="flex h-10 w-10 items-center justify-center rounded-full bg-panel-strong text-ink shadow-raise ring-1 ring-line transition-[transform,box-shadow] hover:-translate-y-px active:translate-y-[2px] active:shadow-none disabled:opacity-35 disabled:hover:translate-y-0 disabled:active:translate-y-0"
     >
       {children}
     </button>

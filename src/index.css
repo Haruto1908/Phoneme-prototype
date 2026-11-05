@@ -1,28 +1,123 @@
 @import 'tailwindcss';
 
-@theme {
-  --font-sans: 'Segoe UI Rounded', 'Nunito', 'Quicksand', 'Trebuchet MS', ui-rounded, system-ui, sans-serif;
+/* `dark:` utilities follow the .dark class on <html> (set by lib/theme.ts), not the OS alone. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ---------- design tokens: light ---------- */
+:root {
+  color-scheme: light;
+
+  --ink: #1d2736;
+  --muted: #65728a;
+  --canvas: #ffffff;              /* text on top of ink-coloured buttons */
+  --panel: rgba(255, 255, 255, 0.72);
+  --panel-strong: #ffffff;
+  --line: rgba(29, 39, 54, 0.08);
+  --sunk: rgba(29, 39, 54, 0.06);  /* inset tracks behind segmented controls */
+  --accent: #d2503a;
+  --accent-hover: #bf4530;
+  --on-accent: #ffffff;
+  --scrim: rgba(17, 24, 39, 0.5);
+
+  --page-a: #eef4ff;
+  --page-b: #fff6ea;
+  --glow-1: rgba(199, 184, 245, 0.45);
+  --glow-2: rgba(169, 223, 195, 0.45);
+  --glow-3: rgba(255, 224, 214, 0.6);
+
+  --shadow-panel: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 14px 34px -18px rgba(29, 39, 54, 0.32);
+  --shadow-raise: 0 4px 0 0 rgba(29, 39, 54, 0.1), 0 10px 20px -14px rgba(29, 39, 54, 0.3);
+  --shadow-float: 0 30px 60px -22px rgba(29, 39, 54, 0.45);
+  --shadow-tile: 0 6px 0 0 var(--edge, transparent), 0 20px 34px -18px rgba(29, 39, 54, 0.35);
+  --shadow-tile-pressed: 0 2px 0 0 var(--edge, transparent), 0 8px 16px -12px rgba(29, 39, 54, 0.35);
+
+  /* tile palettes: bg / ink / edge (bottom lip) */
+  --mint-bg: #d9f5e6;      --mint-ink: #1f7a53;      --mint-edge: #a9dfc3;
+  --teal-bg: #d3f0f0;      --teal-ink: #1b6f73;      --teal-edge: #a1d9da;
+  --coral-bg: #ffe0d6;     --coral-ink: #b8452d;     --coral-edge: #f5b9a8;
+  --lavender-bg: #e8e0ff;  --lavender-ink: #6a4bc4;  --lavender-edge: #c7b8f5;
+  --sun-bg: #fff2c2;       --sun-ink: #a3730a;       --sun-edge: #f1d98a;
+  --sky-bg: #d9ecff;       --sky-ink: #1f5fa8;       --sky-edge: #a9cdf5;
+  --peach-bg: #ffe6cc;     --peach-ink: #b35c12;     --peach-edge: #f5c89a;
+}
+
+/* ---------- design tokens: dark ---------- */
+.dark {
+  color-scheme: dark;
+
+  --ink: #eaf0f8;
+  --muted: #9aa8bd;
+  --canvas: #0f172a;
+  --panel: rgba(23, 31, 48, 0.72);
+  --panel-strong: #1b2438;
+  --line: rgba(255, 255, 255, 0.08);
+  --sunk: rgba(0, 0, 0, 0.3);
+  --accent: #ff7b5e;
+  --accent-hover: #ff8f76;
+  --on-accent: #2a110b;
+  --scrim: rgba(2, 6, 23, 0.7);
+
+  --page-a: #0f172a;
+  --page-b: #171331;
+  --glow-1: rgba(99, 102, 241, 0.28);
+  --glow-2: rgba(16, 185, 129, 0.18);
+  --glow-3: rgba(236, 72, 153, 0.16);
+
+  --shadow-panel: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 18px 40px -20px rgba(0, 0, 0, 0.7);
+  --shadow-raise: 0 4px 0 0 rgba(0, 0, 0, 0.35), 0 10px 20px -14px rgba(0, 0, 0, 0.6);
+  --shadow-float: 0 30px 60px -22px rgba(0, 0, 0, 0.8);
+  --shadow-tile: 0 6px 0 0 var(--edge, transparent), 0 20px 34px -18px rgba(0, 0, 0, 0.7);
+  --shadow-tile-pressed: 0 2px 0 0 var(--edge, transparent), 0 8px 16px -12px rgba(0, 0, 0, 0.7);
+
+  --mint-bg: #163a2e;      --mint-ink: #8ee3bc;      --mint-edge: #0d261e;
+  --teal-bg: #12373a;      --teal-ink: #86dcdd;      --teal-edge: #0a2325;
+  --coral-bg: #402119;     --coral-ink: #ffa48d;     --coral-edge: #28140e;
+  --lavender-bg: #2b2249;  --lavender-ink: #c8b6ff;  --lavender-edge: #1b152f;
+  --sun-bg: #3c3011;       --sun-ink: #f5d366;       --sun-edge: #261e09;
+  --sky-bg: #16293f;       --sky-ink: #92c4ff;       --sky-edge: #0d1a29;
+  --peach-bg: #3d2613;     --peach-ink: #ffbb7c;     --peach-edge: #26180a;
+}
+
+/* ---------- expose the tokens to Tailwind (text-ink, bg-panel, shadow-raise, bg-mint-bg …) ---------- */
+@theme inline {
+  --font-sans: 'Nunito', 'Segoe UI Rounded', 'Quicksand', 'Trebuchet MS', ui-rounded, system-ui, sans-serif;
   --font-ipa: 'Charis SIL', 'Doulos SIL', 'Gentium Plus', 'Segoe UI', serif;
 
-  --color-ink: #2b3545;
-  --color-muted: #6c7a8f;
-  --color-page-a: #eef5ff;
-  --color-page-b: #fff7ec;
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-canvas: var(--canvas);
+  --color-panel: var(--panel);
+  --color-panel-strong: var(--panel-strong);
+  --color-line: var(--line);
+  --color-sunk: var(--sunk);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-on-accent: var(--on-accent);
+  --color-scrim: var(--scrim);
 
-  /* tile palettes: bg / ink / edge (bottom shadow) */
-  --color-mint-bg: #d9f5e6;      --color-mint-ink: #1f7a53;      --color-mint-edge: #a9dfc3;
-  --color-teal-bg: #d3f0f0;      --color-teal-ink: #1b6f73;      --color-teal-edge: #a1d9da;
-  --color-coral-bg: #ffe0d6;     --color-coral-ink: #b8452d;     --color-coral-edge: #f5b9a8;
-  --color-lavender-bg: #e8e0ff;  --color-lavender-ink: #6a4bc4;  --color-lavender-edge: #c7b8f5;
-  --color-sun-bg: #fff2c2;       --color-sun-ink: #a3730a;       --color-sun-edge: #f1d98a;
-  --color-sky-bg: #d9ecff;       --color-sky-ink: #1f5fa8;       --color-sky-edge: #a9cdf5;
-  --color-peach-bg: #ffe6cc;     --color-peach-ink: #b35c12;     --color-peach-edge: #f5c89a;
+  --color-mint-bg: var(--mint-bg);          --color-mint-ink: var(--mint-ink);          --color-mint-edge: var(--mint-edge);
+  --color-teal-bg: var(--teal-bg);          --color-teal-ink: var(--teal-ink);          --color-teal-edge: var(--teal-edge);
+  --color-coral-bg: var(--coral-bg);        --color-coral-ink: var(--coral-ink);        --color-coral-edge: var(--coral-edge);
+  --color-lavender-bg: var(--lavender-bg);  --color-lavender-ink: var(--lavender-ink);  --color-lavender-edge: var(--lavender-edge);
+  --color-sun-bg: var(--sun-bg);            --color-sun-ink: var(--sun-ink);            --color-sun-edge: var(--sun-edge);
+  --color-sky-bg: var(--sky-bg);            --color-sky-ink: var(--sky-ink);            --color-sky-edge: var(--sky-edge);
+  --color-peach-bg: var(--peach-bg);        --color-peach-ink: var(--peach-ink);        --color-peach-edge: var(--peach-edge);
 
-  --radius-tile: 32px;
+  --shadow-panel: var(--shadow-panel);
+  --shadow-raise: var(--shadow-raise);
+  --shadow-float: var(--shadow-float);
+  --shadow-tile: var(--shadow-tile);
+  --shadow-tile-pressed: var(--shadow-tile-pressed);
+
+  --radius-tile: 28px;
+  --radius-panel: 28px;
 
   --animate-wiggle: wiggle 0.5s ease-in-out;
   --animate-bars: bars 0.7s ease-in-out infinite;
   --animate-pop: pop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --animate-rise: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-drift: drift 18s ease-in-out infinite alternate;
 
   @keyframes wiggle {
     0%, 100% { transform: rotate(0deg) scale(1); }
@@ -37,6 +132,27 @@
     from { transform: scale(0.6); opacity: 0; }
     to { transform: scale(1); opacity: 1; }
   }
+  @keyframes rise {
+    from { transform: translateY(14px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(var(--tilt, 0deg)); }
+    50% { transform: translateY(-10px) rotate(var(--tilt, 0deg)); }
+  }
+  @keyframes drift {
+    from { transform: translate3d(0, 0, 0) scale(1); }
+    to { transform: translate3d(4%, 6%, 0) scale(1.08); }
+  }
+}
+
+/* A translucent, blurred card: the building block of every composition. */
+@utility panel {
+  background: var(--panel);
+  box-shadow: var(--shadow-panel);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 }
 
 html, body, #root {
@@ -45,17 +161,30 @@ html, body, #root {
 
 body {
   margin: 0;
-  color: var(--color-ink);
-  background:
-    radial-gradient(1200px 600px at 10% -10%, #ffffff 0%, transparent 60%),
-    linear-gradient(160deg, var(--color-page-a), var(--color-page-b));
+  color: var(--ink);
+  background-color: var(--page-a);
+  background-image:
+    radial-gradient(900px 520px at 8% -10%, var(--glow-1), transparent 60%),
+    radial-gradient(760px 520px at 100% 0%, var(--glow-3), transparent 60%),
+    radial-gradient(700px 460px at 50% 110%, var(--glow-2), transparent 60%),
+    linear-gradient(160deg, var(--page-a), var(--page-b));
+  background-attachment: fixed;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation; /* no double-tap zoom on tiles */
   overscroll-behavior: none;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* prevent accidental text selection while kids tap around */
 .no-select {
   user-select: none;
   -webkit-user-select: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

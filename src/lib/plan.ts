@@ -48,16 +48,18 @@ export function clipsFor(s: Sound, presenter: Presenter): Clip[] {
 /**
  * Build the player item for a sound. `withTongue: false` gives mouth close-ups only (the Word Builder runs the
  * clips back to back without the tongue view between them); `seconds` caps each clip to a short window.
+ * Human mode never has a side view: the real mouth is the whole lesson.
  */
 export function itemFor(manifest: Manifest, id: string, lang: Lang, presenter: Presenter, withTongue = true, seconds: number | null = null): PlayItem | null {
   const s = manifest.sounds.find((x) => x.id === id)
   if (!s) return null
+  const sideView = withTongue && presenter !== 'human'
   return {
     id,
     label: cardLabel(s),
     color: s.color,
     clips: clipsFor(s, presenter),
-    tongue: withTongue && s.tongue && s.audio ? { sound: s.tongue.sound, audio: s.audio } : null,
+    tongue: sideView && s.tongue && s.audio ? { sound: s.tongue.sound, audio: s.audio } : null,
     hint: lang === 'jp' ? (ARTICULATION_JP[id] ?? s.articulation) : s.articulation,
     seconds,
   }
