@@ -5,7 +5,8 @@ import { cardLabel } from '../lib/plan'
 import { t, type Lang } from '../lib/i18n'
 import { asset } from '../lib/media'
 import { CARD_DRAG_TYPE, cardDrag } from '../lib/drag'
-import { MinusIcon, PlayIcon, PlusIcon, VolumeDownIcon, VolumeUpIcon } from './icons'
+import { BlocksIcon, MinusIcon, PlayIcon, PlusIcon, VolumeDownIcon, VolumeUpIcon } from './icons'
+import { SectionTitle } from './controls'
 
 export const MIN_BLOCKS = 1
 export const MAX_BLOCKS = 8
@@ -75,7 +76,9 @@ export function WordBuilder({ manifest, lang, slots, onSlots, armed, onArmed, vo
   return (
     <section className="no-select flex flex-col gap-3 panel rounded-panel p-4" aria-label={t('wordBuilder', lang)}>
       <div className="flex items-center gap-2">
-        <h2 className="text-lg font-black tracking-tight text-ink">{t('wordBuilder', lang)}</h2>
+        <SectionTitle icon={<BlocksIcon className="h-5 w-5" />} tone="sun">
+          {t('wordBuilder', lang)}
+        </SectionTitle>
         <div className="ml-auto flex items-center gap-1.5">
           <SmallButton label={t('quieter', lang)} onClick={() => onVolume(-VOLUME_STEP)} disabled={volume <= 0}>
             <VolumeDownIcon className="h-6 w-6" />
@@ -123,13 +126,17 @@ export function WordBuilder({ manifest, lang, slots, onSlots, armed, onArmed, vo
                 onDragLeave={() => setOver((o) => (o === i ? null : o))}
                 onDrop={(e) => onDrop(e, i)}
                 className={[
-                  'flex h-[88px] w-16 shrink-0 flex-col items-center justify-center gap-1 rounded-2xl font-bold transition-all sm:h-24 sm:w-[76px]',
+                  'relative flex h-[88px] w-16 shrink-0 flex-col items-center justify-center gap-1 rounded-2xl font-bold transition-all sm:h-24 sm:w-[76px]',
                   s && c ? `${c.bg} ${c.ink} shadow-[0_5px_0_0_var(--edge)] ring-1 ring-white/50 dark:ring-white/10` : 'border-[3px] border-dashed border-ink/20 bg-sunk text-ink/30',
-                  isArmed ? 'scale-105 border-ink/60 ring-4 ring-ink/20' : '',
+                  isArmed ? 'animate-pulse scale-105 border-ink/60 ring-4 ring-ink/20' : '',
                   over === i ? 'scale-105 ring-4 ring-mint-ink/50' : '',
                 ].join(' ')}
                 style={c ? { ['--edge' as string]: c.edgeVar } : undefined}
               >
+                {/* block number, so "block 2" means something to a child */}
+                <span className={`pointer-events-none absolute left-1.5 top-1 text-[10px] font-black tabular-nums ${s ? 'opacity-60' : 'opacity-70'}`} aria-hidden="true">
+                  {i + 1}
+                </span>
                 {shown ? (
                   <span className={`pointer-events-none flex flex-col items-center gap-1 ${s ? '' : 'opacity-50'}`} aria-hidden={!s}>
                     {shown.figure ? (

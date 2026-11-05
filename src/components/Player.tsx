@@ -5,6 +5,7 @@ import { t, type Lang } from '../lib/i18n'
 import { clipWindow, type PlayItem } from '../lib/plan'
 import { createThSideview, PORTRAIT_GIRL, type ThSideview, type ThSound } from '../animations/th-sideview.js'
 import { CloseIcon, MouthIcon, PlayIcon, ReplayIcon, TongueIcon } from './icons'
+import { SectionTitle } from './controls'
 
 export interface PlayerHandle {
   /** Must be called from the tap handler itself: iOS only lets media start with sound inside a user gesture. */
@@ -19,7 +20,9 @@ type Phase = 'idle' | 'mouth' | 'ask' | 'tongue' | 'done'
  * Framing of the side view (image px): nose to chin around the cutaway, filling the stage. With "slice" a wide
  * stage crops only top/bottom cheek, a tall one only the back of the face — never the mouth.
  */
-const PORTRAIT = { ...PORTRAIT_GIRL, src: asset('assets/girl_profile.jpg'), view: [430, 428, 434, 340] }
+// 16:9 window on the portrait (image px) so the side view fills the video stage *without* being cropped by
+// `slice`: nose tip to chin, like the front-view clips, instead of a zoomed-in mouth.
+const PORTRAIT = { ...PORTRAIT_GIRL, src: asset('assets/girl_profile.jpg'), view: [358, 464, 506, 285] }
 
 interface PlayerProps {
   ref: Ref<PlayerHandle>
@@ -283,9 +286,13 @@ export function Player({ ref, lang, muted, volume, variant, idle, onClose, onPla
   return (
     <div className={`flex h-full flex-col gap-3 ${compact ? '' : 'min-h-0'}`}>
       <header className="no-select flex items-center gap-3">
-        <span className={`font-ipa font-bold leading-none ${compact ? 'text-4xl' : 'text-6xl'} ${c.ink}`}>
-          {item ? item.label : <span className="text-2xl font-sans text-ink">{t('watch', lang)}</span>}
-        </span>
+        {item ? (
+          <span className={`font-ipa font-bold leading-none ${compact ? 'text-4xl' : 'text-6xl'} ${c.ink}`}>{item.label}</span>
+        ) : (
+          <SectionTitle icon={<PlayIcon className="ml-0.5 h-5 w-5" />} tone="sky">
+            {t('watch', lang)}
+          </SectionTitle>
+        )}
         {items.length > 1 && (
           <span className="rounded-full bg-panel-strong/80 px-3 py-1 text-sm font-bold text-muted ring-1 ring-line">
             {index + 1} / {items.length}
@@ -357,16 +364,16 @@ export function Player({ ref, lang, muted, volume, variant, idle, onClose, onPla
         )}
       </div>
 
-      <div className="no-select flex min-h-14 items-center gap-3">
-        <p className="min-w-0 flex-1 text-sm font-medium text-muted">{item?.hint ?? ''}</p>
+      <div className="no-select flex min-h-14 flex-wrap items-center gap-3">
+        <p className="min-w-0 flex-1 basis-40 text-sm font-medium text-muted">{item?.hint ?? ''}</p>
         {phase === 'done' && item && (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <BigButton label={t('again', lang)} onClick={() => start(items)} className={c.ink} compact={compact}>
-              <ReplayIcon className={compact ? 'h-7 w-7' : 'h-10 w-10'} />
+              <ReplayIcon className={compact ? 'h-6 w-6' : 'h-8 w-8'} />
             </BigButton>
             {tongueAgain && (
               <BigButton label={t('tongueAgain', lang)} onClick={startTongue} className={c.ink} compact={compact}>
-                <TongueIcon className={compact ? 'h-7 w-7' : 'h-10 w-10'} />
+                <TongueIcon className={compact ? 'h-6 w-6' : 'h-8 w-8'} />
               </BigButton>
             )}
           </div>
@@ -409,16 +416,16 @@ function RoundButton({ label, onClick, className, children }: { label: string; o
   )
 }
 
+/** Labelled pill (icon + word): children should not have to guess what a lone icon does. */
 function BigButton({ label, onClick, className, compact, children }: { label: string; onClick: () => void; className?: string; compact: boolean; children: ReactNode }) {
   return (
     <button
       type="button"
-      aria-label={label}
-      title={label}
       onClick={onClick}
-      className={`animate-pop flex items-center justify-center rounded-full bg-panel-strong shadow-raise ring-1 ring-line transition-transform hover:-translate-y-px active:translate-y-[4px] active:shadow-none ${compact ? 'h-14 w-14' : 'h-20 w-20'} ${className ?? ''}`}
+      className={`animate-pop flex items-center justify-center gap-2 rounded-full bg-panel-strong font-extrabold shadow-raise ring-1 ring-line transition-transform hover:-translate-y-px active:translate-y-[4px] active:shadow-none ${compact ? 'h-12 px-4 text-sm' : 'h-14 px-6 text-lg'} ${className ?? ''}`}
     >
       {children}
+      <span className="text-ink">{label}</span>
     </button>
   )
 }

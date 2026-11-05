@@ -1,15 +1,25 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import type { TileColor } from '../types'
 import { palette } from './palette'
 import { t, type Lang } from '../lib/i18n'
 import { asset } from '../lib/media'
 import { scoreRecording, unlockAudio } from '../lib/pronounce/analyze'
 import { reasonKey, reasonText, SOUND_META, type ReasonKey } from '../lib/pronounce/reasons'
-import { CompareIcon, MicIcon, ReplayIcon, StopIcon } from './icons'
+import { CompareIcon, MicIcon, ReplayIcon, StarIcon, StopIcon } from './icons'
 
 /** Longest recording we keep; a single sound is well under this. */
 const MAX_REC_MS = 3000
 const MIN_REC_MS = 250
+
+/** 0–3 stars from the score: children read stars faster than numbers, and three is a clear "you did it". */
+const stars = (score: number) => (score >= 85 ? 3 : score >= 65 ? 2 : score >= 40 ? 1 : 0)
+const CHEER = ['cheer0', 'cheer1', 'cheer2', 'cheer3'] as const
+/** Confetti pieces for a three-star result: direction, spin and tone per piece. */
+const CONFETTI = Array.from({ length: 14 }, (_, i) => {
+  const a = (i / 14) * Math.PI * 2
+  const r = 70 + (i % 3) * 22
+  return { dx: Math.cos(a) * r, dy: Math.sin(a) * r - 30, spin: 200 + (i % 5) * 90, delay: (i % 4) * 40, tone: ['bg-coral-ink', 'bg-sun-ink', 'bg-mint-ink', 'bg-sky-ink', 'bg-lavender-ink'][i % 5] }
+})
 
 export interface RecorderTarget {
   id: string
@@ -224,6 +234,7 @@ export function Recorder({ lang, host, target, muted, volume }: RecorderProps) {
 
   const score = result?.score ?? 0
   const ring = 2 * Math.PI * 52
+  const got = stars(score)
 
   return (
     <section className="no-select flex h-full flex-col items-center gap-3 panel rounded-[24px] p-4 text-center" aria-label={t('yourTurn', lang)}>
@@ -258,6 +269,17 @@ export function Recorder({ lang, host, target, muted, volume }: RecorderProps) {
         <>
           {/* the mark */}
           <div className="animate-pop relative mt-1 flex h-36 w-36 items-center justify-center" role="img" aria-label={`${t('score', lang)}: ${score} / 100`}>
+            {got === 3 && (
+              <span aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2">
+                {CONFETTI.map((p, i) => (
+                  <span
+                    key={i}
+                    className={`animate-confetti absolute -ml-1 -mt-1 h-2.5 w-2.5 rounded-sm ${p.tone}`}
+                    style={{ '--dx': `${p.dx}px`, '--dy': `${p.dy}px`, '--spin': `${p.spin}deg`, animationDelay: `${p.delay}ms` } as CSSProperties}
+                  />
+                ))}
+              </span>
+            )}
             <svg viewBox="0 0 120 120" className="absolute inset-0 h-full w-full -rotate-90">
               <circle cx="60" cy="60" r="52" fill="var(--color-panel-strong)" stroke="var(--color-line)" strokeWidth="10" />
               <circle
@@ -278,6 +300,18 @@ export function Recorder({ lang, host, target, muted, volume }: RecorderProps) {
               <span className="mt-1 text-xs font-bold text-muted">/ 100</span>
             </div>
           </div>
+          {/* stars + a cheer: the part a child reads first */}
+          <div className="flex items-center gap-1" role="img" aria-label={`${got} / 3`}>
+            {[0, 1, 2].map((i) => (
+              <StarIcon
+                key={i}
+                filled={i < got}
+                className={`h-9 w-9 ${i < got ? 'animate-star text-sun-ink drop-shadow-[0_2px_0_rgba(0,0,0,0.12)]' : 'text-ink/15'}`}
+                style={{ animationDelay: `${150 + i * 140}ms` }}
+              />
+            ))}
+          </div>
+          <p className={`text-lg font-black tracking-tight ${c.ink}`}>{t(CHEER[got], lang)}</p>
           <p className="max-w-xs text-sm font-semibold leading-snug text-ink/80">{reasonText(result.reason, lang, host)}</p>
 
           <div className="mt-auto flex w-full flex-col items-center gap-2 pt-2">

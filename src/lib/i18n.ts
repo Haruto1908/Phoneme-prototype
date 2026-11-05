@@ -54,6 +54,11 @@ const STRINGS = {
   micDenied: { en: 'We need the microphone to hear you. Allow it in the browser and try again.', jp: 'マイクが使えません。ブラウザで マイクを ゆるして、もういちど。' },
   micUnsupported: { en: 'Recording is not supported in this browser.', jp: 'このブラウザでは ろくおんできません。' },
   tooShort: { en: 'That was too short — try again.', jp: 'みじかすぎたよ。もういちど。' },
+  // cheer under the stars (0–3)
+  cheer0: { en: 'Keep going!', jp: 'もういちど チャレンジ！' },
+  cheer1: { en: 'Nice try!', jp: 'いいかんじ！' },
+  cheer2: { en: 'Great job!', jp: 'すごい！' },
+  cheer3: { en: 'Perfect!', jp: 'かんぺき！' },
   // theme + account (top bar)
   themeLight: { en: 'Switch to light mode', jp: 'ライトモードにする' },
   themeDark: { en: 'Switch to dark mode', jp: 'ダークモードにする' },
@@ -62,6 +67,10 @@ const STRINGS = {
   theme: { en: 'Theme', jp: 'テーマ' },
   light: { en: 'Light', jp: 'ライト' },
   dark: { en: 'Dark', jp: 'ダーク' },
+  // session log (account menu)
+  activity: { en: 'Modes used', jp: 'つかったモード' },
+  activityHint: { en: 'times, on this account', jp: 'かい（このアカウント）' },
+  downloadCsv: { en: 'Download session log (CSV)', jp: 'セッションログを ダウンロード (CSV)' },
   // sign in
   signIn: { en: 'Log in', jp: 'ログイン' },
   signUp: { en: 'Sign up', jp: 'とうろく' },

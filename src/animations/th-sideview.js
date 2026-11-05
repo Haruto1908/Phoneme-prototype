@@ -182,11 +182,13 @@ const HOLD_T = [
   [118.5, 136.5], [114.5, 140.5], [110.5, 145.5], [106.5, 151.0], [103.0, 157.5], [99.5, 163.0], [100.5, 169.5],
   [107.0, 171.5], [117.0, 167.0], [126.5, 160.5], [135.0, 153.5], [141.5, 147.0], [145.5, 140.5], [148.0, 134.0],
 ]
-// /k/: jaw +2.5°. Tip stays down behind the lower incisors; the back of the tongue humps up and seals against the
-// roof of the cavity (points 6–9 lie 0.4 mm inside CAVITY_OVAL's roof, x 109–121, so the seal is on the dark roof).
+// /k/: jaw +2.5°. See-saw: the tip stays down behind the lower incisors and the front half of the tongue sinks
+// *below* its rest height, so a wide dark pocket (13–18 mm) opens between the blade and the roof, while the back
+// humps up and seals against the velum end of the roof (points 6–9 lie ~0.4 mm inside CAVITY_OVAL's roof,
+// x 110–123). That way the only thing that moves is clearly the *back* of the tongue, and the pop is visible.
 const HOLD_K = [
-  [145.8, 145.0], [144.0, 142.4], [140.3, 138.3], [136.5, 133.6], [131.5, 128.6], [126.0, 124.6], [121.1, 125.7],
-  [117.3, 127.5], [113.7, 129.6], [108.8, 133.3], [104.5, 139.5], [102.0, 148.0], [100.0, 157.0], [100.5, 166.0],
+  [146.0, 145.5], [143.8, 144.0], [140.5, 142.2], [136.5, 139.5], [132.0, 135.5], [127.5, 130.5], [123.0, 125.3],
+  [118.5, 126.9], [114.0, 129.2], [110.0, 132.0], [105.5, 137.0], [102.0, 146.0], [100.0, 157.0], [100.5, 166.0],
   [107.0, 170.0], [117.0, 166.5], [126.5, 160.0], [134.5, 153.5], [138.5, 151.0], [142.0, 148.8], [144.6, 147.2],
 ]
 // /ɹ/: jaw +2.5°. Tip curled up and back toward the post-alveolar palate, NOT touching (≈3 mm of dark above it);

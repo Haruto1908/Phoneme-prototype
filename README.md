@@ -30,7 +30,7 @@ The site sits behind a login / sign-up page. Sign-up takes an email and a passwo
 characters), stores `{ email, passwordHash, createdAt }` in MongoDB (`Phoneme-prototype` →
 `UsersTable`) and signs the user straight in; no email verification. Login sets an httpOnly
 cookie for 30 days. The account button in the top bar shows the email, language and theme
-switches, and Log out.
+switches, the mode-usage counters with the CSV download, and Log out.
 
 Local: put these in `phoneme-prototype/.env.local` (git-ignored). On Vercel: Project →
 Settings → Environment Variables. Never commit the values.
@@ -40,10 +40,28 @@ Settings → Environment Variables. Never commit the values.
 | `MONGODB_URI` | yes | Atlas connection string (user + password included). |
 | `JWT_SECRET` | yes in production | Signs the session cookie. Any long random string. |
 | `MONGODB_DB`, `USERS_COLLECTION` | no | Defaults `Phoneme-prototype`, `UsersTable`. |
+| `USAGE_COLLECTION`, `EVENTS_COLLECTION` | no | Session log collections, defaults `ModeUsage`, `SessionEvents`. |
 | `MONGODB_DNS` | no | Dev only, e.g. `1.1.1.1,8.8.8.8` when the local DNS refuses the Atlas SRV lookup. |
 
 Vercel: framework preset **Vite**, root directory `phoneme-prototype`, build `npm run build`,
 output `dist`. The `api/` folder is picked up automatically as serverless functions.
+
+## Session log (mode usage)
+
+Every signed-in user's use of the Avatar / Human / Both switch is recorded in MongoDB:
+
+- `ModeUsage` — one document per user: `{ email, userId, counts: { avatar, human, both },
+  lastMode, firstAt, lastAt }`. The counters are bumped with `$inc`, so they are exact under
+  concurrent tabs.
+- `SessionEvents` — one row per event: `{ email, userId, event: 'start' | 'switch', mode,
+  lang, at }`. `start` is the mode the app opened in, `switch` every change after that.
+
+Endpoints (session cookie required, a user only sees their own rows): `POST /api/log/mode`,
+`GET /api/log/summary`, `GET /api/log/csv`. The account menu shows the three counters and a
+**Download session log (CSV)** button; the file lists the events in order with running totals
+per mode (`time_utc, email, event, mode, language, avatar_total, human_total, both_total`),
+UTF-8 with BOM so Excel opens it directly. Logging is fire-and-forget on the client: if the API
+is unreachable the lesson still works. Code: `api/_lib/log.ts`, `src/lib/log.ts`.
 
 ## Theme
 

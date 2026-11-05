@@ -1,4 +1,5 @@
 /** Simple stroke icons (currentColor) used across the UI. */
+import type { CSSProperties } from 'react'
 
 const stroke = { fill: 'none', stroke: 'currentColor', strokeWidth: 3.2, strokeLinecap: 'round', strokeLinejoin: 'round' } as const
 
@@ -167,6 +168,31 @@ export function CheckIcon({ className }: IconProps) {
   return (
     <svg viewBox="0 0 32 32" className={className ?? 'h-6 w-6'} {...stroke} aria-hidden="true">
       <path d="M6 17l7 7L26 9" />
+    </svg>
+  )
+}
+/** Three building blocks (Word Builder). */
+export function BlocksIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className ?? 'h-6 w-6'} {...stroke} strokeWidth={2.8} aria-hidden="true">
+      <rect x="4" y="17" width="10" height="10" rx="2" />
+      <rect x="18" y="17" width="10" height="10" rx="2" />
+      <rect x="11" y="5" width="10" height="10" rx="2" />
+    </svg>
+  )
+}
+export function DownloadIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className ?? 'h-6 w-6'} {...stroke} strokeWidth={2.8} aria-hidden="true">
+      <path d="M16 5v15M9.5 13.5L16 20l6.5-6.5M6 23v2a2 2 0 002 2h16a2 2 0 002-2v-2" />
+    </svg>
+  )
+}
+/** Tiny five-point star for scores and rewards. */
+export function StarIcon({ className, filled = true, style }: IconProps & { filled?: boolean; style?: CSSProperties }) {
+  return (
+    <svg viewBox="0 0 32 32" className={className ?? 'h-6 w-6'} style={style} fill={filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2.4} strokeLinejoin="round" aria-hidden="true">
+      <path d="M16 3.5l3.9 8 8.8 1.2-6.4 6.1 1.6 8.7L16 23.3l-7.9 4.2 1.6-8.7-6.4-6.1 8.8-1.2z" />
     </svg>
   )
 }

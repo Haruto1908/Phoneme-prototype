@@ -10,7 +10,7 @@
  */
 import bcrypt from 'bcryptjs'
 import { users } from './db.ts'
-import { HttpError, json, readJson, type Req, type Res } from './http.ts'
+import { dispatch, HttpError, json, readJson, type Req, type Res, type Route } from './http.ts'
 import { currentUser, endSession, startSession } from './session.ts'
 
 const normEmail = (v: unknown) => String(v ?? '').trim().toLowerCase()
@@ -63,7 +63,7 @@ async function me(req: Req, res: Res) {
   json(res, 200, { user: { email: user.email } })
 }
 
-const ROUTES: Record<string, { method: 'GET' | 'POST'; run: (req: Req, res: Res) => Promise<void> }> = {
+const ROUTES: Record<string, Route> = {
   signup: { method: 'POST', run: signup },
   login: { method: 'POST', run: login },
   logout: { method: 'POST', run: logout },
@@ -71,20 +71,4 @@ const ROUTES: Record<string, { method: 'GET' | 'POST'; run: (req: Req, res: Res)
 }
 
 /** Dispatch one auth action; used by api/auth/[action].ts on Vercel and by the Vite dev middleware. */
-export async function handleAuth(action: string, req: Req, res: Res): Promise<void> {
-  const route = ROUTES[action]
-  try {
-    if (!route) throw new HttpError(404, 'not_found')
-    if (req.method !== route.method) throw new HttpError(405, 'method_not_allowed')
-    await route.run(req, res)
-  } catch (e) {
-    if (e instanceof HttpError) json(res, e.status, { error: e.code })
-    else {
-      const message = e instanceof Error ? e.message : String(e)
-      console.error(`auth/${action} failed:`, message)
-      // a missing / malformed environment variable is a deployment problem, not a user one: say so
-      const config = /environment variable|MONGODB_URI must/.test(message)
-      json(res, 500, { error: config ? 'config' : 'server' })
-    }
-  }
-}
+export const handleAuth = (action: string, req: Req, res: Res): Promise<void> => dispatch('auth', ROUTES, action, req, res)

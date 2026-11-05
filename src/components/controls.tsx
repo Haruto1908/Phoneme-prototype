@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { t, type Lang } from '../lib/i18n'
 import type { Theme } from '../lib/theme'
-import { LogoutIcon, MoonIcon, SunIcon } from './icons'
+import { CSV_URL, type ModeCounts } from '../lib/log'
+import type { Presenter } from '../types'
+import { DownloadIcon, LogoutIcon, MoonIcon, SunIcon } from './icons'
 
 /** Round, raised icon button used across the top bar. */
 export function IconButton({ label, pressed, onClick, className, children }: { label: string; pressed?: boolean; onClick: () => void; className?: string; children: ReactNode }) {
@@ -16,6 +18,25 @@ export function IconButton({ label, pressed, onClick, className, children }: { l
     >
       {children}
     </button>
+  )
+}
+
+/** Section heading with a small tinted icon badge, so every panel has the same "signpost". */
+export function SectionTitle({ icon, tone, children }: { icon: ReactNode; tone: 'mint' | 'sky' | 'sun' | 'coral' | 'lavender'; children: ReactNode }) {
+  const tones = {
+    mint: 'bg-mint-bg text-mint-ink',
+    sky: 'bg-sky-bg text-sky-ink',
+    sun: 'bg-sun-bg text-sun-ink',
+    coral: 'bg-coral-bg text-coral-ink',
+    lavender: 'bg-lavender-bg text-lavender-ink',
+  }
+  return (
+    <h2 className="flex items-center gap-2.5 text-lg font-black tracking-tight text-ink">
+      <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ring-1 ring-black/5 dark:ring-white/10 ${tones[tone]}`} aria-hidden="true">
+        {icon}
+      </span>
+      {children}
+    </h2>
   )
 }
 
@@ -68,13 +89,21 @@ interface AccountMenuProps {
   email: string
   lang: Lang
   theme: Theme
+  /** times each presenter mode was used by this account */
+  usage: ModeCounts
   onTheme: (t: Theme) => void
   onLang: (l: Lang) => void
   onLogout: () => void
 }
 
-/** Account button in the top bar: opens a small sheet with the email, language, theme and Log out. */
-export function AccountMenu({ email, lang, theme, onTheme, onLang, onLogout }: AccountMenuProps) {
+const MODE_TONES: Record<Presenter, string> = {
+  avatar: 'bg-coral-bg text-coral-ink',
+  human: 'bg-sky-bg text-sky-ink',
+  both: 'bg-lavender-bg text-lavender-ink',
+}
+
+/** Account button in the top bar: opens a sheet with the email, language, theme, mode usage + CSV, and Log out. */
+export function AccountMenu({ email, lang, theme, usage, onTheme, onLang, onLogout }: AccountMenuProps) {
   const [open, setOpen] = useState(false)
   const box = useRef<HTMLDivElement>(null)
 
@@ -146,10 +175,34 @@ export function AccountMenu({ email, lang, theme, onTheme, onLang, onLogout }: A
             </div>
           </Row>
 
+          <div className="my-4 h-px bg-line" />
+
+          {/* session log: how often each mode was used, and the CSV export */}
+          <div className="flex items-baseline justify-between gap-3">
+            <span className="text-sm font-bold text-muted">{t('activity', lang)}</span>
+            <span className="text-xs font-semibold text-muted">{t('activityHint', lang)}</span>
+          </div>
+          <ul className="mt-2 grid grid-cols-3 gap-2" aria-label={t('activity', lang)}>
+            {(['avatar', 'human', 'both'] as const).map((m) => (
+              <li key={m} className={`rounded-2xl px-2 py-2 text-center ring-1 ring-black/5 dark:ring-white/10 ${MODE_TONES[m]}`}>
+                <span className="block text-2xl font-black leading-none tabular-nums">{usage[m]}</span>
+                <span className="mt-1 block text-[11px] font-extrabold uppercase tracking-wide opacity-80">{t(m, lang)}</span>
+              </li>
+            ))}
+          </ul>
+          <a
+            href={CSV_URL}
+            download
+            className="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-full bg-panel-strong text-sm font-extrabold text-ink shadow-raise ring-1 ring-line transition-transform hover:-translate-y-px active:translate-y-[2px] active:shadow-none"
+          >
+            <DownloadIcon className="h-5 w-5" />
+            {t('downloadCsv', lang)}
+          </a>
+
           <button
             type="button"
             onClick={onLogout}
-            className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-ink text-base font-extrabold text-canvas shadow-raise transition-transform hover:-translate-y-px active:translate-y-[2px] active:shadow-none"
+            className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-ink text-base font-extrabold text-canvas shadow-raise transition-transform hover:-translate-y-px active:translate-y-[2px] active:shadow-none"
           >
             <LogoutIcon className="h-5 w-5" />
             {t('signOut', lang)}

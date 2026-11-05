@@ -13,6 +13,7 @@ import { Recorder, type RecorderTarget } from './components/Recorder'
 import { SETTINGS_KEY } from './lib/settings'
 import type { Theme } from './lib/theme'
 import type { User } from './lib/auth'
+import { usageLog, ZERO_COUNTS, type ModeCounts } from './lib/log'
 
 interface Settings {
   /** Avatar / Human / Both: whose mouth close-up plays. */
@@ -70,6 +71,9 @@ export default function App({ user, lang, onLang, theme, onTheme, onLogout }: Ap
   const [playingId, setPlayingId] = useState<string | null>(null)
   const panel = useRef<PlayerHandle>(null)
   const modal = useRef<PlayerHandle>(null)
+  /** Per-mode usage counters for this account (shown in the account menu, exported as CSV). */
+  const [usage, setUsage] = useState<ModeCounts>(ZERO_COUNTS)
+  const loggedMode = useRef<Presenter | null>(null)
 
   useEffect(() => {
     try {
@@ -78,6 +82,17 @@ export default function App({ user, lang, onLang, theme, onTheme, onLogout }: Ap
       /* private mode */
     }
   }, [settings, lang])
+
+  // Session log: the mode the app opened in counts as a `start`, every change after that as a `switch`.
+  // The ref makes this idempotent per mode (StrictMode double-runs, re-renders), and failures stay silent:
+  // logging must never get in the way of a lesson.
+  useEffect(() => {
+    const mode = settings.presenter
+    if (loggedMode.current === mode) return
+    const event = loggedMode.current === null ? 'start' : 'switch'
+    loggedMode.current = mode
+    usageLog.mode(mode, event, lang).then(setUsage).catch(() => {})
+  }, [settings.presenter, lang])
 
   useEffect(() => {
     if (state.status !== 'ready') return
@@ -145,10 +160,14 @@ export default function App({ user, lang, onLang, theme, onTheme, onLogout }: Ap
   }
 
   const avatar = manifest.host.portrait ? asset(manifest.host.portrait) : null
+  // Idle stage: the host "says" the hint in a speech bubble — the same voice as the rest of the lesson.
   const idle = (
-    <div className="no-select flex h-full w-full flex-col items-center justify-center gap-3 bg-[radial-gradient(circle_at_50%_30%,var(--color-mint-bg),transparent_70%)] p-4 text-center">
-      {avatar && <img src={avatar} alt="" className="h-24 w-24 rounded-full object-cover shadow-raise ring-4 ring-panel-strong" />}
-      <p className="text-sm font-semibold text-muted">{t('idlePanel', lang)}</p>
+    <div className="no-select flex h-full w-full flex-col items-center justify-center gap-4 bg-[radial-gradient(circle_at_50%_30%,var(--color-mint-bg),transparent_70%)] p-4 text-center">
+      <div className="relative max-w-[16rem] rounded-[20px] bg-panel-strong px-4 py-2.5 text-sm font-extrabold text-ink shadow-raise ring-1 ring-line">
+        {t('idlePanel', lang)}
+        <span aria-hidden="true" className="absolute -bottom-2 left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 rounded-sm bg-panel-strong ring-1 ring-line [clip-path:polygon(0_100%,100%_100%,100%_0)]" />
+      </div>
+      {avatar && <img src={avatar} alt="" className="animate-nod h-24 w-24 rounded-full object-cover shadow-raise ring-4 ring-panel-strong" />}
     </div>
   )
 
@@ -168,6 +187,7 @@ export default function App({ user, lang, onLang, theme, onTheme, onLogout }: Ap
         practice={practice}
         onPractice={(p) => set('practice', p)}
         email={user.email}
+        usage={usage}
         onLogout={onLogout}
       />
 

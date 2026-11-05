@@ -47,6 +47,29 @@ export function json(res: Res, status: number, body: unknown): void {
   res.end(JSON.stringify(body))
 }
 
+export type Route = { method: 'GET' | 'POST'; run: (req: Req, res: Res) => Promise<void> }
+
+/**
+ * Run one named route with the shared error policy: HttpError → its status + code; anything else → 500 with
+ * `config` when it smells like a missing deployment setting (so the UI can say so) and `server` otherwise.
+ */
+export async function dispatch(group: string, routes: Record<string, Route>, action: string, req: Req, res: Res): Promise<void> {
+  const route = routes[action]
+  try {
+    if (!route) throw new HttpError(404, 'not_found')
+    if (req.method !== route.method) throw new HttpError(405, 'method_not_allowed')
+    await route.run(req, res)
+  } catch (e) {
+    if (e instanceof HttpError) json(res, e.status, { error: e.code })
+    else {
+      const message = e instanceof Error ? e.message : String(e)
+      console.error(`${group}/${action} failed:`, message)
+      const config = /environment variable|MONGODB_URI must/.test(message)
+      json(res, 500, { error: config ? 'config' : 'server' })
+    }
+  }
+}
+
 export function getCookie(req: Req, name: string): string | null {
   const header = req.headers.cookie
   if (!header) return null

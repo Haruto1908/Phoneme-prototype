@@ -6,6 +6,8 @@
  *   MONGODB_DNS          optional, local dev: resolvers for the +srv lookup, e.g. "1.1.1.1,8.8.8.8"
  *   MONGODB_DB           default "Phoneme-prototype"
  *   USERS_COLLECTION     default "UsersTable"
+ *   USAGE_COLLECTION     default "ModeUsage"      — per-user counters: how often Avatar / Human / Both was used
+ *   EVENTS_COLLECTION    default "SessionEvents"  — one row per mode start/switch (the CSV export)
  *   JWT_SECRET           required in production (any long random string); a fixed dev secret is used locally
  */
 
@@ -38,6 +40,12 @@ export const env = {
   },
   get usersCollection() {
     return clean(process.env.USERS_COLLECTION) || 'UsersTable'
+  },
+  get usageCollection() {
+    return clean(process.env.USAGE_COLLECTION) || 'ModeUsage'
+  },
+  get eventsCollection() {
+    return clean(process.env.EVENTS_COLLECTION) || 'SessionEvents'
   },
   get jwtSecret() {
     const s = clean(process.env.JWT_SECRET)

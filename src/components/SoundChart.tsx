@@ -3,6 +3,8 @@ import { asset } from '../lib/media'
 import { cardLabel } from '../lib/plan'
 import { t, type Lang } from '../lib/i18n'
 import { SoundCard } from './SoundCard'
+import { SectionTitle } from './controls'
+import { MouthIcon } from './icons'
 
 interface SoundChartProps {
   manifest: Manifest
@@ -20,7 +22,9 @@ export function SoundChart({ manifest, lang, playingId, armed, onPress }: SoundC
   return (
     <section className="panel flex h-full flex-col gap-4 rounded-panel p-4 sm:p-5" aria-label={t('sounds', lang)}>
       <div className="no-select flex flex-wrap items-center gap-x-3 gap-y-1">
-        <h2 className="text-lg font-black tracking-tight text-ink">{t('sounds', lang)}</h2>
+        <SectionTitle icon={<MouthIcon className="h-5 w-5" />} tone="mint">
+          {t('sounds', lang)}
+        </SectionTitle>
         <span className="rounded-full bg-sunk px-2.5 py-0.5 text-xs font-extrabold text-muted ring-1 ring-line">{manifest.sounds.length}</span>
         <p className="basis-full text-sm font-semibold text-muted sm:ml-auto sm:basis-auto">{t('tapHint', lang)}</p>
       </div>
