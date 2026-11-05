@@ -18,7 +18,15 @@ export class HttpError extends Error {
 
 export async function readJson(req: Req): Promise<Record<string, unknown>> {
   if (req.body !== undefined && req.body !== null) {
-    if (typeof req.body === 'string') return req.body ? (JSON.parse(req.body) as Record<string, unknown>) : {}
+    if (typeof req.body === 'string') {
+      if (!req.body) return {}
+      try {
+        return JSON.parse(req.body) as Record<string, unknown>
+      } catch {
+        throw new HttpError(400, 'bad_json')
+      }
+    }
+    if (typeof req.body !== 'object') throw new HttpError(400, 'bad_json')
     return req.body as Record<string, unknown>
   }
   const chunks: Buffer[] = []

@@ -80,8 +80,11 @@ export async function handleAuth(action: string, req: Req, res: Res): Promise<vo
   } catch (e) {
     if (e instanceof HttpError) json(res, e.status, { error: e.code })
     else {
-      console.error(`auth/${action} failed:`, e instanceof Error ? e.message : e)
-      json(res, 500, { error: 'server' })
+      const message = e instanceof Error ? e.message : String(e)
+      console.error(`auth/${action} failed:`, message)
+      // a missing / malformed environment variable is a deployment problem, not a user one: say so
+      const config = /environment variable|MONGODB_URI must/.test(message)
+      json(res, 500, { error: config ? 'config' : 'server' })
     }
   }
 }

@@ -94,6 +94,7 @@ const STRINGS = {
   'err.weak_password': { en: 'Password must be at least 8 characters.', jp: 'パスワードは 8文字いじょう にしてね。' },
   'err.email_taken': { en: 'That email is already registered — log in instead.', jp: 'その メールアドレスは とうろくずみです。ログインしてね。' },
   'err.bad_credentials': { en: 'Wrong email or password.', jp: 'メールアドレスか パスワードが ちがいます。' },
+  'err.config': { en: 'The server is not fully set up yet (a setting is missing). Please tell the administrator.', jp: 'サーバーの せっていが まだ おわっていません。かんりしゃに つたえてね。' },
   'err.server': { en: 'Something went wrong. Please try again.', jp: 'エラーが おきました。もういちど ためしてね。' },
   'err.network': { en: 'Cannot reach the server. Check your connection.', jp: 'サーバーに つながりません。つうしんを かくにんしてね。' },
 } as const

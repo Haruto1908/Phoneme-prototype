@@ -11,24 +11,36 @@
 
 export const isProduction = process.env.VERCEL_ENV === 'production' || (!process.env.VERCEL_ENV && process.env.NODE_ENV === 'production')
 
+/**
+ * Dashboard values are often pasted straight from a .env line, quotes and all. dotenv strips those locally,
+ * so do the same here or the Mongo driver sees `"mongodb+srv://…` and rejects the scheme.
+ */
+function clean(v: string | undefined): string {
+  const s = (v ?? '').trim()
+  const q = s[0]
+  return (q === '"' || q === "'") && s.endsWith(q) && s.length >= 2 ? s.slice(1, -1).trim() : s
+}
+
 export function required(name: string): string {
-  const v = process.env[name]
+  const v = clean(process.env[name])
   if (!v) throw new Error(`Missing environment variable ${name}`)
   return v
 }
 
 export const env = {
   get mongoUri() {
-    return required('MONGODB_URI')
+    const uri = required('MONGODB_URI')
+    if (!/^mongodb(\+srv)?:\/\//.test(uri)) throw new Error('MONGODB_URI must start with mongodb:// or mongodb+srv://')
+    return uri
   },
   get dbName() {
-    return process.env.MONGODB_DB || 'Phoneme-prototype'
+    return clean(process.env.MONGODB_DB) || 'Phoneme-prototype'
   },
   get usersCollection() {
-    return process.env.USERS_COLLECTION || 'UsersTable'
+    return clean(process.env.USERS_COLLECTION) || 'UsersTable'
   },
   get jwtSecret() {
-    const s = process.env.JWT_SECRET
+    const s = clean(process.env.JWT_SECRET)
     if (s) return s
     if (isProduction) throw new Error('Missing environment variable JWT_SECRET')
     return 'dev-only-secret-not-for-production'

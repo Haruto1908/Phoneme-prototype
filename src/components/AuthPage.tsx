@@ -27,6 +27,7 @@ const ERR_KEYS: Record<string, true> = {
   'err.weak_password': true,
   'err.email_taken': true,
   'err.bad_credentials': true,
+  'err.config': true,
   'err.server': true,
   'err.network': true,
 }
