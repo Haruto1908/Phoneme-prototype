@@ -41,6 +41,7 @@ Settings → Environment Variables. Never commit the values.
 | `JWT_SECRET` | yes in production | Signs the session cookie. Any long random string. |
 | `MONGODB_DB`, `USERS_COLLECTION` | no | Defaults `Phoneme-prototype`, `UsersTable`. |
 | `USAGE_COLLECTION`, `EVENTS_COLLECTION` | no | Session log collections, defaults `ModeUsage`, `SessionEvents`. |
+| `ATTEMPTS_COLLECTION`, `PROGRESS_COLLECTION` | no | Pronunciation attempts and per-child baselines, defaults `Attempts`, `Progress`. |
 | `MONGODB_DNS` | no | Dev only, e.g. `1.1.1.1,8.8.8.8` when the local DNS refuses the Atlas SRV lookup. |
 
 Vercel: framework preset **Vite**, root directory `phoneme-prototype`, build `npm run build`,
@@ -73,11 +74,61 @@ CSS tokens in `src/index.css` (`:root` / `.dark`) exposed to Tailwind as `text-i
 ## Practice mode and pronunciation score
 
 In practice mode the lesson pop-up is split: the mouth close-up and side view on the left, a
-microphone on the right. The recording (≤ 3 s) is compared with the host's clip in the
-browser (log-mel features + DTW, vocal-tract-length warps) and shown as 0–100 with a short
-reason, plus a *Compare* button that plays the child then the host. It is an acoustic
-similarity heuristic, not a phonetic assessment; `src/lib/pronounce/` is isolated so it can
-be swapped for a speech-assessment API later.
+microphone on the right. The child records (≤ 3 s), sees 1–3 animated stars with a cheer and
+one line of advice (also spoken aloud), and can *Compare* their attempt with the model. **No
+number is ever shown** — the users are four-year-olds. The number exists only in the database,
+for the teacher's CSV and for a future AI coach that reads the measurements and gives verbal
+feedback.
+
+**How the score is measured** (`src/lib/pronounce/`, in the browser, no audio leaves the device)
+
+1. The recording is trimmed and turned into log-mel frames (50 ms, 10 ms hop, 24 bands), each
+   level-normalised, with the utterance's broad spectral tilt removed (microphone/room
+   colouring) and frame-to-frame deltas appended. Frames are compared by *shape* (cosine
+   distance of spectrum and deltas), which made a man's and a woman's /k/ agree.
+2. It is aligned (DTW) against **every sound we teach, from every model voice** — the avatar's
+   clip and the human teacher's — at seven vocal-tract-length warps (children's formants sit
+   higher than an adult's).
+3. The score is a **contrast**: `margin = (nearest other sound's cost − target cost) / target
+   cost`, mapped by a soft sigmoid and damped by an absolute term (`SCORE` in `dsp.ts`), so a
+   quiet mic or a small voice, which shift every distance together, no longer produce zeros.
+   Also stored: `rank` (1 = target was the closest sound), per-sound costs, best warp, duration,
+   voicing, centroid, peak level.
+
+The manifest's `scoreRefs` lets a sound name the exact clips/windows used as references when
+the clips shown to the child are not usable as-is. Today `th_voiceless` scores against the
+avatar /θ/ **and** the teacher's clean /θ/, which lives in `human_th_voiced.mp4` (the
+`human_th_voiceless.mp4` soundtrack is her saying the word "thin"); `th_voiced` scores against
+the avatar /ð/ only, because no human /ð/ clip exists.
+
+**Calibration.** Every reference clip was scored against the other speaker's references with
+speed, pitch (child-voice), band-limit, noise, echo and level perturbations (144 "correct"
+attempts) and against every wrong sound (100 "wrong" attempts). Result: the target ranks first
+in 77 % of correct attempts (100 % for /k/ and /t/, ~95 % for /r/ and /æ/; /θ/ is the weak one
+— the two /θ/ voices sit far apart and it is confused with /k/ and /t/), and in 7 % of wrong
+attempts; 73 % of correct attempts score ≥ 60 vs 4 % of wrong ones. The old scorer managed
+19 % rank-first across speakers. Calibration scripts live outside the repo.
+
+**Baseline and stars** (`api/_lib/attempts.ts`, server side, so the rule is one place)
+
+- Each attempt is `POST /api/attempts/record` with the measurements; the server stores it in
+  `Attempts` and keeps `Progress` (one document per child, `sounds.<id>: { attempts, baseline,
+  baselineScores, best, last }`).
+- The first **three** attempts per sound are the *baseline* phase: their median becomes the
+  child's hidden baseline. After that the child is *tracked*: `improvement = score − baseline`.
+- Stars never drop to zero. Baseline phase: 3 stars if score ≥ 80, else 2. Tracked: 3 stars
+  if the gain is ≥ 15 or the score ≥ 80; 2 if the gain is ≥ 5 or the score ≥ 60; else 1.
+  The response carries `stars`, `cheerKey`, `phase`, `improvement`; the client only turns
+  these into pictures and speech. Offline, the client falls back to the baseline-phase rule.
+- `GET /api/attempts/summary` returns the child's progress; `GET /api/attempts/csv` exports
+  every attempt (`time_utc, email, sound, phase, baseline, score, improvement, stars, rank,
+  margin, target_cost, nearest_other, warp, duration_s, voiced, centroid_hz, peak_db, reason,
+  engine, language`). The `engine` field (`contrast-v1`) lets the mapping change later without
+  mixing old and new numbers. Audio is **not** stored.
+
+It is still an acoustic similarity heuristic, not a phonetic assessment; `src/lib/pronounce/`
+is isolated so it can be swapped for a speech-assessment API later without touching the
+baseline/stars logic.
 
 ## Operator settings (URL params)
 
@@ -106,6 +157,10 @@ row and its assets; no component changes.
   "voiced": false,                // true adds the small buzz badge (ð)
   "video": "video/avatar_th_voiceless.mp4",   // avatar mouth close-up (3 s, sound centred)
   "poster": "video/avatar_th_voiceless.jpg",  // its first frame, shown while it loads
+  "scoreRefs": [                               // optional: scorer references when the shown clips won't do
+    { "src": "audio/th_voiceless.mp3", "window": [1.31, 1.68] },
+    { "src": "video/human_th_voiced.mp4", "window": [0.58, 1.23] }
+  ],
   "tongue": { "module": "th", "sound": "θ" }  // tongue view after the close-up, or null
 }
 ```

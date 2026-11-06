@@ -45,6 +45,82 @@ export interface EventDoc {
   at: Date
 }
 
+/** How many attempts per sound form the hidden baseline before improvement is shown. */
+export const BASELINE_ATTEMPTS = 3
+
+/** The measurements behind one pronunciation attempt. Numbers only — the recording itself is never stored. */
+export interface AttemptInternal {
+  /** contrast score 0–100 */
+  score: number
+  /** (nearest competitor cost − target cost) / target cost */
+  margin: number
+  /** 1 = the target sound was the closest of all */
+  rank: number
+  targetCost: number
+  /** best DTW cost per sound id */
+  costs: Record<string, number>
+  /** nearest competitor sound id */
+  bestOther: string | null
+  /** vocal-tract warp that matched best */
+  warp: number
+  /** seconds of speech, share of voiced frames, spectral centroid Hz, peak level dBFS */
+  duration: number
+  voiced: number
+  centroid: number
+  peakDb: number
+  /** legacy absolute score, diagnostic */
+  absScore: number
+}
+
+/** What the child was shown for the attempt. */
+export interface AttemptShown {
+  stars: 1 | 2 | 3
+  /** one-line articulatory remark (src/lib/pronounce/reasons.ts key) */
+  reasonKey: string
+  /** cheer line key (i18n cheer0–cheer3) */
+  cheerKey: string
+}
+
+/** One pronunciation attempt — written so a future AI can read the whole story and speak feedback. */
+export interface AttemptDoc {
+  _id?: ObjectId
+  email: string
+  userId: string
+  soundId: string
+  at: Date
+  lang?: string
+  /** scoring engine version that produced `internal` */
+  engine: string
+  internal: AttemptInternal
+  /** the user's baseline for this sound at the time (null while it is still being formed) */
+  baseline: number | null
+  phase: 'baseline' | 'tracked'
+  /** score − baseline, once tracked */
+  improvement: number | null
+  shown: AttemptShown
+  device?: { mime?: string }
+}
+
+export interface SoundProgress {
+  attempts: number
+  /** median contrast score of the first BASELINE_ATTEMPTS attempts; null until there are enough */
+  baseline: number | null
+  /** the first attempts' scores, kept until the baseline is fixed */
+  baselineScores: number[]
+  best: number
+  last: number
+  lastAt: Date
+}
+
+/** One document per user: progress per sound (the hidden baseline lives here). */
+export interface ProgressDoc {
+  _id?: ObjectId
+  email: string
+  userId: string
+  sounds: Record<string, SoundProgress>
+  updatedAt: Date
+}
+
 // One client per warm serverless instance (and per dev server).
 let clientPromise: Promise<MongoClient> | null = null
 const indexed = new Set<string>()
@@ -75,3 +151,5 @@ async function collection<T extends { _id?: ObjectId }>(name: string, index: Rec
 export const users = () => collection<UserDoc>(env.usersCollection, { email: 1 }, true)
 export const usage = () => collection<UsageDoc>(env.usageCollection, { email: 1 }, true)
 export const events = () => collection<EventDoc>(env.eventsCollection, { email: 1, at: 1 })
+export const attempts = () => collection<AttemptDoc>(env.attemptsCollection, { email: 1, soundId: 1, at: 1 })
+export const progress = () => collection<ProgressDoc>(env.progressCollection, { email: 1 }, true)

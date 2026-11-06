@@ -13,7 +13,7 @@ function apiDev(): Plugin {
     configureServer(server) {
       const vars = loadEnv(server.config.mode, server.config.root, '')
       for (const [k, v] of Object.entries(vars)) if (process.env[k] === undefined) process.env[k] = v
-      const mount = (prefix: string, file: string, name: 'handleAuth' | 'handleLog') =>
+      const mount = (prefix: string, file: string, name: 'handleAuth' | 'handleLog' | 'handleAttempts') =>
         server.middlewares.use(prefix, async (req, res, next) => {
           try {
             const action = (req.url ?? '/').split('?')[0].replace(/^\/+/, '').split('/')[0]
@@ -25,6 +25,7 @@ function apiDev(): Plugin {
         })
       mount('/api/auth', '/api/_lib/auth.ts', 'handleAuth')
       mount('/api/log', '/api/_lib/log.ts', 'handleLog')
+      mount('/api/attempts', '/api/_lib/attempts.ts', 'handleAttempts')
     },
   }
 }

@@ -38,8 +38,21 @@ export interface Sound {
   /** [on, off] seconds where the sound is heard in `video` / `humanVideo`, so a short window can be centred on it. */
   speech?: [number, number] | null
   humanSpeech?: [number, number] | null
+  /**
+   * Model clips the pronunciation scorer compares against, when the clips shown to the child are not usable as-is
+   * (e.g. the teacher's clean /θ/ is in the th_voiced video; the th_voiceless video has her saying "thin").
+   * Defaults to `audio` over `speech` plus `humanVideo` over `humanSpeech`. Never shown — scoring only.
+   */
+  scoreRefs?: ScoreRef[]
   /** Side-view tongue animation that follows the close-up; null when a sound has none. */
   tongue?: TongueView | null
+}
+
+export interface ScoreRef {
+  /** audio or video file (its soundtrack is used) */
+  src: string
+  /** [start, end] seconds holding the bare sound; null for the whole file */
+  window: [number, number] | null
 }
 
 export interface TongueView {

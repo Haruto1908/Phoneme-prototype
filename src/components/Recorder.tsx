@@ -1,19 +1,18 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
-import type { TileColor } from '../types'
+import type { Sound, TileColor } from '../types'
 import { palette } from './palette'
 import { t, type Lang } from '../lib/i18n'
 import { asset } from '../lib/media'
 import { scoreRecording, unlockAudio } from '../lib/pronounce/analyze'
+import { allReferences, preloadReferences } from '../lib/pronounce/references'
 import { reasonKey, reasonText, SOUND_META, type ReasonKey } from '../lib/pronounce/reasons'
+import { attemptsApi, localVerdict, type AttemptVerdict } from '../lib/attempts'
 import { CompareIcon, MicIcon, ReplayIcon, StarIcon, StopIcon } from './icons'
 
 /** Longest recording we keep; a single sound is well under this. */
 const MAX_REC_MS = 3000
 const MIN_REC_MS = 250
 
-/** 0–3 stars from the score: children read stars faster than numbers, and three is a clear "you did it". */
-const stars = (score: number) => (score >= 85 ? 3 : score >= 65 ? 2 : score >= 40 ? 1 : 0)
-const CHEER = ['cheer0', 'cheer1', 'cheer2', 'cheer3'] as const
 /** Confetti pieces for a three-star result: direction, spin and tone per piece. */
 const CONFETTI = Array.from({ length: 14 }, (_, i) => {
   const a = (i / 14) * Math.PI * 2
@@ -34,6 +33,8 @@ interface RecorderProps {
   lang: Lang
   host: string
   target: RecorderTarget
+  /** every sound in the manifest — the attempt is scored against all of them (contrast score) */
+  sounds: Sound[]
   muted: boolean
   volume: number
 }
@@ -42,17 +43,34 @@ type Stage = 'idle' | 'recording' | 'analysing' | 'result'
 type ErrorKey = 'micDenied' | 'micUnsupported' | 'tooShort' | 'err.server'
 
 interface Result {
-  score: number
+  verdict: AttemptVerdict
   reason: ReasonKey
   url: string
   blob: Blob
 }
 
+/** Speak a line in the lesson language; silently does nothing where speech synthesis is unavailable. */
+function say(text: string, lang: Lang, volume: number): void {
+  const synth = typeof window !== 'undefined' ? window.speechSynthesis : undefined
+  if (!synth) return
+  synth.cancel()
+  const u = new SpeechSynthesisUtterance(text)
+  u.lang = lang === 'jp' ? 'ja-JP' : 'en-US'
+  u.rate = 0.95
+  u.pitch = 1.1
+  u.volume = volume
+  const voice = synth.getVoices().find((v) => v.lang.replace('_', '-').toLowerCase().startsWith(lang === 'jp' ? 'ja' : 'en'))
+  if (voice) u.voice = voice
+  synth.speak(u)
+}
+
 /**
- * Right half of the practice pop-up: tap the microphone, say the sound, get a 0–100 score with one line of advice,
- * then hear your attempt and the model's back to back. Scoring runs in the browser (lib/pronounce).
+ * Right half of the practice pop-up: tap the microphone, say the sound, get stars and one line of advice (spoken
+ * too), then hear your attempt and the model's back to back. The attempt is scored in the browser against every
+ * sound (lib/pronounce) and the measurements go to /api/attempts, which keeps the child's hidden baseline and
+ * decides the stars. No number is ever shown — four-year-olds read stars, not scores.
  */
-export function Recorder({ lang, host, target, muted, volume }: RecorderProps) {
+export function Recorder({ lang, host, target, sounds, muted, volume }: RecorderProps) {
   const c = palette[target.color]
   const [stage, setStage] = useState<Stage>('idle')
   const [error, setError] = useState<ErrorKey | null>(null)
@@ -97,16 +115,18 @@ export function Recorder({ lang, host, target, muted, volume }: RecorderProps) {
     setPlaying(null)
   }
 
-  // tidy up when the target changes or the panel unmounts
+  // warm the reference cache so the first score does not wait for twelve decodes; tidy up on target change / unmount
   const resultUrl = useRef<string | null>(null)
   useEffect(() => {
+    preloadReferences(sounds)
     return () => {
       releaseMic()
       stopPlayback()
+      window.speechSynthesis?.cancel()
       if (resultUrl.current) URL.revokeObjectURL(resultUrl.current)
       resultUrl.current = null
     }
-  }, [target.id])
+  }, [target.id, sounds])
 
   async function startRecording() {
     setError(null)
@@ -183,13 +203,18 @@ export function Recorder({ lang, host, target, muted, volume }: RecorderProps) {
   async function analyse(blob: Blob) {
     setStage('analysing')
     try {
-      const cmp = await scoreRecording(blob, asset(target.audio), target.audioWindow)
+      const refs = await allReferences(sounds)
+      const cmp = await scoreRecording(blob, target.id, refs)
       const meta = SOUND_META[target.id] ?? { id: target.id, voiced: false, held: true }
+      const reason = reasonKey(cmp, meta)
+      // the server owns the baseline and the stars; offline we fall back to the same rule without a baseline
+      const verdict = await attemptsApi.record(target.id, cmp, reason, lang, blob.type).catch(() => localVerdict(cmp.score))
       if (resultUrl.current) URL.revokeObjectURL(resultUrl.current)
       const url = URL.createObjectURL(blob)
       resultUrl.current = url
-      setResult({ score: cmp.score, reason: reasonKey(cmp, meta), url, blob })
+      setResult({ verdict, reason, url, blob })
       setStage('result')
+      if (!muted) say(`${t(verdict.cheerKey, lang)} ${reasonText(reason, lang, host)}`, lang, volume)
     } catch {
       setError('err.server')
       setStage('idle')
@@ -228,13 +253,12 @@ export function Recorder({ lang, host, target, muted, volume }: RecorderProps) {
 
   function reset() {
     stopPlayback()
+    window.speechSynthesis?.cancel()
     setError(null)
     setStage('idle')
   }
 
-  const score = result?.score ?? 0
-  const ring = 2 * Math.PI * 52
-  const got = stars(score)
+  const got = result?.verdict.stars ?? 0
 
   return (
     <section className="no-select flex h-full flex-col items-center gap-3 panel rounded-[24px] p-4 text-center" aria-label={t('yourTurn', lang)}>
@@ -267,8 +291,8 @@ export function Recorder({ lang, host, target, muted, volume }: RecorderProps) {
 
       {stage === 'result' && result && (
         <>
-          {/* the mark */}
-          <div className="animate-pop relative mt-1 flex h-36 w-36 items-center justify-center" role="img" aria-label={`${t('score', lang)}: ${score} / 100`}>
+          {/* stars: the whole verdict, no number — the big middle star lifts on three */}
+          <div className="animate-pop relative mt-3 flex h-32 items-end justify-center gap-2" role="img" aria-label={`${got} / 3`}>
             {got === 3 && (
               <span aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2">
                 {CONFETTI.map((p, i) => (
@@ -280,38 +304,20 @@ export function Recorder({ lang, host, target, muted, volume }: RecorderProps) {
                 ))}
               </span>
             )}
-            <svg viewBox="0 0 120 120" className="absolute inset-0 h-full w-full -rotate-90">
-              <circle cx="60" cy="60" r="52" fill="var(--color-panel-strong)" stroke="var(--color-line)" strokeWidth="10" />
-              <circle
-                cx="60"
-                cy="60"
-                r="52"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="10"
-                strokeLinecap="round"
-                strokeDasharray={ring}
-                strokeDashoffset={ring * (1 - score / 100)}
-                className={`${score >= 65 ? 'text-mint-ink' : score >= 40 ? 'text-sun-ink' : 'text-accent'} transition-[stroke-dashoffset] duration-700`}
-              />
-            </svg>
-            <div className="relative flex flex-col items-center leading-none">
-              <span className={`text-5xl font-black ${c.ink}`}>{score}</span>
-              <span className="mt-1 text-xs font-bold text-muted">/ 100</span>
-            </div>
+            {[0, 1, 2].map((i) => {
+              const lit = i < got
+              const size = i === 1 ? 'h-24 w-24' : 'h-16 w-16 mb-3'
+              return (
+                <StarIcon
+                  key={i}
+                  filled={lit}
+                  className={`${size} ${lit ? 'animate-star text-sun-ink drop-shadow-[0_3px_0_rgba(0,0,0,0.14)]' : 'text-ink/15'}`}
+                  style={{ animationDelay: `${150 + i * 160}ms` }}
+                />
+              )
+            })}
           </div>
-          {/* stars + a cheer: the part a child reads first */}
-          <div className="flex items-center gap-1" role="img" aria-label={`${got} / 3`}>
-            {[0, 1, 2].map((i) => (
-              <StarIcon
-                key={i}
-                filled={i < got}
-                className={`h-9 w-9 ${i < got ? 'animate-star text-sun-ink drop-shadow-[0_2px_0_rgba(0,0,0,0.12)]' : 'text-ink/15'}`}
-                style={{ animationDelay: `${150 + i * 140}ms` }}
-              />
-            ))}
-          </div>
-          <p className={`text-lg font-black tracking-tight ${c.ink}`}>{t(CHEER[got], lang)}</p>
+          <p className={`text-2xl font-black tracking-tight ${c.ink}`}>{t(result.verdict.cheerKey, lang)}</p>
           <p className="max-w-xs text-sm font-semibold leading-snug text-ink/80">{reasonText(result.reason, lang, host)}</p>
 
           <div className="mt-auto flex w-full flex-col items-center gap-2 pt-2">

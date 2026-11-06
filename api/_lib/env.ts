@@ -8,6 +8,8 @@
  *   USERS_COLLECTION     default "UsersTable"
  *   USAGE_COLLECTION     default "ModeUsage"      — per-user counters: how often Avatar / Human / Both was used
  *   EVENTS_COLLECTION    default "SessionEvents"  — one row per mode start/switch (the CSV export)
+ *   ATTEMPTS_COLLECTION  default "Attempts"       — one row per pronunciation attempt (measurements, no audio)
+ *   PROGRESS_COLLECTION  default "Progress"       — per-user, per-sound baseline and running progress
  *   JWT_SECRET           required in production (any long random string); a fixed dev secret is used locally
  */
 
@@ -46,6 +48,12 @@ export const env = {
   },
   get eventsCollection() {
     return clean(process.env.EVENTS_COLLECTION) || 'SessionEvents'
+  },
+  get attemptsCollection() {
+    return clean(process.env.ATTEMPTS_COLLECTION) || 'Attempts'
+  },
+  get progressCollection() {
+    return clean(process.env.PROGRESS_COLLECTION) || 'Progress'
   },
   get jwtSecret() {
     const s = clean(process.env.JWT_SECRET)

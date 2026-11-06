@@ -1,5 +1,5 @@
-/** Browser side of the scorer: decode a recording / the model clip to 16 kHz mono and run the comparison. */
-import { analyze, compare, SR, type Comparison, type Features } from './dsp'
+/** Browser side of the scorer: decode a recording / the model clips to 16 kHz mono and run the comparison. */
+import { analyze, compareAll, SR, type Comparison, type Features, type SoundRef } from './dsp'
 
 let ctx: AudioContext | null = null
 function audioContext(): AudioContext {
@@ -39,10 +39,10 @@ export function referenceFeatures(url: string, window: [number, number] | null |
   return p
 }
 
-/** Score a recording against the model's clip. */
-export async function scoreRecording(recording: Blob, refUrl: string, refWindow: [number, number] | null | undefined): Promise<Comparison> {
-  const [pcm, ref] = await Promise.all([recording.arrayBuffer().then((b) => decodeMono16k(b)), referenceFeatures(refUrl, refWindow)])
-  return compare(pcm, ref)
+/** Score a recording of `target` against every sound's references (contrast score). */
+export async function scoreRecording(recording: Blob, target: string, refs: SoundRef[]): Promise<Comparison> {
+  const pcm = await recording.arrayBuffer().then((b) => decodeMono16k(b))
+  return compareAll(pcm, target, refs)
 }
 
 /** Resume the shared AudioContext inside a tap (iOS keeps it suspended until a gesture). */

@@ -36,9 +36,13 @@ const REASONS = {
 
 export type ReasonKey = keyof typeof REASONS
 
-/** Pick the single most useful remark about the attempt. */
+/**
+ * Pick the single most useful remark about the attempt. Recording problems first (quiet, short), then the
+ * articulatory checks, then how the attempt ranked against the other sounds. Stored with every attempt so an AI
+ * can later phrase it as spoken feedback.
+ */
 export function reasonKey(c: Comparison, meta: SoundMeta): ReasonKey {
-  const { user, ref, score } = c
+  const { user, ref, rank, score } = c
   if (user.peakDb < -30) return 'quiet'
   if (user.duration < 0.08) return 'short'
   if (meta.voiced && ref.voiced > 0.4 && user.voiced < 0.2) return 'addVoice'
@@ -47,9 +51,9 @@ export function reasonKey(c: Comparison, meta: SoundMeta): ReasonKey {
   if (meta.held && user.duration < 0.4 * ref.duration) return 'hold'
   if (meta.id === 'th_voiceless' && user.centroid > 5000) return 'sharpTh'
   if (meta.id === 'th_voiced' && user.centroid > 1800 && user.voiced > 0.4) return 'sharpTh'
-  if (score >= 85) return 'great'
-  if (score >= 65) return 'close'
-  if (score >= 40) return 'getting'
+  if (rank === 1 && score >= 75) return 'great'
+  if (rank === 1) return 'close'
+  if (rank === 2) return 'getting'
   return 'different'
 }
 
