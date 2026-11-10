@@ -10,10 +10,21 @@
  *   EVENTS_COLLECTION    default "SessionEvents"  — one row per mode start/switch (the CSV export)
  *   ATTEMPTS_COLLECTION  default "Attempts"       — one row per pronunciation attempt (measurements, no audio)
  *   PROGRESS_COLLECTION  default "Progress"       — per-user, per-sound baseline and running progress
+ *   MANAGER_EMAILS       comma-separated accounts with the manager role (see MANAGERS below for the default)
  *   JWT_SECRET           required in production (any long random string); a fixed dev secret is used locally
  */
 
 export const isProduction = process.env.VERCEL_ENV === 'production' || (!process.env.VERCEL_ENV && process.env.NODE_ENV === 'production')
+
+/**
+ * Accounts that get the manager role when MANAGER_EMAILS is not set. The role is derived from the signed-in
+ * email on every request, so adding a manager is a settings change — nobody has to sign up again.
+ */
+const MANAGERS = [
+  'aubreycotconsulting@gmail.com',
+  'brucel@blastlearning.com', // the registered account
+  'bruce@blastlearning.com', // the address usually written down; listed so either one works
+]
 
 /**
  * Dashboard values are often pasted straight from a .env line, quotes and all. dotenv strips those locally,
@@ -54,6 +65,11 @@ export const env = {
   },
   get progressCollection() {
     return clean(process.env.PROGRESS_COLLECTION) || 'Progress'
+  },
+  get managerEmails(): string[] {
+    const list = clean(process.env.MANAGER_EMAILS)
+    const emails = (list ? list.split(',') : MANAGERS).map((e) => e.trim().toLowerCase()).filter(Boolean)
+    return [...new Set(emails)]
   },
   get jwtSecret() {
     const s = clean(process.env.JWT_SECRET)

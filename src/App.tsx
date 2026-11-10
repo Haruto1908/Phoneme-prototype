@@ -56,9 +56,11 @@ interface AppProps {
   theme: Theme
   onTheme: (t: Theme) => void
   onLogout: () => void
+  /** Managers only: open the dashboard over every student. */
+  onManager?: () => void
 }
 
-export default function App({ user, lang, onLang, theme, onTheme, onLogout }: AppProps) {
+export default function App({ user, lang, onLang, theme, onTheme, onLogout, onManager }: AppProps) {
   const state = useManifest()
   const [settings, setSettings] = useState<Settings>(loadSettings)
   const [slots, setSlots] = useState<Array<string | null>>([null, null, null, null])
@@ -187,8 +189,10 @@ export default function App({ user, lang, onLang, theme, onTheme, onLogout }: Ap
         practice={practice}
         onPractice={(p) => set('practice', p)}
         email={user.email}
+        role={user.role}
         usage={usage}
         onLogout={onLogout}
+        onManager={onManager}
       />
 
       <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-3">

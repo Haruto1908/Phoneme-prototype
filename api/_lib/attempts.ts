@@ -12,9 +12,10 @@
  * student against themselves. The stars rule lives here, server-side, so a manager view or an AI reads exactly
  * what the child saw.
  */
+import { f3, row, safeName, sendCsv, stamp } from './csv.ts'
 import { attempts, BASELINE_ATTEMPTS, progress, type AttemptDoc, type AttemptInternal, type AttemptShown, type SoundProgress } from './db.ts'
 import { dispatch, HttpError, json, readJson, type Req, type Res, type Route } from './http.ts'
-import { currentUser, type SessionUser } from './session.ts'
+import { requireUser } from './session.ts'
 
 /** Bump when the client's scoring maths changes, so old rows are not compared with new ones. */
 export const ENGINE = 'contrast-v1'
@@ -26,12 +27,6 @@ const FAIR = 60
 /** Improvement over the baseline (score points) for three / two stars. */
 const BIG_GAIN = 15
 const GAIN = 5
-
-async function requireUser(req: Req): Promise<SessionUser> {
-  const user = await currentUser(req)
-  if (!user) throw new HttpError(401, 'unauthorized')
-  return user
-}
 
 const num = (v: unknown, lo = -Infinity, hi = Infinity): number => {
   const n = typeof v === 'number' ? v : Number.NaN
@@ -150,33 +145,19 @@ async function summary(req: Req, res: Res) {
   json(res, 200, { sounds, baselineAttempts: BASELINE_ATTEMPTS })
 }
 
-const cell = (v: unknown) => {
-  const s = v === null || v === undefined ? '' : String(v)
-  return /[",\r\n]/.test(s) ? `"${s.replaceAll('"', '""')}"` : s
+export const ATTEMPTS_CSV_HEADER =
+  'time_utc,email,sound,phase,baseline,score,improvement,stars,rank,margin,target_cost,nearest_other,warp,duration_s,voiced,centroid_hz,peak_db,reason,engine,language'
+
+/** One CSV line per attempt. Shared with the manager export, so both files have identical columns. */
+export function attemptCsvLine(r: AttemptDoc): string {
+  const i = r.internal
+  return row([r.at.toISOString(), r.email, r.soundId, r.phase, r.baseline ?? '', i.score, r.improvement ?? '', r.shown.stars, i.rank, f3(i.margin), f3(i.targetCost), i.bestOther ?? '', i.warp, f3(i.duration), f3(i.voiced), Math.round(i.centroid), i.peakDb.toFixed(1), r.shown.reasonKey, r.engine, r.lang ?? ''])
 }
-const f3 = (v: number | null | undefined) => (v === null || v === undefined ? '' : v.toFixed(3))
 
 async function csv(req: Req, res: Res) {
   const user = await requireUser(req)
   const rows = await (await attempts()).find({ email: user.email }).sort({ at: 1 }).limit(50_000).toArray()
-  const lines = [
-    'time_utc,email,sound,phase,baseline,score,improvement,stars,rank,margin,target_cost,nearest_other,warp,duration_s,voiced,centroid_hz,peak_db,reason,engine,language',
-  ]
-  for (const r of rows) {
-    const i = r.internal
-    lines.push(
-      [r.at.toISOString(), r.email, r.soundId, r.phase, r.baseline ?? '', i.score, r.improvement ?? '', r.shown.stars, i.rank, f3(i.margin), f3(i.targetCost), i.bestOther ?? '', i.warp, f3(i.duration), f3(i.voiced), Math.round(i.centroid), i.peakDb.toFixed(1), r.shown.reasonKey, r.engine, r.lang ?? '']
-        .map(cell)
-        .join(','),
-    )
-  }
-  const stamp = new Date().toISOString().slice(0, 10)
-  const safeEmail = user.email.replace(/[^a-z0-9]+/gi, '_')
-  res.statusCode = 200
-  res.setHeader('Content-Type', 'text/csv; charset=utf-8')
-  res.setHeader('Content-Disposition', `attachment; filename="attempts_${safeEmail}_${stamp}.csv"`)
-  res.setHeader('Cache-Control', 'no-store')
-  res.end('\uFEFF' + lines.join('\r\n') + '\r\n')
+  sendCsv(res, `attempts_${safeName(user.email)}_${stamp()}.csv`, [ATTEMPTS_CSV_HEADER, ...rows.map(attemptCsvLine)])
 }
 
 const ROUTES: Record<string, Route> = {

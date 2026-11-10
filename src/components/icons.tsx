@@ -188,6 +188,33 @@ export function DownloadIcon({ className }: IconProps) {
     </svg>
   )
 }
+/** Bar chart: the manager dashboard. */
+export function ChartIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className ?? 'h-6 w-6'} {...stroke} strokeWidth={2.8} aria-hidden="true">
+      <path d="M5 27h22" />
+      <path d="M9 27V16M16 27V6M23 27v-7" />
+    </svg>
+  )
+}
+/** Two figures: the student list. */
+export function PeopleIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className ?? 'h-6 w-6'} {...stroke} strokeWidth={2.8} aria-hidden="true">
+      <circle cx="12.5" cy="12" r="5" />
+      <path d="M3.5 26c1.5-5 5-7.5 9-7.5s7.5 2.5 9 7.5" />
+      <path d="M22 8.2a5 5 0 010 9.6M24 26c-.6-2.3-1.6-4.2-2.9-5.6" />
+    </svg>
+  )
+}
+/** Left arrow: back to the lesson. */
+export function BackIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className ?? 'h-6 w-6'} {...stroke} strokeWidth={2.8} aria-hidden="true">
+      <path d="M26 16H7M14 8l-8 8 8 8" />
+    </svg>
+  )
+}
 /** Tiny five-point star for scores and rewards. */
 export function StarIcon({ className, filled = true, style }: IconProps & { filled?: boolean; style?: CSSProperties }) {
   return (

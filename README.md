@@ -30,7 +30,8 @@ The site sits behind a login / sign-up page. Sign-up takes an email and a passwo
 characters), stores `{ email, passwordHash, createdAt }` in MongoDB (`Phoneme-prototype` →
 `UsersTable`) and signs the user straight in; no email verification. Login sets an httpOnly
 cookie for 30 days. The account button in the top bar shows the email, language and theme
-switches, the mode-usage counters with the CSV download, and Log out.
+switches, the mode-usage counters with the CSV download, and Log out — plus, for a manager, a
+button back to the dashboard (see [Manager role](#manager-role)).
 
 Local: put these in `phoneme-prototype/.env.local` (git-ignored). On Vercel: Project →
 Settings → Environment Variables. Never commit the values.
@@ -42,6 +43,7 @@ Settings → Environment Variables. Never commit the values.
 | `MONGODB_DB`, `USERS_COLLECTION` | no | Defaults `Phoneme-prototype`, `UsersTable`. |
 | `USAGE_COLLECTION`, `EVENTS_COLLECTION` | no | Session log collections, defaults `ModeUsage`, `SessionEvents`. |
 | `ATTEMPTS_COLLECTION`, `PROGRESS_COLLECTION` | no | Pronunciation attempts and per-child baselines, defaults `Attempts`, `Progress`. |
+| `MANAGER_EMAILS` | no | Comma-separated manager accounts; defaults to Aubrey's and Bruce's addresses. See [Manager role](#manager-role). |
 | `MONGODB_DNS` | no | Dev only, e.g. `1.1.1.1,8.8.8.8` when the local DNS refuses the Atlas SRV lookup. |
 
 Vercel: framework preset **Vite**, root directory `phoneme-prototype`, build `npm run build`,
@@ -63,6 +65,47 @@ Endpoints (session cookie required, a user only sees their own rows): `POST /api
 per mode (`time_utc, email, event, mode, language, avatar_total, human_total, both_total`),
 UTF-8 with BOM so Excel opens it directly. Logging is fire-and-forget on the client: if the API
 is unreachable the lesson still works. Code: `api/_lib/log.ts`, `src/lib/log.ts`.
+
+## Manager role
+
+Every account is either a **student** or a **manager**. A manager signs in through the same
+page as everyone else and lands on a dashboard with every student's session activity and
+progress, plus CSV exports.
+
+**Who is a manager** is decided by email, not by anything stored on the account:
+`MANAGER_EMAILS` is a comma-separated list, defaulting to `aubreycotconsulting@gmail.com` and
+`brucel@blastlearning.com` (plus `bruce@blastlearning.com`, since that spelling is the one
+usually written down), and the role is recomputed from the signed-in email on every request
+(`roleOf` in
+`api/_lib/session.ts`). So to add a manager you add their address to `MANAGER_EMAILS` and
+redeploy — they do not re-register, and if they are already signed in the dashboard appears on
+their next page load. Removing an address takes effect just as fast, because the session cookie
+carries only the email and can never carry a stale role. The role is also never read from the
+browser: the client UI hides the dashboard, and the API checks again on its own.
+
+**The dashboard** (`src/components/ManagerDashboard.tsx`) shows totals, one row per student
+(last active, Avatar / Human / Both counts, attempts, average stars, sounds practised), and, for
+the selected student, the per-sound table (baseline → latest → best with the improvement), the
+last 50 attempts with stars and feedback, and the last 50 mode changes. **Back to the lesson**
+opens the normal lesson for a manager, and the account menu brings them back.
+
+**Endpoints** are read-only — they only ever query, never write: `GET /api/manager/students`
+(all rows and totals), `GET /api/manager/student?email=…` (one student's detail),
+`GET /api/manager/csv?kind=…`. A non-manager gets `403 forbidden` from all three. Code:
+`api/_lib/manager.ts`, client `src/lib/manager.ts`.
+
+**CSV exports** — four kinds, all UTF-8 with BOM and CRLF so Excel opens them directly, named
+`all-<kind>_<manager>_<date>.csv`:
+
+| `kind` | One row per | Columns |
+|---|---|---|
+| `students` | account | email, role, sign-up, last login, last seen, mode counts, attempts, average stars, sounds practised |
+| `progress` | student × sound | attempts, baseline, best, last, improvement, best improvement, last attempt |
+| `sessions` | mode event | time, email, event, mode, language, running totals per mode |
+| `attempts` | recording | time, email, sound, phase, baseline, score, improvement, stars, rank, margin, nearest other sound, duration, voiced, centroid, peak, reason, engine |
+
+The per-student exports in the account menu and these all-student exports share one set of
+writers (`api/_lib/csv.ts` plus the `*CsvLine` helpers), so the columns are identical either way.
 
 ## Theme
 

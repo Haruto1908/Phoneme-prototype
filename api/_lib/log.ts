@@ -9,20 +9,15 @@
  * event, so the CSV can show the full timeline. All routes need the session cookie; a user only ever sees
  * their own rows.
  */
+import { row, safeName, sendCsv, stamp } from './csv.ts'
 import { events, MODES, usage, type EventDoc, type Mode, type ModeCounts } from './db.ts'
 import { dispatch, HttpError, json, readJson, type Req, type Res, type Route } from './http.ts'
-import { currentUser, type SessionUser } from './session.ts'
+import { requireUser } from './session.ts'
 
 const ZERO: ModeCounts = { avatar: 0, human: 0, both: 0 }
 const isMode = (v: unknown): v is Mode => typeof v === 'string' && (MODES as readonly string[]).includes(v)
 
-async function requireUser(req: Req): Promise<SessionUser> {
-  const user = await currentUser(req)
-  if (!user) throw new HttpError(401, 'unauthorized')
-  return user
-}
-
-function normCounts(c: Partial<ModeCounts> | undefined): ModeCounts {
+export function normCounts(c: Partial<ModeCounts> | undefined): ModeCounts {
   return { avatar: c?.avatar ?? 0, human: c?.human ?? 0, both: c?.both ?? 0 }
 }
 
@@ -62,29 +57,21 @@ async function summary(req: Req, res: Res) {
   })
 }
 
-/** RFC 4180: quote fields that need it, double embedded quotes. */
-const cell = (v: unknown) => {
-  const s = v === null || v === undefined ? '' : String(v)
-  return /[",\r\n]/.test(s) ? `"${s.replaceAll('"', '""')}"` : s
+export const SESSION_CSV_HEADER = 'time_utc,email,event,mode,language,avatar_total,human_total,both_total'
+
+/** The user's events in order, with the running per-mode totals that the header promises. */
+export function sessionCsvLines(rows: EventDoc[]): string[] {
+  const running: ModeCounts = { ...ZERO }
+  return rows.map((r) => {
+    running[r.mode] = (running[r.mode] ?? 0) + 1
+    return row([r.at.toISOString(), r.email, r.event, r.mode, r.lang ?? '', running.avatar, running.human, running.both])
+  })
 }
 
 async function csv(req: Req, res: Res) {
   const user = await requireUser(req)
   const rows = await (await events()).find({ email: user.email }).sort({ at: 1 }).limit(50_000).toArray()
-  const running: ModeCounts = { ...ZERO }
-  const lines = ['time_utc,email,event,mode,language,avatar_total,human_total,both_total']
-  for (const r of rows) {
-    running[r.mode] = (running[r.mode] ?? 0) + 1
-    lines.push([r.at.toISOString(), r.email, r.event, r.mode, r.lang ?? '', running.avatar, running.human, running.both].map(cell).join(','))
-  }
-  const stamp = new Date().toISOString().slice(0, 10)
-  const safeEmail = user.email.replace(/[^a-z0-9]+/gi, '_')
-  res.statusCode = 200
-  res.setHeader('Content-Type', 'text/csv; charset=utf-8')
-  res.setHeader('Content-Disposition', `attachment; filename="session-log_${safeEmail}_${stamp}.csv"`)
-  res.setHeader('Cache-Control', 'no-store')
-  // BOM so Excel opens it as UTF-8; CRLF line ends per RFC 4180
-  res.end('\uFEFF' + lines.join('\r\n') + '\r\n')
+  sendCsv(res, `session-log_${safeName(user.email)}_${stamp()}.csv`, [SESSION_CSV_HEADER, ...sessionCsvLines(rows)])
 }
 
 const ROUTES: Record<string, Route> = {

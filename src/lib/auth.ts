@@ -1,7 +1,11 @@
 /** Client for /api/auth (see api/_lib/auth.ts). Sessions live in an httpOnly cookie, so nothing is stored here. */
 
+/** `manager` accounts also get the dashboard over every student's activity (see lib/manager.ts). */
+export type Role = 'student' | 'manager'
+
 export interface User {
   email: string
+  role: Role
 }
 
 /** Thrown for any non-2xx reply; `code` maps to an `err.*` string in i18n. */

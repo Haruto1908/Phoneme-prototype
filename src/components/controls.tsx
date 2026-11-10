@@ -2,8 +2,9 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { t, type Lang } from '../lib/i18n'
 import type { Theme } from '../lib/theme'
 import { CSV_URL, type ModeCounts } from '../lib/log'
+import type { Role } from '../lib/auth'
 import type { Presenter } from '../types'
-import { DownloadIcon, LogoutIcon, MoonIcon, SunIcon } from './icons'
+import { ChartIcon, DownloadIcon, LogoutIcon, MoonIcon, SunIcon } from './icons'
 
 /** Round, raised icon button used across the top bar. */
 export function IconButton({ label, pressed, onClick, className, children }: { label: string; pressed?: boolean; onClick: () => void; className?: string; children: ReactNode }) {
@@ -87,13 +88,16 @@ export function Avatar({ email, className }: { email: string; className?: string
 
 interface AccountMenuProps {
   email: string
+  role: Role
   lang: Lang
   theme: Theme
-  /** times each presenter mode was used by this account */
-  usage: ModeCounts
+  /** times each presenter mode was used by this account; null hides the block (manager dashboard) */
+  usage: ModeCounts | null
   onTheme: (t: Theme) => void
   onLang: (l: Lang) => void
   onLogout: () => void
+  /** Offered to managers only: open the dashboard over every student. */
+  onManager?: () => void
 }
 
 const MODE_TONES: Record<Presenter, string> = {
@@ -103,7 +107,7 @@ const MODE_TONES: Record<Presenter, string> = {
 }
 
 /** Account button in the top bar: opens a sheet with the email, language, theme, mode usage + CSV, and Log out. */
-export function AccountMenu({ email, lang, theme, usage, onTheme, onLang, onLogout }: AccountMenuProps) {
+export function AccountMenu({ email, role, lang, theme, usage, onTheme, onLang, onLogout, onManager }: AccountMenuProps) {
   const [open, setOpen] = useState(false)
   const box = useRef<HTMLDivElement>(null)
 
@@ -149,7 +153,11 @@ export function AccountMenu({ email, lang, theme, usage, onTheme, onLang, onLogo
               <p className="truncate text-sm font-extrabold text-ink" title={email}>
                 {email}
               </p>
-              <p className="text-xs font-medium text-muted">{t('accountHint', lang)}</p>
+              {role === 'manager' ? (
+                <p className="mt-0.5 inline-flex rounded-full bg-lavender-bg px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-lavender-ink">{t('manager', lang)}</p>
+              ) : (
+                <p className="text-xs font-medium text-muted">{t('accountHint', lang)}</p>
+              )}
             </div>
           </div>
 
@@ -178,26 +186,44 @@ export function AccountMenu({ email, lang, theme, usage, onTheme, onLang, onLogo
           <div className="my-4 h-px bg-line" />
 
           {/* session log: how often each mode was used, and the CSV export */}
-          <div className="flex items-baseline justify-between gap-3">
-            <span className="text-sm font-bold text-muted">{t('activity', lang)}</span>
-            <span className="text-xs font-semibold text-muted">{t('activityHint', lang)}</span>
-          </div>
-          <ul className="mt-2 grid grid-cols-3 gap-2" aria-label={t('activity', lang)}>
-            {(['avatar', 'human', 'both'] as const).map((m) => (
-              <li key={m} className={`rounded-2xl px-2 py-2 text-center ring-1 ring-black/5 dark:ring-white/10 ${MODE_TONES[m]}`}>
-                <span className="block text-2xl font-black leading-none tabular-nums">{usage[m]}</span>
-                <span className="mt-1 block text-[11px] font-extrabold uppercase tracking-wide opacity-80">{t(m, lang)}</span>
-              </li>
-            ))}
-          </ul>
-          <a
-            href={CSV_URL}
-            download
-            className="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-full bg-panel-strong text-sm font-extrabold text-ink shadow-raise ring-1 ring-line transition-transform hover:-translate-y-px active:translate-y-[2px] active:shadow-none"
-          >
-            <DownloadIcon className="h-5 w-5" />
-            {t('downloadCsv', lang)}
-          </a>
+          {usage && (
+            <>
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="text-sm font-bold text-muted">{t('activity', lang)}</span>
+                <span className="text-xs font-semibold text-muted">{t('activityHint', lang)}</span>
+              </div>
+              <ul className="mt-2 grid grid-cols-3 gap-2" aria-label={t('activity', lang)}>
+                {(['avatar', 'human', 'both'] as const).map((m) => (
+                  <li key={m} className={`rounded-2xl px-2 py-2 text-center ring-1 ring-black/5 dark:ring-white/10 ${MODE_TONES[m]}`}>
+                    <span className="block text-2xl font-black leading-none tabular-nums">{usage[m]}</span>
+                    <span className="mt-1 block text-[11px] font-extrabold uppercase tracking-wide opacity-80">{t(m, lang)}</span>
+                  </li>
+                ))}
+              </ul>
+              <a
+                href={CSV_URL}
+                download
+                className="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-full bg-panel-strong text-sm font-extrabold text-ink shadow-raise ring-1 ring-line transition-transform hover:-translate-y-px active:translate-y-[2px] active:shadow-none"
+              >
+                <DownloadIcon className="h-5 w-5" />
+                {t('downloadCsv', lang)}
+              </a>
+            </>
+          )}
+
+          {onManager && (
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false)
+                onManager()
+              }}
+              className="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-full bg-lavender-bg text-sm font-extrabold text-lavender-ink shadow-raise ring-1 ring-black/5 transition-transform hover:-translate-y-px active:translate-y-[2px] active:shadow-none dark:ring-white/10"
+            >
+              <ChartIcon className="h-5 w-5" />
+              {t('managerOpen', lang)}
+            </button>
+          )}
 
           <button
             type="button"

@@ -6,12 +6,13 @@
  *   POST /api/auth/logout
  *   GET  /api/auth/me                           → { user } or 401
  *
- * Errors are `{ error: code }` with codes the UI translates (see i18n `err.*`).
+ * `user` is `{ email, role }`; the role comes from the email (see session.ts) and decides whether the manager
+ * dashboard is offered. Errors are `{ error: code }` with codes the UI translates (see i18n `err.*`).
  */
 import bcrypt from 'bcryptjs'
 import { users } from './db.ts'
 import { dispatch, HttpError, json, readJson, type Req, type Res, type Route } from './http.ts'
-import { currentUser, endSession, startSession } from './session.ts'
+import { endSession, requireUser, roleOf, startSession } from './session.ts'
 
 const normEmail = (v: unknown) => String(v ?? '').trim().toLowerCase()
 const validEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e) && e.length <= 254
@@ -36,7 +37,7 @@ async function signup(req: Req, res: Res) {
     throw e
   }
   await startSession(req, res, { id, email })
-  json(res, 200, { user: { email } })
+  json(res, 200, { user: { email, role: roleOf(email) } })
 }
 
 async function login(req: Req, res: Res) {
@@ -49,7 +50,7 @@ async function login(req: Req, res: Res) {
   if (!user || !ok) throw new HttpError(401, 'bad_credentials')
   await col.updateOne({ email }, { $set: { lastLoginAt: new Date() } })
   await startSession(req, res, { id: String(user._id), email })
-  json(res, 200, { user: { email } })
+  json(res, 200, { user: { email, role: roleOf(email) } })
 }
 
 async function logout(req: Req, res: Res) {
@@ -58,9 +59,8 @@ async function logout(req: Req, res: Res) {
 }
 
 async function me(req: Req, res: Res) {
-  const user = await currentUser(req)
-  if (!user) throw new HttpError(401, 'unauthorized')
-  json(res, 200, { user: { email: user.email } })
+  const user = await requireUser(req)
+  json(res, 200, { user: { email: user.email, role: user.role } })
 }
 
 const ROUTES: Record<string, Route> = {

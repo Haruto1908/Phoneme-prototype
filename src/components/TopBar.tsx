@@ -2,6 +2,7 @@ import type { Presenter } from '../types'
 import { t, type Lang } from '../lib/i18n'
 import type { Theme } from '../lib/theme'
 import type { ModeCounts } from '../lib/log'
+import type { Role } from '../lib/auth'
 import { SpeakerIcon } from './icons'
 import { AccountMenu, IconButton, LangToggle, ThemeToggle } from './controls'
 
@@ -20,9 +21,12 @@ interface TopBarProps {
   practice: boolean
   onPractice: (on: boolean) => void
   email: string
+  role: Role
   /** How many times this account has used each mode (account menu + CSV). */
   usage: ModeCounts
   onLogout: () => void
+  /** Managers only: leave the lesson for the dashboard. */
+  onManager?: () => void
 }
 
 const PRESENTERS: Presenter[] = ['avatar', 'human', 'both']
@@ -32,7 +36,7 @@ const PRESENTERS: Presenter[] = ['avatar', 'human', 'both']
  * right the language switch, sound, Practice, theme toggle and the account menu. Below lg the mode control
  * drops to its own full-width row.
  */
-export function TopBar({ hostName, avatar, lang, onLang, theme, onTheme, presenter, onPresenter, muted, onMuted, practice, onPractice, email, usage, onLogout }: TopBarProps) {
+export function TopBar({ hostName, avatar, lang, onLang, theme, onTheme, presenter, onPresenter, muted, onMuted, practice, onPractice, email, role, usage, onLogout, onManager }: TopBarProps) {
   const selected = PRESENTERS.indexOf(presenter)
   return (
     <header className="no-select panel animate-rise relative z-20 grid grid-cols-1 items-center gap-x-4 gap-y-3 rounded-panel px-4 py-3 sm:px-5 md:grid-cols-[minmax(0,1fr)_auto] lg:grid-cols-[minmax(0,1fr)_auto_auto] xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
@@ -106,7 +110,7 @@ export function TopBar({ hostName, avatar, lang, onLang, theme, onTheme, present
         </label>
 
         <ThemeToggle theme={theme} onTheme={onTheme} lang={lang} />
-        <AccountMenu email={email} lang={lang} theme={theme} usage={usage} onTheme={onTheme} onLang={onLang} onLogout={onLogout} />
+        <AccountMenu email={email} role={role} lang={lang} theme={theme} usage={usage} onTheme={onTheme} onLang={onLang} onLogout={onLogout} onManager={onManager} />
       </div>
     </header>
   )

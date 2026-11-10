@@ -69,6 +69,48 @@ const STRINGS = {
   activity: { en: 'Modes used', jp: 'つかったモード' },
   activityHint: { en: 'times, on this account', jp: 'かい（このアカウント）' },
   downloadCsv: { en: 'Download session log (CSV)', jp: 'セッションログを ダウンロード (CSV)' },
+  // manager dashboard
+  manager: { en: 'Manager', jp: '管理者' },
+  managerTitle: { en: 'Manager dashboard', jp: '管理ダッシュボード' },
+  managerHint: { en: "Every student's session activity and progress.", jp: 'すべての生徒の利用状況と進捗。' },
+  managerOpen: { en: 'Manager dashboard', jp: '管理ダッシュボード' },
+  managerBack: { en: 'Back to the lesson', jp: 'レッスンにもどる' },
+  students: { en: 'Students', jp: '生徒' },
+  totalAttempts: { en: 'Attempts', jp: 'ろくおん回数' },
+  totalModes: { en: 'Mode changes', jp: 'モード切替' },
+  studentCol: { en: 'Student', jp: '生徒' },
+  lastSeen: { en: 'Last active', jp: '最終利用' },
+  modesCol: { en: 'Avatar / Human / Both', jp: 'アバター / 人 / 両方' },
+  avgStars: { en: 'Avg. stars', jp: '平均スター' },
+  soundsCol: { en: 'Sounds', jp: 'おと' },
+  noStudents: { en: 'No accounts yet. A student appears here after they sign up.', jp: 'まだアカウントがありません。生徒が登録すると ここに表示されます。' },
+  exports: { en: 'Downloads (CSV)', jp: 'ダウンロード (CSV)' },
+  csvStudents: { en: 'All students', jp: '生徒一覧' },
+  csvProgress: { en: 'Progress per sound', jp: 'おとごとの進捗' },
+  csvSessions: { en: 'Session log', jp: 'セッションログ' },
+  csvAttempts: { en: 'Every attempt', jp: 'すべてのろくおん' },
+  progressPerSound: { en: 'Progress per sound', jp: 'おとごとの進捗' },
+  soundCol: { en: 'Sound', jp: 'おと' },
+  baseline: { en: 'Baseline', jp: '基準値' },
+  bestCol: { en: 'Best', jp: 'ベスト' },
+  latestCol: { en: 'Latest', jp: 'さいきん' },
+  improvement: { en: 'Improvement', jp: 'のびしろ' },
+  baselineForming: { en: '{n} of {m} baseline tries', jp: '基準値 {n}/{m} 回' },
+  recentAttempts: { en: 'Recent attempts', jp: 'さいきんのろくおん' },
+  recentSessions: { en: 'Recent mode changes', jp: 'さいきんのモード切替' },
+  selectStudent: { en: 'Choose a student to see their details.', jp: '生徒をえらぶと くわしく見られます。' },
+  noActivity: { en: 'No activity yet.', jp: 'まだ利用がありません。' },
+  refresh: { en: 'Refresh', jp: '更新' },
+  timeCol: { en: 'Time', jp: '時刻' },
+  scoreCol: { en: 'Score', jp: 'スコア' },
+  starsCol: { en: 'Stars', jp: 'スター' },
+  phaseCol: { en: 'Phase', jp: 'だんかい' },
+  phaseBaseline: { en: 'Baseline', jp: '基準づくり' },
+  phaseTracked: { en: 'Tracked', jp: '記録中' },
+  eventCol: { en: 'Event', jp: 'できごと' },
+  eventStart: { en: 'Opened', jp: 'ひらいた' },
+  eventSwitch: { en: 'Changed', jp: 'かえた' },
+  never: { en: 'Never', jp: 'なし' },
   // sign in
   signIn: { en: 'Log in', jp: 'ログイン' },
   signUp: { en: 'Sign up', jp: 'とうろく' },
@@ -101,6 +143,8 @@ const STRINGS = {
   'err.weak_password': { en: 'Password must be at least 8 characters.', jp: 'パスワードは 8文字いじょう にしてね。' },
   'err.email_taken': { en: 'That email is already registered — log in instead.', jp: 'その メールアドレスは とうろくずみです。ログインしてね。' },
   'err.bad_credentials': { en: 'Wrong email or password.', jp: 'メールアドレスか パスワードが ちがいます。' },
+  'err.forbidden': { en: 'This account does not have manager access.', jp: 'このアカウントには 管理者けんげんが ありません。' },
+  'err.unauthorized': { en: 'Your session has expired. Please log in again.', jp: 'セッションが きれました。もういちど ログインしてね。' },
   'err.config': { en: 'The server is not fully set up yet (a setting is missing). Please tell the administrator.', jp: 'サーバーの せっていが まだ おわっていません。かんりしゃに つたえてね。' },
   'err.server': { en: 'Something went wrong. Please try again.', jp: 'エラーが おきました。もういちど ためしてね。' },
   'err.network': { en: 'Cannot reach the server. Check your connection.', jp: 'サーバーに つながりません。つうしんを かくにんしてね。' },
@@ -113,6 +157,12 @@ export function t(key: StringKey, lang: Lang, vars?: Record<string, string | num
   let s: string = STRINGS[key][lang]
   if (vars) for (const [k, v] of Object.entries(vars)) s = s.replaceAll(`{${k}}`, String(v))
   return s
+}
+
+/** Message for a server error code, falling back to the generic one for codes this build does not know. */
+export function errorText(code: string, lang: Lang): string {
+  const key = `err.${code}` as StringKey
+  return t(key in STRINGS ? key : 'err.server', lang)
 }
 
 /** Short "how to make it" line per sound, shown under the player. English comes from the manifest. */
