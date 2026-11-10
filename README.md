@@ -140,9 +140,15 @@ feedback.
 
 The manifest's `scoreRefs` lets a sound name the exact clips/windows used as references when
 the clips shown to the child are not usable as-is. Today `th_voiceless` scores against the
-avatar /θ/ **and** the teacher's clean /θ/, which lives in `human_th_voiced.mp4` (the
-`human_th_voiceless.mp4` soundtrack is her saying the word "thin"); `th_voiced` scores against
-the avatar /ð/ only, because no human /ð/ clip exists.
+avatar /θ/ **and** the teacher's clean /θ/; `th_voiced` scores against the avatar /ð/ only,
+because no human /ð/ clip exists.
+
+**The two human /th/ files are named the wrong way round.** `human_th_voiced.mp4` holds the
+clean voiceless /θ/ and `human_th_voiceless.mp4` holds her saying the word "thin", so the
+manifest deliberately crosses them over: /θ/ shows `human_th_voiced.mp4` and /ð/ shows
+`human_th_voiceless.mp4`. Keep that in mind before "fixing" the mapping — and note that
+`humanSpeech` and `humanPoster` belong to the file, so they move with it. Replacing the clips
+with clean single-sound recordings is the real fix.
 
 **Calibration.** Every reference clip was scored against the other speaker's references with
 speed, pitch (child-voice), band-limit, noise, echo and level perturbations (144 "correct"

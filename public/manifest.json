@@ -27,9 +27,9 @@
       "video": "video/avatar_th_voiceless.mp4",
       "poster": "video/avatar_th_voiceless.jpg",
       "speech": [1.31, 1.68],
-      "humanVideo": "video/human_th_voiceless.mp4",
-      "humanPoster": "video/human_th_voiceless.jpg",
-      "humanSpeech": [0.80, 1.37],
+      "humanVideo": "video/human_th_voiced.mp4",
+      "humanPoster": "video/human_th_voiced.jpg",
+      "humanSpeech": [0.58, 1.23],
       "scoreRefs": [
         { "src": "audio/th_voiceless.mp3", "window": [1.31, 1.68] },
         { "src": "video/human_th_voiced.mp4", "window": [0.58, 1.23] }
@@ -52,9 +52,9 @@
       "video": "video/avatar_th_voiced.mp4",
       "poster": "video/avatar_th_voiced.jpg",
       "speech": [1.30, 1.69],
-      "humanVideo": "video/human_th_voiced.mp4",
-      "humanPoster": "video/human_th_voiced.jpg",
-      "humanSpeech": [0.58, 1.23],
+      "humanVideo": "video/human_th_voiceless.mp4",
+      "humanPoster": "video/human_th_voiceless.jpg",
+      "humanSpeech": [0.80, 1.37],
       "scoreRefs": [{ "src": "audio/th_voiced.mp3", "window": [1.30, 1.69] }],
       "tongue": { "module": "th", "sound": "ð" }
     },
