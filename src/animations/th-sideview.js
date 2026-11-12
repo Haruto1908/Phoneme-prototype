@@ -690,7 +690,7 @@ export function createThSideview(container, options = {}) {
   const glottis = el('path', { fill: 'none', stroke: theme.line, 'stroke-width': lw * 1.2 }, dg)
   toothU.setAttribute('d', poly(UPPER_TOOTH, true))
   // ---------- moving lower lip + chin (portrait with `jaw` preset) ----------
-  let jawImg = null, pivotPx = null, jawGain = 1, wedge = null, wedgeClip = null, seamTop = null, seamBase = null
+  let jawImg = null, pivotPx = null, jawGain = 1, wedge = null, wedgeClip = null, seamTop = null, seamBase = null, outsideClip = null
   if (jawCfg) {
     const front = jawCfg.seam[0], corner = jawCfg.seam[jawCfg.seam.length - 1], W = portrait.width, H = portrait.height + 200
     jawGain = jawCfg.gain || 1
@@ -726,7 +726,11 @@ export function createThSideview(container, options = {}) {
 
     // Tongue tip OUTSIDE the lips (/θ/ /ð/ come out past the lip line): the photo hides everything in front of the
     // seam, so the part of the tongue beyond the lip front is drawn again here, on top of the lower lip.
-    el('rect', { x: front[0] - 0.8, y: front[1] - 6, width: 200, height: 60 }, el('clipPath', { id: uid + 'outside' }, defs))
+    // Its region starts exactly at the front edge of the mouth opening (upper lip front → the *rotated* lower lip
+    // front, a slanted line that moves with the jaw) and is updated every frame, so the tongue drawn between the
+    // lips and the tongue drawn in front of them meet with no gap (a fixed vertical edge left a background-
+    // coloured triangle on the tip while the jaw was open).
+    outsideClip = el('path', {}, el('clipPath', { id: uid + 'outside' }, defs))
     const out = el('g', { 'clip-path': `url(#${uid}outside)` }, outsideLayer)
     const og = el('g', { transform: diagramTransform }, out)
     ;['tongue', 'tongueEdge'].forEach((id) => el('use', { href: '#' + uid + id }, og))
@@ -828,6 +832,10 @@ export function createThSideview(container, options = {}) {
       jawImg.setAttribute('transform', `rotate(${f(deg)} ${f(pivotPx[0])} ${f(pivotPx[1])})`)
       const d = poly(seamTop.concat(seamBase.slice().reverse().map((q) => rotPx(q, deg))), true)
       wedge.setAttribute('d', d)
+      // in front of the lips: everything right of the opening's front edge (upper lip front → rotated lower lip
+      // front), overlapping that edge by 0.8 px so no background shows between the two tongue pieces
+      const a = seamTop[0], b = rotPx(seamBase[0], deg), W = portrait.width + 400, H = portrait.height + 400
+      outsideClip.setAttribute('d', poly([[a[0] - 0.8, a[1] - 6], [W, a[1] - 6], [W, H], [b[0] - 0.8, H], [b[0] - 0.8, b[1]], [a[0] - 0.8, a[1]]], true))
       wedgeClip.setAttribute('d', d)
     }
     const sounding = t >= T.soundOn && t <= T.soundOff
