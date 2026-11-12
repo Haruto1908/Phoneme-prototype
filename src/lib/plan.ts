@@ -48,12 +48,12 @@ export function clipsFor(s: Sound, presenter: Presenter): Clip[] {
 /**
  * Build the player item for a sound. `withTongue: false` gives mouth close-ups only (the Word Builder runs the
  * clips back to back without the tongue view between them); `seconds` caps each clip to a short window.
- * Human mode never has a side view: the real mouth is the whole lesson.
+ * After the avatar or human close-up(s) the lesson offers the side + front views (in every presenter mode).
  */
 export function itemFor(manifest: Manifest, id: string, lang: Lang, presenter: Presenter, withTongue = true, seconds: number | null = null): PlayItem | null {
   const s = manifest.sounds.find((x) => x.id === id)
   if (!s) return null
-  const sideView = withTongue && presenter !== 'human'
+  const sideView = withTongue
   return {
     id,
     label: cardLabel(s),

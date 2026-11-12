@@ -4,6 +4,7 @@ import { asset, mediaUrl } from '../lib/media'
 import { t, type Lang } from '../lib/i18n'
 import { clipWindow, type PlayItem } from '../lib/plan'
 import { createThSideview, PORTRAIT_GIRL, type ThSideview, type ThSound } from '../animations/th-sideview.js'
+import { createThFrontview, type ThFrontview } from '../animations/th-frontview.js'
 import { CloseIcon, MouthIcon, PlayIcon, ReplayIcon, TongueIcon } from './icons'
 import { SectionTitle } from './controls'
 
@@ -13,16 +14,17 @@ export interface PlayerHandle {
   stop(): void
 }
 
-/** `ask`: the close-up has finished and we are asking whether to show the side view. */
+/** `ask`: the close-up has finished and we are asking whether to show the side and front views. */
 type Phase = 'idle' | 'mouth' | 'ask' | 'tongue' | 'done'
 
 /**
- * Framing of the side view (image px): nose to chin around the cutaway, filling the stage. With "slice" a wide
- * stage crops only top/bottom cheek, a tall one only the back of the face — never the mouth.
+ * The 16:9 stage is split into two 8:9 halves once the child says yes: the side view (left) and the front view
+ * (right), driven by the same audio clock. Each view gets an 8:9 window so `slice` never crops the mouth.
  */
-// 16:9 window on the portrait (image px) so the side view fills the video stage *without* being cropped by
-// `slice`: nose tip to chin, like the front-view clips, instead of a zoomed-in mouth.
-const PORTRAIT = { ...PORTRAIT_GIRL, src: asset('assets/girl_profile.jpg'), view: [358, 464, 506, 285] }
+// side view (image px): nose to throat around the cutaway, with room in front of the lips for the air
+const PORTRAIT = { ...PORTRAIT_GIRL, src: asset('assets/girl_profile.jpg'), view: [440, 405, 384, 432] }
+// front view (its own units): lips, both rows of teeth and the voice arcs beside the mouth
+const FRONT_VIEWBOX = '126 94 148 166'
 
 interface PlayerProps {
   ref: Ref<PlayerHandle>
@@ -47,8 +49,10 @@ interface PlayerProps {
 export function Player({ ref, lang, muted, volume, variant, idle, onClose, onPlaying }: PlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
+  const frontStageRef = useRef<HTMLDivElement>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const animRef = useRef<ThSideview | null>(null)
+  const frontRef = useRef<ThFrontview | null>(null)
   const itemsRef = useRef<PlayItem[]>([])
   const indexRef = useRef(0)
   const clipRef = useRef(0)
@@ -99,6 +103,8 @@ export function Player({ ref, lang, muted, volume, variant, idle, onClose, onPla
   function stopMedia() {
     animRef.current?.destroy()
     animRef.current = null
+    frontRef.current?.destroy()
+    frontRef.current = null
     clearClipTimer()
     clipEndRef.current = null
     videoRef.current?.pause()
@@ -163,16 +169,23 @@ export function Player({ ref, lang, muted, volume, variant, idle, onClose, onPla
 
   function startTongue() {
     const item = itemsRef.current[indexRef.current]
-    const box = stageRef.current
-    if (!item?.tongue || !box) return
+    const box = stageRef.current, frontBox = frontStageRef.current
+    if (!item?.tongue || !box || !frontBox) return
     animRef.current?.destroy()
+    frontRef.current?.destroy()
     const audio: Partial<Record<ThSound, string>> = {}
     audio[item.tongue.sound] = mediaUrl(item.tongue.audio)
+    // front view first: the side view renders its first frame (and calls onTime) while it is being created
+    const front = createThFrontview(frontBox, { sound: item.tongue.sound })
+    front.el.setAttribute('viewBox', FRONT_VIEWBOX)
+    front.el.setAttribute('preserveAspectRatio', 'xMidYMid slice')
+    frontRef.current = front
     const anim = createThSideview(box, {
       sound: item.tongue.sound,
       audio,
       audioElement: tongueAudio(),
       portrait: PORTRAIT,
+      onTime: (time) => front.render(time),   // one clock (the audio) for both views
       onEnd: () => {
         if (animRef.current === anim) nextItem()
       },
@@ -318,10 +331,20 @@ export function Player({ ref, lang, muted, volume, variant, idle, onClose, onPla
           onSeeked={armClipTimer}
           className={`absolute inset-0 h-full w-full object-contain transition-opacity duration-300 ${showTongue ? 'opacity-0' : 'opacity-100'}`}
         />
-        <div
-          ref={stageRef}
-          className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 [&>svg]:h-full [&>svg]:w-full ${showTongue ? 'opacity-100' : 'opacity-0'}`}
-        />
+        {/* side view (left) and front view (right), shown together after "Yes" */}
+        <div className={`absolute inset-0 grid grid-cols-2 gap-[3px] bg-line transition-opacity duration-300 ${showTongue ? 'opacity-100' : 'pointer-events-none opacity-0'}`}>
+          {([
+            [stageRef, 'sideView'],
+            [frontStageRef, 'frontView'],
+          ] as const).map(([r, label]) => (
+            <div key={label} className="relative min-h-0 overflow-hidden bg-panel-strong">
+              <div ref={r} className="absolute inset-0 [&>svg]:h-full [&>svg]:w-full" />
+              <span className={`no-select absolute left-2 top-2 rounded-full bg-panel-strong/90 px-2.5 py-0.5 font-extrabold shadow-raise ${compact ? 'text-xs' : 'text-sm'} ${c.ink}`}>
+                {t(label, lang)}
+              </span>
+            </div>
+          ))}
+        </div>
         {phase === 'idle' && idle && <div className="absolute inset-0">{idle}</div>}
         {who && !showTongue && phase !== 'idle' && (
           <span className={`no-select absolute left-3 top-3 rounded-full bg-panel-strong/90 px-3 py-1 text-sm font-extrabold shadow-raise ${c.ink}`}>

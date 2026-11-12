@@ -116,7 +116,12 @@ CSS tokens in `src/index.css` (`:root` / `.dark`) exposed to Tailwind as `text-i
 
 ## Practice mode and pronunciation score
 
-In practice mode the lesson pop-up is split: the mouth close-up and side view on the left, a
+After the avatar or human close-up (in every presenter mode) the lesson asks *"Do you want to see the
+side and front views in more detail?"*. On **Yes** the stage splits in two: the side-view cutaway
+(left) and the front view of the mouth (right), both driven by the same audio clock, so they move
+in lock-step. **No** skips to the replay buttons.
+
+In practice mode the lesson pop-up is split: the mouth close-up and side/front views on the left, a
 microphone on the right. The child records (≤ 3 s), sees 1–3 animated stars with a cheer and
 one line of advice (also spoken aloud), and can *Compare* their attempt with the model. **No
 number is ever shown** — the users are four-year-olds. The number exists only in the database,
@@ -231,8 +236,10 @@ Bruce's designer is producing the real icons. Until then:
 - `src/components/Tile.tsx` – one tile (symbol, cue, sound indicator, buzz badge).
 - `src/components/Lesson.tsx` – full-screen lesson: close-up → tongue view → replay buttons.
 - `src/components/palette.ts` – tile colour classes (spelled out so Tailwind emits them).
-- `src/animations/th-sideview.js` – /θ/ /ð/ tongue animation (copied from
-  `Others/videos/tongue_anim`, where it is developed and previewed; copy it again after changes).
+- `src/animations/th-sideview.js` – side-view tongue animation for all six sounds, and
+  `src/animations/th-frontview.js` – front view of the mouth on the same keyframes. Both are copied from
+  `Others/videos/tongue_anim`, where they are developed and previewed (`mouth_review.html`); copy them
+  again after changes.
 - `src/lib/media.ts` – preloads clips into memory so taps start instantly.
 - `src/lib/useManifest.ts` – manifest fetch.
 - `public/video/` – Brooke (Tavus) mouth close-ups, 768×432, 25 fps, plus first-frame posters.

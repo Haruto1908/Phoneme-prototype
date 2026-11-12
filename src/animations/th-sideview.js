@@ -168,12 +168,15 @@ const TONGUE_REST = [
   [120.0, 131.9], [115.5, 135.8], [111.0, 141.0], [106.5, 147.5], [102.5, 155.0], [99.5, 162.0], [100.5, 169.5],
   [107.0, 171.5], [117.0, 167.0], [126.5, 160.5], [135.0, 153.5], [142.0, 147.0], [145.6, 142.8], [147.4, 141.0],
 ]
-// /θ/ /ð/: jaw +2°, the blade passes between the incisors (gap y 137.05–143.15) ~5 mm thick, both teeth visible, and
-// the rounded tip reaches x 158.6 — about 5 mm past the teeth, between the lips.
+// /θ/ /ð/ — "sandwich" (expert feedback, Nov 2026): slightly exaggerated for teaching. Jaw +2.6°: the blade is
+// held between the incisors and *touches both*: its top lies on the upper biting edge (y 137.05, x 149.6–153.9)
+// and its underside rests on the lower biting edge (y ≈ 143.7, x 147.9–151.1). The rounded tip reaches x 164.2 —
+// about 10 mm past the upper teeth and visibly out between the lips, resting on the lower lip. Teeth are drawn over
+// the tongue, so both stay visible.
 const HOLD_TH = [
-  [158.6, 140.2], [156.6, 138.0], [152.5, 137.5], [147.8, 136.6], [142.5, 134.4], [136.0, 132.7], [129.0, 132.3],
-  [122.0, 134.0], [116.5, 137.5], [111.0, 142.5], [106.0, 148.5], [102.0, 155.5], [99.5, 162.0], [100.5, 169.5],
-  [107.0, 171.5], [117.5, 167.0], [127.0, 160.0], [135.5, 153.0], [143.0, 147.5], [150.0, 143.0], [156.0, 142.7],
+  [164.6, 140.4], [163.3, 137.9], [159.2, 137.25], [151.8, 136.95], [148.2, 135.4], [141.5, 133.7], [134.5, 132.5],
+  [126.0, 133.0], [118.5, 136.3], [111.0, 142.5], [106.0, 148.5], [102.0, 155.5], [99.5, 162.0], [100.5, 169.5],
+  [107.0, 171.5], [117.5, 167.0], [127.0, 160.0], [135.5, 153.0], [142.5, 147.6], [146.4, 144.7], [161.6, 143.3],
 ]
 // /t/: jaw +1°. Tip–blade raised and pressed on the alveolar ridge just behind the upper incisors (seal at
 // (146.4,128.6)); the front of the tongue is a short column rising from behind the lower teeth; dorsum relaxed.
@@ -191,12 +194,23 @@ const HOLD_K = [
   [118.5, 126.9], [114.0, 129.2], [110.0, 132.0], [105.5, 137.0], [102.0, 146.0], [100.0, 157.0], [100.5, 166.0],
   [107.0, 170.0], [117.0, 166.5], [126.5, 160.0], [134.5, 153.5], [138.5, 151.0], [142.0, 148.8], [144.6, 147.2],
 ]
-// /ɹ/: jaw +2.5°. Tip curled up and back toward the post-alveolar palate, NOT touching (≈3 mm of dark above it);
-// body bunched and pulled back, root retracted toward the throat.
+// /ɹ/ (retroflex): jaw +2°. The tip rises from below and CURLS BACK, so its underside touches the roof further
+// back than the ridge (contact ≈ x 131.7, behind the alveolar ridge at x 143–146). The tip reaches the real (raised)
+// palate, y ≈ 118.3 there, so it touches the drawn roof in the Simple style; in the photo style the part above the
+// dark cavity's edge (y ≈ 122.7) is hidden by the cheek, so there too the tip meets the roof.
+// Behind the curled tip the top of the tongue dips into a hollow ("spoon"), the body is pulled back and the root
+// retracts toward the throat. Point 20 is the front of the curled blade (its underside, facing the teeth), ≈3 mm
+// behind the upper incisors. Order as everywhere: 0 tip → dorsum → root → underside → 20.
 const HOLD_R = [
-  [142.0, 125.9], [139.5, 127.0], [136.0, 128.3], [132.5, 128.3], [128.0, 128.5], [123.5, 129.8], [119.0, 132.3],
-  [114.5, 136.0], [110.5, 140.5], [106.5, 146.0], [103.0, 152.5], [100.5, 159.0], [98.8, 164.8], [100.0, 171.0],
-  [107.0, 172.0], [117.0, 168.0], [126.5, 162.0], [135.0, 156.0], [141.5, 149.0], [145.2, 139.0], [144.5, 129.2],
+  [132.4, 118.65], [129.9, 120.4], [129.0, 124.0], [126.9, 128.6], [123.5, 131.6], [119.5, 134.0], [116.0, 136.6],
+  [113.0, 139.6], [110.5, 143.0], [107.5, 147.5], [104.0, 153.0], [101.0, 159.0], [98.8, 164.8], [100.0, 171.0],
+  [107.0, 172.0], [117.0, 168.0], [126.5, 162.0], [135.0, 156.0], [140.8, 149.5], [143.6, 139.5], [140.4, 122.6],
+]
+// /ɹ/ "lift": on the way up the tip points straight up behind the upper teeth, not yet curled back
+const LIFT_R = [
+  [141.6, 127.4], [138.8, 129.6], [135.6, 131.6], [131.5, 132.6], [127.0, 132.6], [122.5, 133.4], [118.5, 135.3],
+  [114.5, 138.6], [111.0, 142.5], [107.5, 147.5], [104.0, 153.0], [101.0, 159.0], [98.8, 164.8], [100.0, 171.0],
+  [107.0, 172.0], [117.0, 168.0], [126.5, 162.0], [135.0, 156.0], [141.0, 149.0], [144.6, 140.0], [144.4, 131.0],
 ]
 // /æ/: jaw +5° (mouth open). Tongue low and forward: tip behind the lower incisors, dorsum flat and low, leaving a
 // big open space under the palate.
@@ -210,51 +224,122 @@ const TONGUE_HI_RANGE = [1, 8]                                // moist highlight
 const TONGUE_HI_INSET = 1.4
 
 // ---------- per-sound configuration ----------
-// timing (seconds) matches the 3 s audio clips (syllable centred at 1.5 s): moveStart → reach (posture reached) →
-// holdEnd → rest; soundOn/soundOff bracket the audible part. Stops (kind 'stop') seal at `reach`, pop open at
-// `release` (the burst) to the half-way posture `released`, then relax from holdEnd. steps[] are the 4 captions.
-const T_TH = { moveStart: 1.05, reach: 1.28, holdEnd: 2.2, rest: 2.6, soundOn: 1.3, soundOff: 1.7, end: 2.7 }
-const T_STOP = { moveStart: 0.98, reach: 1.2, release: 1.37, holdEnd: 1.85, rest: 2.25, soundOn: 1.376, soundOff: 1.62, end: 2.7 }
-// One dark oral cavity for every sound (the /θ/ one), so the inside of the mouth never changes shape or place
-// between sounds; the holds are fitted to it (the /k/ hump seals on its roof). Only the small lip opening in
-// front (`front`) differs, following how far the jaw opens.
+// Motion is a list of keyframes [time (s), pose name] shared by the side view and the front view (th-frontview.js),
+// so both views move in lock-step. Between keyframes everything eases (smoothstep). 'rest' is the resting posture.
+// Side-view poses: { pts: 21 tongue points, jaw: degrees relative to the Wikimedia drawing (rest = −JAW_CLOSE),
+// p: 0…1 how far the floor of the mouth follows the posture }.
+// timing: soundOn/soundOff bracket the audible part of the 3 s clip (measured with ffmpeg silencedetect, −40 dB),
+// release = the burst of a stop, end = clip length shown. stepTimes = when caption steps 2, 3 and 4 begin.
+// contacts: glowing "touch here" points ({at, from, to}) or a dashed "touches nothing" ring ({gap: true, …}).
+// flows: animated air paths in diagram mm ({d, from, to, n, speed, rough}): particles stream along each path.
+// One dark oral cavity for every sound, so the inside of the mouth never changes shape or place between sounds;
+// only the small lip opening in front (`front`) differs per sound, following how far the jaw opens.
 const CAVITY_OVAL = { cx: 124, cy: 147.5, a: 31, b: 21, deg: 36 }
+const mixPts = (a, b, u) => a.map((q, k) => [q[0] + (b[k][0] - q[0]) * u, q[1] + (b[k][1] - q[1]) * u])
+// air around the sandwiched tongue: over the dorsum and out between the tongue and the upper teeth, and out under
+// the tip over the lower lip — the stream splits around the tongue rather than passing "softly over" it
+const TH_FLOWS = [
+  { d: 'M 127 129.2 C 136 128.6, 143 130.2, 147.8 133.6 C 150.6 135.6, 154 136.5, 159 136.6 C 165 136.6, 171 135, 179 133', n: 7, speed: 1.6 },
+  { d: 'M 150.5 144.2 C 155 144.6, 160 144.4, 164.5 143.4 C 168 142.6, 171 143.8, 174.5 146 C 176.5 147.3, 178 148, 180 148.6', n: 6, speed: 1.6 },
+  { d: 'M 164 137.7 C 166.8 137.6, 168.4 139, 169.3 140.6 C 170.4 142.4, 173.5 142.6, 179 141.6', n: 4, speed: 1.4 },
+]
+const thSound = (voiced) => ({
+  voiced, word: voiced ? 'this' : 'think', kind: 'hold', oval: CAVITY_OVAL, protrudes: true,
+  front: { cx: 155.6, cy: 140.3, rx: 7.8, ry: 3.9 },
+  hint: voiced ? 'Sandwich your tongue between your teeth and hum.' : 'Sandwich your tongue between your teeth, then blow.',
+  hintJa: voiced ? 'したを はで はさんで、のどを ぶるぶる。' : 'したを はで かるく はさんで、いきを ふきだそう。',
+  // tongue slides out with the teeth apart (out), then the teeth close gently onto it (hold = sandwich) well
+  // BEFORE any air or voice starts (expert: the tongue must protrude first, more strongly); air 1.30–1.70;
+  // the tongue stays sandwiched a moment after the sound, then pulls back in
+  keys: [[0.70, 'rest'], [1.00, 'out'], [1.16, 'hold'], [1.86, 'hold'], [2.30, 'rest']],
+  poses: { out: { pts: HOLD_TH, jaw: 3.8, p: 1 }, hold: { pts: HOLD_TH, jaw: 2.6, p: 1 } },
+  timing: { soundOn: 1.30, soundOff: voiced ? 1.704 : 1.697, end: 2.7 },
+  stepTimes: [0.70, 1.30, 1.86],
+  contacts: [{ at: [151.6, 137.0], from: 1.14, to: 1.88 }, { at: [149.6, 143.7], from: 1.14, to: 1.88 }],
+  flows: voiced ? TH_FLOWS.slice(0, 2).map((q) => ({ ...q, n: 4, speed: 1.1 })) : TH_FLOWS,
+  steps: [
+    ['Ready', 'Mouth relaxed, tongue inside.'],
+    ['Sandwich', 'Tongue tip comes out; top and bottom teeth hold it gently.'],
+    voiced ? ['Buzz', 'Keep the sandwich and hum — feel the buzz in your throat.'] : ['Blow', 'Keep the sandwich and blow air around the tongue.'],
+    ['Back', 'Pull the tongue back in.'],
+  ],
+  stepsJa: [
+    ['じゅんび', 'くちを らくに して、したは なかに。'],
+    ['はさむ', 'したの さきを だして、うえと したの はで かるく はさむ。'],
+    voiced ? ['ぶるぶる', 'はさんだ まま、のどを ぶるぶる ふるわせる。'] : ['ふく', 'はさんだ まま、したの まわりから いきを ふきだす。'],
+    ['もどす', 'したを なかに ひっこめる。'],
+  ],
+})
+// stops relax half-way after the burst
+const K_REL = { pts: mixPts(HOLD_K, TONGUE_REST, 0.55), jaw: 2.5 * 0.45 - JAW_CLOSE * 0.55, p: 0.45 }
+const T_REL = { pts: mixPts(HOLD_T, TONGUE_REST, 0.55), jaw: 1 * 0.45 - JAW_CLOSE * 0.55, p: 0.45 }
 export const SOUNDS = {
-  'θ': {
-    voiced: false, word: 'think', hint: 'Blow air softly over the tongue.', kind: 'hold', hold: HOLD_TH, jawOpen: 2,
-    oval: CAVITY_OVAL, front: { cx: 154.5, cy: 140, rx: 6.5, ry: 3.4 }, timing: T_TH,
-    steps: [['Ready', 'Mouth relaxed, tongue inside.'], ['Peek', 'Tongue tip slides out between the teeth.'], ['Blow', 'Blow air softly over the tongue.'], ['Back', 'Tongue goes back inside.']],
-  },
-  'ð': {
-    voiced: true, word: 'this', hint: 'Hum! Feel the buzz in your throat.', kind: 'hold', hold: HOLD_TH, jawOpen: 2,
-    oval: CAVITY_OVAL, front: { cx: 154.5, cy: 140, rx: 6.5, ry: 3.4 }, timing: T_TH,
-    steps: [['Ready', 'Mouth relaxed, tongue inside.'], ['Peek', 'Tongue tip slides out between the teeth.'], ['Buzz', 'Hum! Feel the buzz in your throat.'], ['Back', 'Tongue goes back inside.']],
-  },
+  'θ': thSound(false),
+  'ð': thSound(true),
   'ɹ': {
-    voiced: true, word: 'red', hint: 'Curl the tip up — don’t let it touch!', kind: 'hold', hold: HOLD_R, jawOpen: 2.5,
-    oval: CAVITY_OVAL, front: { cx: 154.5, cy: 140.3, rx: 6.5, ry: 3.6 },
-    timing: { moveStart: 0.9, reach: 1.14, holdEnd: 1.95, rest: 2.35, soundOn: 1.16, soundOff: 1.84, end: 2.7 },
-    steps: [['Ready', 'Mouth relaxed, tongue inside.'], ['Curl', 'Tip curls up and back; the tongue bunches up.'], ['Hum', 'Say “rrr” — the tip touches nothing.'], ['Back', 'Tongue relaxes.']],
+    voiced: true, word: 'red', kind: 'hold', oval: CAVITY_OVAL, front: { cx: 154.5, cy: 140.6, rx: 6.5, ry: 4.0 },
+    hint: 'Curl the tip up and back — it touches the roof further back.',
+    hintJa: 'したの さきを うえに あげて、うしろに まるめる。うわあごの おくの ほうに つけよう。',
+    // Retroflex /ɹ/: the tip dips low behind the lower teeth, rises straight up behind the upper teeth (lift), then
+    // curls back so its underside touches the roof well behind the ridge (hold, contact ≈ x 133.3) while the lips
+    // round a little. The curled tip stays there for the whole sound, then uncurls and drops back to rest.
+    keys: [[0.70, 'rest'], [0.86, 'down'], [1.02, 'lift'], [1.18, 'hold'], [1.86, 'hold'], [2.30, 'rest']],
+    poses: {
+      down: { pts: mixPts(HOLD_AE, TONGUE_REST, 0.35), jaw: 1.2, p: 1 },
+      lift: { pts: LIFT_R, jaw: 2.0, p: 1 },
+      hold: { pts: HOLD_R, jaw: 2.0, p: 1 },
+    },
+    timing: { soundOn: 1.18, soundOff: 1.82, end: 2.7 },
+    stepTimes: [0.70, 1.18, 1.86],
+    // glow on the palate (Simple style) / on the edge of the dark cavity where the tip meets it (photo style)
+    contacts: [{ at: [131.8, 118.8], atPhoto: [132.4, 122.7], from: 1.16, to: 1.88 }],
+    steps: [['Ready', 'Mouth relaxed, tongue inside.'], ['Tip up & back', 'The tip rises from below, then curls back.'], ['Rrr', 'The curled tip touches the roof further back (behind the bump). Voice on!'], ['Back', 'The tip uncurls; the tongue relaxes.']],
+    stepsJa: [['じゅんび', 'くちを らくに して、したは なかに。'], ['あげて まるめる', 'したの さきを したから うえに あげて、うしろに まるめる。'], ['「rrr」', 'まるめた さきを、うわあごの おくの ほう（でっぱりより うしろ）に つけて、こえを だす。'], ['もどす', 'さきを もどして、したを らくに する。']],
   },
   'k': {
-    voiced: false, word: 'cat', hint: 'Back of the tongue pops off the roof.', kind: 'stop', hold: HOLD_K, jawOpen: 2.5, released: 0.45,
-    oval: CAVITY_OVAL, front: { cx: 154.5, cy: 140.3, rx: 6.5, ry: 3.6 }, timing: T_STOP,
-    steps: [['Ready', 'Mouth relaxed, tongue inside.'], ['Lift', 'Back of the tongue lifts up to the roof.'], ['Pop!', 'Air bursts out as it lets go.'], ['Back', 'Tongue relaxes.']],
+    voiced: false, word: 'cat', kind: 'stop', oval: CAVITY_OVAL, front: { cx: 154.5, cy: 140.3, rx: 6.5, ry: 3.6 },
+    hint: 'The back of the tongue presses the roof, then lets go — air scrapes out.',
+    hintJa: 'したの おくを うわあごに つけて、はなすと いきが こすれて でる。',
+    keys: [[0.98, 'rest'], [1.20, 'hold'], [1.39, 'hold'], [1.49, 'rel'], [1.85, 'rel'], [2.25, 'rest']],
+    poses: { hold: { pts: HOLD_K, jaw: 2.5, p: 1 }, rel: K_REL },
+    timing: { soundOn: 1.39, soundOff: 1.612, release: 1.39, end: 2.7 },
+    stepTimes: [0.98, 1.39, 1.70],
+    contacts: [{ at: [118.6, 126.6], from: 1.18, to: 1.40 }],
+    flows: [{ d: 'M 117 128.4 C 124 127.6, 131 127.4, 137.5 128.2 C 143 129, 147 132.4, 149.6 137.6 C 151.5 139.6, 155 140.2, 160 140.2 C 166 140.2, 171 139.8, 177 139.2', n: 8, speed: 2.4, rough: 0.55, from: 1.39, to: 1.66 }],
+    steps: [['Ready', 'Mouth relaxed, tongue inside.'], ['Lift', 'The BACK of the tongue lifts and presses the soft roof at the back.'], ['Scrape out', 'The back lets go — air scrapes out in a burst.'], ['Back', 'Tongue relaxes.']],
+    stepsJa: [['じゅんび', 'くちを らくに して、したは なかに。'], ['もちあげる', 'したの「おく」を もちあげて、うわあごの おくに くっつける。'], ['こすって でる', 'おくが はなれて、いきが こすれながら いきおいよく でる。'], ['もどす', 'したを らくに する。']],
   },
   'æ': {
-    voiced: true, word: 'cat', hint: 'Open wide, tongue low and flat.', kind: 'hold', hold: HOLD_AE, jawOpen: 5,
-    oval: CAVITY_OVAL, front: { cx: 154.5, cy: 141.3, rx: 6.5, ry: 4.6 },
-    timing: { moveStart: 0.95, reach: 1.2, holdEnd: 1.9, rest: 2.3, soundOn: 1.22, soundOff: 1.78, end: 2.7 },
+    voiced: true, word: 'cat', kind: 'hold', oval: CAVITY_OVAL, front: { cx: 154.5, cy: 141.3, rx: 6.5, ry: 4.6 },
+    hint: 'Open wide, tongue low and flat.', hintJa: 'おおきく あけて、したは ひくく たいらに。',
+    keys: [[0.95, 'rest'], [1.20, 'hold'], [1.90, 'hold'], [2.30, 'rest']],
+    poses: { hold: { pts: HOLD_AE, jaw: 5, p: 1 } },
+    timing: { soundOn: 1.237, soundOff: 1.75, end: 2.7 },
+    stepTimes: [0.95, 1.237, 1.90],
     steps: [['Ready', 'Mouth relaxed, tongue inside.'], ['Open', 'Jaw drops; the tongue lies low and forward.'], ['Say “a”', 'Voice on — like “apple”.'], ['Back', 'Mouth closes.']],
+    stepsJa: [['じゅんび', 'くちを らくに して、したは なかに。'], ['ひらく', 'あごを さげて、したは ひくく まえに。'], ['「ア」', 'こえを だして、「アップル」の ア。'], ['もどす', 'くちを とじる。']],
   },
   't': {
-    voiced: false, word: 'top', hint: 'Tip taps the bump behind the top teeth.', kind: 'stop', hold: HOLD_T, jawOpen: 1, released: 0.45,
-    oval: CAVITY_OVAL, front: { cx: 154.5, cy: 139.7, rx: 6.5, ry: 2.8 }, timing: T_STOP,
-    steps: [['Ready', 'Mouth relaxed, tongue inside.'], ['Tip up', 'Tongue tip presses the ridge behind the top teeth.'], ['Tap!', 'Air pops out as the tip lets go.'], ['Back', 'Tongue relaxes.']],
+    voiced: false, word: 'top', kind: 'stop', oval: CAVITY_OVAL, front: { cx: 154.5, cy: 139.7, rx: 6.5, ry: 2.8 },
+    hint: 'The TIP taps the bump behind the top teeth.', hintJa: 'したの「さき」で、うえの はの うらの でっぱりを トン。',
+    keys: [[0.98, 'rest'], [1.20, 'hold'], [1.394, 'hold'], [1.49, 'rel'], [1.85, 'rel'], [2.25, 'rest']],
+    poses: { hold: { pts: HOLD_T, jaw: 1, p: 1 }, rel: T_REL },
+    timing: { soundOn: 1.394, soundOff: 1.608, release: 1.394, end: 2.7 },
+    stepTimes: [0.98, 1.394, 1.70],
+    contacts: [{ at: [146.0, 128.9], from: 1.18, to: 1.40 }],
+    flows: [{ d: 'M 145.6 131.2 C 146.6 134, 147.6 136.8, 149.4 138.6 C 152 140, 156 140.2, 161 140 C 166 139.8, 171 139.4, 176 139', n: 5, speed: 2.4, from: 1.394, to: 1.6 }],
+    steps: [['Ready', 'Mouth relaxed, tongue inside.'], ['Tip up', 'The tongue TIP presses the bump behind the top teeth.'], ['Tap!', 'The tip lets go — a quick puff of air.'], ['Back', 'Tongue relaxes.']],
+    stepsJa: [['じゅんび', 'くちを らくに して、したは なかに。'], ['さきを あげる', 'したの「さき」を、うえの はの うらの でっぱりに つける。'], ['トン！', 'さきが はなれて、いきが すばやく でる。'], ['もどす', 'したを らくに する。']],
   },
 }
+for (const s in SOUNDS) {
+  const c = SOUNDS[s]
+  c.timing.moveStart = c.keys[0][0]; c.timing.holdEnd = c.stepTimes[2]; c.timing.rest = c.keys[c.keys.length - 1][0]
+  ;(c.flows || []).forEach((fl) => { if (fl.from === undefined) { fl.from = c.timing.soundOn; fl.to = c.timing.soundOff } })
+}
 /** Default timeline (/θ/); use SOUNDS[s].timing for other sounds. */
-export const TIMING = T_TH
+export const TIMING = SOUNDS['θ'].timing
+
 /** Catmull-Rom spline through pts as cubic Béziers (closed or open). */
 function spline(pts, closed) {
   const n = pts.length, at = (k) => pts[closed ? (k + n) % n : Math.min(n - 1, Math.max(0, k))]
@@ -267,14 +352,34 @@ function spline(pts, closed) {
   }
   return d + (closed ? 'Z' : '')
 }
-/** Tongue control points at progress p toward `hold` (the blade lags the body slightly). */
-function tonguePts(p, hold) {
-  const pf = ss((p - 0.1) / 0.9)
-  return TONGUE_REST.map((r, k) => {
-    const h = hold[k], u = TONGUE_FRONT_IDX.has(k) ? pf : p
-    return [r[0] + (h[0] - r[0]) * u, r[1] + (h[1] - r[1]) * u]
+/**
+ * Generic keyframe evaluation (shared with th-frontview.js): `getPose(name)` returns a pose object and
+ * `lerp(a, b, u, toRest)` blends two of them. Returns the pose at time t, eased with smoothstep between keyframes.
+ */
+export function evalKeys(keys, t, getPose, lerp) {
+  if (t <= keys[0][0]) return getPose(keys[0][1])
+  for (let k = 0; k < keys.length - 1; k++) {
+    const [ta, na] = keys[k], [tb, nb] = keys[k + 1]
+    if (t < tb) return na === nb ? getPose(na) : lerp(getPose(na), getPose(nb), ss((t - ta) / (tb - ta)), nb === 'rest')
+  }
+  return getPose(keys[keys.length - 1][1])
+}
+const REST_POSE = { pts: TONGUE_REST, jaw: -JAW_CLOSE, p: 0 }
+/** Side-view pose at time t: { pts (tongue), jaw (deg), p }. The blade lags the body on the way out (the teeth part
+ * before the tip moves) and leads on the way back (the tip pulls in first). */
+export function poseAt(t, sound = 'θ') {
+  const c = SOUNDS[sound] || SOUNDS['θ']
+  return evalKeys(c.keys, t, (n) => (n === 'rest' ? REST_POSE : c.poses[n]), (a, b, u, toRest) => {
+    const uf = toRest ? ss(u / 0.7) : ss((u - 0.12) / 0.88)
+    const uj = toRest && c.protrudes ? ss((u - 0.3) / 0.7) : u   // /θ ð/: the jaw closes only once the tip is back in
+    return {
+      pts: a.pts.map((q, k) => { const w = TONGUE_FRONT_IDX.has(k) ? uf : u; return [q[0] + (b.pts[k][0] - q[0]) * w, q[1] + (b.pts[k][1] - q[1]) * w] }),
+      jaw: a.jaw + (b.jaw - a.jaw) * uj,
+      p: a.p + (b.p - a.p) * u,
+    }
   })
 }
+
 /** Highlight line: dorsum points pushed inward (toward the tongue's body) by TONGUE_HI_INSET. */
 function tongueHiPts(pts) {
   const [a, b] = TONGUE_HI_RANGE, out = []
@@ -329,40 +434,21 @@ function rot(p, deg) {
   const dx = p[0] - PIVOT[0], dy = p[1] - PIVOT[1]
   return [PIVOT[0] + dx * c - dy * s, PIVOT[1] + dx * s + dy * c]
 }
-/** Jaw angle at progress p: closed by JAW_CLOSE at rest, open by `open` degrees beyond the drawing at hold. */
-const jawAngle = (p, open) => open * p - JAW_CLOSE * (1 - p)
-/** Lower-shape point i at tongue progress p (0 = rest, 1 = /θ/ = the Wikimedia drawing). */
-function pt(i, p, open = 0) {
-  const q = rot(P[i], jawAngle(p, open) * jawW(i))
+/** Lower-shape point i with the jaw at `deg` and the floor of the mouth at progress p (0 = rest, 1 = posture). */
+function pt(i, p, deg) {
+  const q = rot(P[i], deg * jawW(i))
   const r = restD(i), l = interp(LIFT_D, i), s = Math.sin(Math.PI * Math.pow(p, 0.8))
   return [q[0] + r[0] * (1 - p) + l[0] * s, q[1] + r[1] * (1 - p) + l[1] * s]
 }
 const f = (n) => n.toFixed(2)
 const poly = (pts, close) => 'M' + pts.map((q) => f(q[0]) + ',' + f(q[1])).join('L') + (close ? 'Z' : '')
 
-/** Tongue progress 0 (rest) → 1 (the sound's posture) at time t. Stops pop open at `release` to `released`. */
-export function progressAt(t, sound = 'θ') {
-  const c = SOUNDS[sound] || SOUNDS['θ'], T = c.timing
-  if (t <= T.moveStart) return 0
-  if (t < T.reach) return ss((t - T.moveStart) / (T.reach - T.moveStart))
-  let top = 1, from = T.holdEnd
-  if (c.kind === 'stop') {
-    const relEnd = T.release + 0.1, after = c.released
-    if (t <= T.release) return 1
-    if (t < relEnd) return 1 - (1 - after) * ss((t - T.release) / (relEnd - T.release))
-    top = after
-  }
-  if (t <= from) return top
-  if (t < T.rest) return top * (1 - ss((t - from) / (T.rest - from)))
-  return 0
-}
-/** 0 ready · 1 tongue moves into position · 2 sound (blow / buzz / pop) · 3 back */
+/** How far the posture is from rest at time t (0 rest … 1 the sound's posture). */
+export function progressAt(t, sound = 'θ') { return poseAt(t, sound).p }
+/** 0 ready · 1 tongue moves into position · 2 sound (blow / buzz / scrape) · 3 back */
 export function stepAt(t, sound = 'θ') {
-  const c = SOUNDS[sound] || SOUNDS['θ'], T = c.timing
-  if (t < T.moveStart) return 0
-  if (t < T.soundOn) return 1
-  if (t < (c.kind === 'stop' ? T.soundOff : T.holdEnd)) return 2
-  return 3
+  const s = (SOUNDS[sound] || SOUNDS['θ']).stepTimes
+  return t < s[0] ? 0 : t < s[1] ? 1 : t < s[2] ? 2 : 3
 }
 
 const NS = 'http://www.w3.org/2000/svg'
@@ -475,6 +561,7 @@ export function createThSideview(container, options = {}) {
   const gap = jawCfg ? el('g', {}, svg) : null
   const lipLayer = jawCfg ? el('g', {}, svg) : null
   const stage = el('g', portrait ? { mask: `url(#${uid}mask)` } : {}, svg)
+  const outsideLayer = jawCfg ? el('g', {}, svg) : null   // tongue tip in front of the lips (drawn over the stage)
   let cavG = null
   if (portrait) {
     // Warm cavity tone inside the oral ellipse; tissue everywhere else. The two masks are complementary copies of the
@@ -590,7 +677,7 @@ export function createThSideview(container, options = {}) {
   blurFilter(uid + 'blurGloss', 1.2)
   const tongueGloss = el('path', { fill: 'none', stroke: '#ffffff', 'stroke-opacity': 0.32, 'stroke-width': 3.2, 'stroke-linecap': 'round', filter: `url(#${uid}blurGloss)` }, tongueShading)
   const tongueEdge = el('path', { id: uid + 'tongueEdge', fill: 'none', stroke: theme.tongueLine, 'stroke-width': lw * 1.2 }, tongueWrap)
-  const tongueHi = el('path', { fill: 'none', stroke: '#ffffff', 'stroke-opacity': 0.5, 'stroke-width': 1.0, 'stroke-linecap': 'round' }, tongueWrap) // moist highlight
+  const tongueHi = el('path', { id: uid + 'tongueHiOut', fill: 'none', stroke: '#ffffff', 'stroke-opacity': 0.5, 'stroke-width': 1.0, 'stroke-linecap': 'round' }, tongueWrap) // moist highlight
   const toothU = el('path', { id: uid + 'toothU', fill: toothUFill, stroke: theme.toothLine, 'stroke-width': lw * 0.9 }, dg)
   const toothL = el('path', { id: uid + 'toothL', fill: toothLFill, stroke: theme.toothLine, 'stroke-width': lw * 0.9 }, dg)
   // specular line just inside each labial face (enamel gloss); the lower one rides with the jaw
@@ -636,6 +723,14 @@ export function createThSideview(container, options = {}) {
     el('path', { d: poly([[W, front[1]]].concat(jawCfg.seam, [[corner[0], corner[1] + 110], [W, front[1] + 110]]), true), fill: '#fff' }, pieceM)   // sharp lip part
     el('path', { d: poly([[W, -50], [W, front[1]]].concat(jawCfg.seam, [[corner[0], -50]]), true), fill: '#000' }, pieceM)                      // no feather spill above the seam
     jawImg = el('image', { href: portrait.src, x: 0, y: 0, width: W, height: portrait.height, preserveAspectRatio: 'none', mask: `url(#${uid}piece)` }, lipLayer)
+
+    // Tongue tip OUTSIDE the lips (/θ/ /ð/ come out past the lip line): the photo hides everything in front of the
+    // seam, so the part of the tongue beyond the lip front is drawn again here, on top of the lower lip.
+    el('rect', { x: front[0] - 0.8, y: front[1] - 6, width: 200, height: 60 }, el('clipPath', { id: uid + 'outside' }, defs))
+    const out = el('g', { 'clip-path': `url(#${uid}outside)` }, outsideLayer)
+    const og = el('g', { transform: diagramTransform }, out)
+    ;['tongue', 'tongueEdge'].forEach((id) => el('use', { href: '#' + uid + id }, og))
+    el('use', { href: '#' + uid + 'tongueHiOut' }, og)
   }
   const rotPx = (q, deg) => {
     const a = (deg * Math.PI) / 180, c = Math.cos(a), s = Math.sin(a), dx = q[0] - pivotPx[0], dy = q[1] - pivotPx[1]
@@ -656,37 +751,80 @@ export function createThSideview(container, options = {}) {
   const lipsAt = toImg(portrait ? 164 : 164, 139)
   airDots.forEach((c) => c.setAttribute('r', f(c.getAttribute('r') * unit)))
 
+  // air streams (diagram mm, drawn over everything so the flow reads across the teeth and lips) and the
+  // "touch here" glows / "touches nothing" ring. Rebuilt per sound by buildMarks().
+  const AIR = { fill: '#dff4ff', stroke: '#4aa8e0', guide: '#7cc4f0' }
+  const glowG = el('radialGradient', { id: uid + 'glow' }, defs)
+  ;[[0, '#fffbe6', 1], [0.35, '#ffd84d', 0.95], [1, '#ffb300', 0]].forEach(([o, c0, a]) => el('stop', { offset: o, 'stop-color': c0, 'stop-opacity': a }, glowG))
+  const marks = el('g', { transform: diagramTransform }, over)
+  let flowEls = [], contactEls = []
+  function buildMarks() {
+    while (marks.firstChild) marks.removeChild(marks.firstChild)
+    flowEls = (cfg().flows || []).map((fl) => {
+      const guide = el('path', { d: fl.d, fill: 'none', stroke: AIR.guide, 'stroke-width': 0.55, 'stroke-dasharray': '1.2 1.6', 'stroke-linecap': 'round', opacity: 0 }, marks)
+      const dots = Array.from({ length: fl.n }, (_, k) => el('ellipse', { rx: 1.05 - 0.04 * k, ry: 0.72 - 0.03 * k, fill: AIR.fill, stroke: AIR.stroke, 'stroke-width': 0.28, opacity: 0 }, marks))
+      return { fl, guide, dots, len: 0 }
+    })
+    contactEls = (cfg().contacts || []).map((c) => c.gap
+      ? { c, e: el('circle', { cx: c.at[0], cy: c.at[1], r: c.r, fill: 'none', stroke: '#ffffff', 'stroke-width': 0.55, 'stroke-dasharray': '1 0.9', opacity: 0 }, marks) }
+      : { c, e: el('circle', { cx: (portrait && c.atPhoto ? c.atPhoto : c.at)[0], cy: (portrait && c.atPhoto ? c.atPhoto : c.at)[1], r: 2.3, fill: `url(#${uid}glow)`, opacity: 0 }, marks) })
+  }
+  const env = (t, a, b, fade = 0.06) => Math.max(0, Math.min(1, (t - a) / fade, (b - t) / fade))
+  function renderMarks(t) {
+    flowEls.forEach((F) => {
+      const w = env(t, F.fl.from, F.fl.to + 0.12, 0.08)
+      F.guide.setAttribute('opacity', f(0.55 * w))
+      if (!F.len) F.len = F.guide.getTotalLength ? F.guide.getTotalLength() : 0
+      F.dots.forEach((dot, k) => {
+        if (!w || !F.len) { dot.setAttribute('opacity', '0'); return }
+        const v = ((t - F.fl.from) * F.fl.speed + k / F.dots.length) % 1
+        const q = F.guide.getPointAtLength(v * F.len), q2 = F.guide.getPointAtLength(Math.min(F.len, v * F.len + 0.5))
+        const ang = (Math.atan2(q2.y - q.y, q2.x - q.x) * 180) / Math.PI
+        const j = F.fl.rough ? F.fl.rough * Math.sin(t * 95 + k * 2.3) : 0          // /k/: a rough, scraping stream
+        dot.setAttribute('transform', `translate(${f(q.x)} ${f(q.y + j)}) rotate(${f(ang)})`)
+        dot.setAttribute('opacity', f(w * Math.min(1, v * 6) * (1 - v * 0.55)))
+      })
+    })
+    contactEls.forEach(({ c, e }) => {
+      const w = env(t, c.from, c.to, 0.07)
+      const pulse = 0.5 + 0.5 * Math.sin(t * 14)
+      e.setAttribute('opacity', f(w * (c.gap ? 0.75 + 0.25 * pulse : 0.65 + 0.35 * pulse)))
+      if (!c.gap) e.setAttribute('r', f(2.0 + 0.6 * pulse))
+    })
+  }
+  buildMarks()
+
   // ---------- rendering ----------
   let curT = 0
-  function renderShapes(p) {
-    const open = cfg().jawOpen
+  function renderShapes(pose) {
+    const p = pose.p, jawDeg = pose.jaw
     const low = []
-    for (let i = 0; i < P.length; i++) low.push(pt(i, p, open))
+    for (let i = 0; i < P.length; i++) low.push(pt(i, p, jawDeg))
     // jaw outline: lower lip (0–85) → meets the tooth → tooth's labial gum → floor of mouth (116–149) → pharynx
     // (230–); the original tapered incisor, its root and the lip pocket (86–115) and the drawing's tongue
     // (150–229) are dropped — the tongue is the spline below
-    const jawRot = (q) => rot(q, jawAngle(p, open))
+    const jawRot = (q) => rot(q, jawDeg)
     const lowerTooth = LOWER_TOOTH.map(jawRot)
     jaw.setAttribute('d', poly(low.slice(0, 86).concat([jawRot(LOWER_LIP_MEETS_TOOTH), lowerTooth[lowerTooth.length - 1]], low.slice(116, TONGUE_A), low.slice(TONGUE_B + 1)), true))
     // smooth designed silhouette (see TONGUE_REST / HOLD_*)
-    const pts = tonguePts(p, cfg().hold), d = spline(pts, true), hi = spline(tongueHiPts(pts), false)
+    const pts = pose.pts, d = spline(pts, true), hi = spline(tongueHiPts(pts), false)
     ;[tongue, tongueEdge, tongueIn, tongueShadow].forEach((e) => { if (e) e.setAttribute('d', d) })
     tongueHi.setAttribute('d', hi)
     tongueGloss.setAttribute('d', hi)
     toothL.setAttribute('d', poly(lowerTooth, true))
     toothHiL.setAttribute('d', poly(TOOTH_HI_L.map(jawRot), false))
-    toothLGrad.setAttribute('gradientTransform', `rotate(${f(jawAngle(p, open))} ${PIVOT[0]} ${PIVOT[1]})`)
+    toothLGrad.setAttribute('gradientTransform', `rotate(${f(jawDeg)} ${PIVOT[0]} ${PIVOT[1]})`)
     gumL.setAttribute('d', poly(LOWER_GUM.map(jawRot), true))
   }
   function render(t) {
     curT = t
     const T = cfg().timing
-    const p = progressAt(t, sound)
-    renderShapes(p)
+    const pose = poseAt(t, sound)
+    renderShapes(pose)
     if (jawImg) {
       // photo lips: the gain was tuned for a 2° diagram opening; wider openings add 1:1 so the lips don't over-open
-      const open = cfg().jawOpen
-      const deg = ((JAW_CLOSE + Math.min(open, 2)) * jawGain + Math.max(open - 2, 0)) * p
+      const o = Math.max(0, pose.jaw + JAW_CLOSE)
+      const deg = Math.min(o, JAW_CLOSE + 2) * jawGain + Math.max(o - JAW_CLOSE - 2, 0)
       jawImg.setAttribute('transform', `rotate(${f(deg)} ${f(pivotPx[0])} ${f(pivotPx[1])})`)
       const d = poly(seamTop.concat(seamBase.slice().reverse().map((q) => rotPx(q, deg))), true)
       wedge.setAttribute('d', d)
@@ -697,8 +835,9 @@ export function createThSideview(container, options = {}) {
     glottis.setAttribute('d', voiced ? D11_DH : D11_TH)
     glottis.setAttribute('transform', voiced && sounding && Math.floor(t * 24) % 2 ? 'matrix(1 0 0 -1 0 409.4)' : '')
     buzz.setAttribute('opacity', voiced && sounding ? String(0.55 + 0.45 * Math.abs(Math.sin(t * 22))) : '0')
-    // air stream: fricatives blow throughout; stops puff only after the release
-    const airOn = sounding && (cfg().kind !== 'stop' || t >= T.release)
+    renderMarks(t)
+    // simple puffs at the lips for sounds without a drawn air stream (the voiced /ɹ/ and /æ/)
+    const airOn = sounding && !cfg().flows
     if (airOn) {
       const u = (t - T.soundOn) / (T.soundOff - T.soundOn)
       air.setAttribute('opacity', '1')
@@ -756,7 +895,7 @@ export function createThSideview(container, options = {}) {
     get time() { return curT },
     get playing() { return playing },
     get duration() { return cfg().timing.end },
-    setSound(s) { if (SOUNDS[s]) { stop(); sound = s; applySound(); loadAudio(); render(Math.min(curT, cfg().timing.end)) } },
+    setSound(s) { if (SOUNDS[s]) { stop(); sound = s; applySound(); buildMarks(); loadAudio(); render(Math.min(curT, cfg().timing.end)) } },
     play,
     stop,
     seek(t) { stop(); render(Math.max(0, Math.min(cfg().timing.end, t))) },

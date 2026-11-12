@@ -37,8 +37,10 @@ const STRINGS = {
   tongue: { en: 'Tongue', jp: 'した' },
   footerNote: { en: 'Icons and host portrait are placeholders.', jp: 'アイコンとホストの絵は仮のものです。' },
   symbols: { en: 'Symbols', jp: '記号' },
-  // question between the mouth close-up and the side view
-  askSideView: { en: 'Do you want to see the side view in more detail?', jp: '横から見た したの動きを くわしく見てみる？' },
+  // question between the mouth close-up and the side + front views (both are shown together after "Yes")
+  askSideView: { en: 'Do you want to see the side and front views in more detail?', jp: '横と 前から見た したの動きを くわしく見てみる？' },
+  sideView: { en: 'Side view', jp: '横から' },
+  frontView: { en: 'Front view', jp: '前から' },
   yes: { en: 'Yes', jp: 'はい' },
   no: { en: 'No', jp: 'いいえ' },
   // recorder (practice pop-up, right side)
@@ -167,10 +169,10 @@ export function errorText(code: string, lang: Lang): string {
 
 /** Short "how to make it" line per sound, shown under the player. English comes from the manifest. */
 export const ARTICULATION_JP: Record<string, string> = {
-  th_voiceless: 'したの先を歯のあいだに。声は出さずに、息だけ。',
-  th_voiced: 'おなじ形で、声を出してブーッ。',
-  r: 'したをうしろに引いて、先はどこにもつけない。',
-  k: 'したの奥を上にもち上げて、ポンとはなす。',
+  th_voiceless: 'したの先を歯で かるく はさんで、まわりから息を出す。声は出さない。',
+  th_voiced: 'おなじように はさんで、声を出してブーッ。',
+  r: 'したの先を下から上にあげて、うしろに丸め、上あごの奥（でっぱりより うしろ）につける。',
+  k: 'したの奥を上あごにつけて、はなすと息がこすれて出る。',
   ae: '口を大きくあけて、したは低く前に。',
   t: 'したの先で、上の歯のうしろをトンとたたく。',
 }
