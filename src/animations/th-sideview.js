@@ -194,23 +194,15 @@ const HOLD_K = [
   [118.5, 126.9], [114.0, 129.2], [110.0, 132.0], [105.5, 137.0], [102.0, 146.0], [100.0, 157.0], [100.5, 166.0],
   [107.0, 170.0], [117.0, 166.5], [126.5, 160.0], [134.5, 153.5], [138.5, 151.0], [142.0, 148.8], [144.6, 147.2],
 ]
-// /ɹ/ (retroflex): jaw +2°. The tip rises from below and CURLS BACK, so its underside touches the roof further
-// back than the ridge (contact ≈ x 131.7, behind the alveolar ridge at x 143–146). The tip reaches the real (raised)
-// palate, y ≈ 118.3 there, so it touches the drawn roof in the Simple style; in the photo style the part above the
-// dark cavity's edge (y ≈ 122.7) is hidden by the cheek, so there too the tip meets the roof.
-// Behind the curled tip the top of the tongue dips into a hollow ("spoon"), the body is pulled back and the root
-// retracts toward the throat. Point 20 is the front of the curled blade (its underside, facing the teeth), ≈3 mm
-// behind the upper incisors. Order as everywhere: 0 tip → dorsum → root → underside → 20.
+// /ɹ/ (expert feedback): the tip TOUCHES NOTHING (Japanese ら taps the roof; English /ɹ/ never does). Jaw +2°.
+// The tip is lifted and pulled back but hangs free in the middle of the mouth: ≈6.5 mm of dark between the tip and
+// the roof of the dark cavity (y ≈ 123.3 at x 140; the drawn palate in the Simple style is ≈11 mm away), the dorsum
+// 8–10 mm below the roof ("open more"); the body is bunched and pulled back, the root retracted toward the throat.
+// The tip stays ≈3 mm behind the upper incisors and the ridge. Order: 0 tip → dorsum → root → underside → 20.
 const HOLD_R = [
-  [132.4, 118.65], [129.9, 120.4], [129.0, 124.0], [126.9, 128.6], [123.5, 131.6], [119.5, 134.0], [116.0, 136.6],
-  [113.0, 139.6], [110.5, 143.0], [107.5, 147.5], [104.0, 153.0], [101.0, 159.0], [98.8, 164.8], [100.0, 171.0],
-  [107.0, 172.0], [117.0, 168.0], [126.5, 162.0], [135.0, 156.0], [140.8, 149.5], [143.6, 139.5], [140.4, 122.6],
-]
-// /ɹ/ "lift": on the way up the tip points straight up behind the upper teeth, not yet curled back
-const LIFT_R = [
-  [141.6, 127.4], [138.8, 129.6], [135.6, 131.6], [131.5, 132.6], [127.0, 132.6], [122.5, 133.4], [118.5, 135.3],
+  [139.8, 129.8], [137.3, 130.6], [134.0, 132.6], [130.5, 133.0], [126.5, 132.6], [122.5, 133.3], [118.5, 135.3],
   [114.5, 138.6], [111.0, 142.5], [107.5, 147.5], [104.0, 153.0], [101.0, 159.0], [98.8, 164.8], [100.0, 171.0],
-  [107.0, 172.0], [117.0, 168.0], [126.5, 162.0], [135.0, 156.0], [141.0, 149.0], [144.6, 140.0], [144.4, 131.0],
+  [107.0, 172.0], [117.0, 168.0], [126.5, 162.0], [135.0, 156.0], [140.8, 149.5], [144.0, 140.5], [143.0, 132.5],
 ]
 // /æ/: jaw +5° (mouth open). Tongue low and forward: tip behind the lower incisors, dorsum flat and low, leaving a
 // big open space under the palate.
@@ -278,23 +270,23 @@ export const SOUNDS = {
   'ð': thSound(true),
   'ɹ': {
     voiced: true, word: 'red', kind: 'hold', oval: CAVITY_OVAL, front: { cx: 154.5, cy: 140.6, rx: 6.5, ry: 4.0 },
-    hint: 'Curl the tip up and back — it touches the roof further back.',
-    hintJa: 'したの さきを うえに あげて、うしろに まるめる。うわあごの おくの ほうに つけよう。',
-    // Retroflex /ɹ/: the tip dips low behind the lower teeth, rises straight up behind the upper teeth (lift), then
-    // curls back so its underside touches the roof well behind the ridge (hold, contact ≈ x 133.3) while the lips
-    // round a little. The curled tip stays there for the whole sound, then uncurls and drops back to rest.
-    keys: [[0.70, 'rest'], [0.86, 'down'], [1.02, 'lift'], [1.18, 'hold'], [1.86, 'hold'], [2.30, 'rest']],
+    hint: 'Open up, then squeeze softly into “rrr” — the tip touches nothing!',
+    hintJa: 'ひらいてから、やさしく すぼめて「rrr」。したの さきは どこにも さわらない！',
+    // Expert's "soft ball" (a lightly squeezed Nerf ball): the mouth and tongue open up to full size (like "ah"),
+    // then squeeze softly into the bunched /ɹ/ as the sound is made — the tip lifted but touching nothing. The
+    // posture is held for the r-colouring, then relaxes.
+    keys: [[0.70, 'rest'], [0.98, 'open'], [1.08, 'open'], [1.42, 'hold'], [1.86, 'hold'], [2.30, 'rest']],
     poses: {
-      down: { pts: mixPts(HOLD_AE, TONGUE_REST, 0.35), jaw: 1.2, p: 1 },
-      lift: { pts: LIFT_R, jaw: 2.0, p: 1 },
+      open: { pts: mixPts(HOLD_AE, HOLD_R, 0.15), jaw: 4.2, p: 1 },
       hold: { pts: HOLD_R, jaw: 2.0, p: 1 },
     },
     timing: { soundOn: 1.18, soundOff: 1.82, end: 2.7 },
-    stepTimes: [0.70, 1.18, 1.86],
-    // glow on the palate (Simple style) / on the edge of the dark cavity where the tip meets it (photo style)
-    contacts: [{ at: [131.8, 118.8], atPhoto: [132.4, 122.7], from: 1.16, to: 1.88 }],
-    steps: [['Ready', 'Mouth relaxed, tongue inside.'], ['Tip up & back', 'The tip rises from below, then curls back.'], ['Rrr', 'The curled tip touches the roof further back (behind the bump). Voice on!'], ['Back', 'The tip uncurls; the tongue relaxes.']],
-    stepsJa: [['じゅんび', 'くちを らくに して、したは なかに。'], ['あげて まるめる', 'したの さきを したから うえに あげて、うしろに まるめる。'], ['「rrr」', 'まるめた さきを、うわあごの おくの ほう（でっぱりより うしろ）に つけて、こえを だす。'], ['もどす', 'さきを もどして、したを らくに する。']],
+    stepTimes: [0.70, 1.08, 1.86],
+    // dashed "touches nothing" ring in the space above the tip: under the dark cavity's roof (photo style) or,
+    // larger, under the drawn palate (Simple style)
+    contacts: [{ gap: true, at: [139.8, 124.4], r: 4.4, atPhoto: [139.8, 126.5], rPhoto: 2.6, from: 1.36, to: 1.88 }],
+    steps: [['Ready', 'Mouth relaxed, tongue inside.'], ['Open', 'Open up, like a soft ball growing big.'], ['Squeeze', 'Squeeze softly into “rrr”. The tip touches nothing!'], ['Back', 'Tongue relaxes.']],
+    stepsJa: [['じゅんび', 'くちを らくに して、したは なかに。'], ['ひらく', 'ボールが ふくらむように、くちを ひらく。'], ['すぼめる', 'やさしく すぼめて「rrr」。したの さきは どこにも さわらない！（「ら」とは ちがうよ）'], ['もどす', 'したを らくに する。']],
   },
   'k': {
     voiced: false, word: 'cat', kind: 'stop', oval: CAVITY_OVAL, front: { cx: 154.5, cy: 140.3, rx: 6.5, ry: 3.6 },
@@ -770,7 +762,7 @@ export function createThSideview(container, options = {}) {
       return { fl, guide, dots, len: 0 }
     })
     contactEls = (cfg().contacts || []).map((c) => c.gap
-      ? { c, e: el('circle', { cx: c.at[0], cy: c.at[1], r: c.r, fill: 'none', stroke: '#ffffff', 'stroke-width': 0.55, 'stroke-dasharray': '1 0.9', opacity: 0 }, marks) }
+      ? { c, e: el('circle', { cx: (portrait && c.atPhoto ? c.atPhoto : c.at)[0], cy: (portrait && c.atPhoto ? c.atPhoto : c.at)[1], r: portrait && c.rPhoto ? c.rPhoto : c.r, fill: 'none', stroke: '#ffffff', 'stroke-width': 0.55, 'stroke-dasharray': '1 0.9', opacity: 0 }, marks) }
       : { c, e: el('circle', { cx: (portrait && c.atPhoto ? c.atPhoto : c.at)[0], cy: (portrait && c.atPhoto ? c.atPhoto : c.at)[1], r: 2.3, fill: `url(#${uid}glow)`, opacity: 0 }, marks) })
   }
   const env = (t, a, b, fade = 0.06) => Math.max(0, Math.min(1, (t - a) / fade, (b - t) / fade))

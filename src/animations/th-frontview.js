@@ -40,12 +40,12 @@ const P = (o) => Object.assign({}, REST, o)
 export const FRONT_POSES = {
   'θ': { out: P({ open: 22, up: 11, W: 54, tOut: 1, smile: 1 }), hold: P({ open: 15, up: 11, W: 54, tOut: 1, smile: 1 }) },
   'ð': { out: P({ open: 22, up: 11, W: 54, tOut: 1, smile: 1 }), hold: P({ open: 15, up: 11, W: 54, tOut: 1, smile: 1 }) },
-  // /ɹ/ (retroflex): from the front the curled tip itself is hidden behind the upper teeth; what you see is the
-  // UNDERSIDE of the tongue rising from below and filling the space behind the teeth, lips gently rounded
+  // /ɹ/ (expert's "soft ball"): the mouth opens wide like "ah" (tongue low), then squeezes softly — lips round and
+  // the tongue pulls back, its tip lifted behind the lower teeth but stopping well short of the upper teeth:
+  // the dark space between them (dashed ring) shows that the tip touches nothing
   'ɹ': {
-    down: P({ open: 11, up: 3, W: 46, round: 0.3, tTop: -6, smile: 1 }),
-    lift: P({ open: 13, up: 5, W: 42, round: 0.7, rTip: 0.65, tTop: 3, smile: 0 }),
-    hold: P({ open: 13, up: 6, W: 40, round: 0.9, rTip: 1, tTop: 3, smile: 0 }),
+    open: P({ open: 27, up: 9, W: 58, round: 0.1, tTop: -10, tW: 32, smile: 1 }),
+    hold: P({ open: 16, up: 6, W: 40, round: 0.9, rTip: 1, tTop: 3, smile: 0 }),
   },
   // /k/: the tip stays DOWN behind the lower teeth; what rises is the back of the tongue, seen as a deep mound
   'k': { hold: P({ open: 19, up: 7, W: 52, hump: 1, tTop: 3 }), rel: P({ open: 15, up: 5, W: 51, hump: 0.25, tTop: 3 }) },
@@ -56,7 +56,7 @@ export const FRONT_POSES = {
 const FRONT_MARKS = {
   'θ': { touch: [[CX - 12, UE + 0.5], [CX + 12, UE + 0.5]], touchLow: true, air: 'around' },
   'ð': { touch: [[CX - 12, UE + 0.5], [CX + 12, UE + 0.5]], touchLow: true, air: 'around' },
-  'ɹ': {},   // the contact is behind the upper teeth, out of sight from the front (shown in the side view)
+  'ɹ': { gap: true },   // dashed ring in the space between the free tip and the upper teeth
   // no front glow for /k/: the seal is at the back of the mouth, and a glow under the front teeth would read as /t/
   'k': { air: 'scrape' },
   't': { touch: [[CX, UE - 0.5]], air: 'puff' },
@@ -180,7 +180,7 @@ export function createThFrontview(container, options = {}) {
   // ---------- marks: touch glows, the "touches nothing" ring, air, buzz ----------
   const marks = el('g', {}, svg)
   const glows = [0, 1, 2, 3].map(() => el('circle', { r: 6, fill: url(gGlow), opacity: 0 }, marks))
-  const gapRing = el('circle', { r: 7.5, fill: 'none', stroke: '#ffffff', 'stroke-width': 1.5, 'stroke-dasharray': '3 2.4', opacity: 0 }, marks)
+  const gapRing = el('circle', { r: 3.4, fill: 'none', stroke: '#ffffff', 'stroke-width': 1.1, 'stroke-dasharray': '2 1.6', opacity: 0 }, marks)
   const airDots = Array.from({ length: 12 }, () => el('ellipse', { rx: 3, ry: 2, fill: C.air, stroke: C.airLine, 'stroke-width': 0.8, opacity: 0 }, marks))
   const rings = [0, 1, 2].map(() => el('ellipse', { fill: 'none', stroke: C.airLine, 'stroke-width': 1.6, opacity: 0 }, marks))
   const buzz = el('g', { fill: 'none', stroke: C.buzz, 'stroke-width': 2.4, 'stroke-linecap': 'round', opacity: 0 }, marks)
@@ -237,14 +237,13 @@ export function createThFrontview(container, options = {}) {
     const humpTop = lerp(LE + 16, UE - 3, p.hump)        // at the seal its top disappears behind the upper teeth (the roof)
     hump.setAttribute('cx', CX); hump.setAttribute('cy', f(humpTop + 30)); hump.setAttribute('opacity', f(Math.min(1, p.hump * 3)))
     humpHi.setAttribute('cx', CX); humpHi.setAttribute('cy', f(humpTop + 7)); humpHi.setAttribute('opacity', f(0.18 * p.hump))
-    // raised tip: /t/ presses the tip up behind the upper teeth; /ɹ/ rises from below and curls back, so from the
-    // front its underside rises up behind the upper teeth (top hidden by them) — broader, with the centre fold
-    // (frenulum) showing, darker toward the top where it curls back under the roof
+    // raised tip: /t/ presses the tip up behind the upper teeth; /ɹ/ lifts its tip (pulled back, so shaded darker)
+    // but stops ≈6 units below the upper teeth, leaving a dark space — it touches nothing
     const colUp = Math.max(p.tipUp, p.rTip)
     if (colUp > 0.01) {
       const retro = p.rTip > p.tipUp
-      const colTop = retro ? lerp(bodyTop, UE - 12, p.rTip) : lerp(bodyTop, UE - 7, p.tipUp)
-      const hw = retro ? 21 : 23, base = bodyTop + 10
+      const colTop = retro ? lerp(bodyTop, UE + 6.5, p.rTip) : lerp(bodyTop, UE - 7, p.tipUp)
+      const hw = retro ? 17 : 23, base = bodyTop + 10
       column.setAttribute('d', `M ${CX - hw - 6} ${f(base)} C ${CX - hw} ${f(colTop + 16)}, ${CX - hw * 0.75} ${f(colTop)}, ${CX} ${f(colTop)} C ${CX + hw * 0.75} ${f(colTop)}, ${CX + hw} ${f(colTop + 16)}, ${CX + hw + 6} ${f(base)} Z`)
       columnLine.setAttribute('d', retro
         ? `M ${CX} ${f(Math.max(colTop + 6, UE + 1))} C ${CX - 1.5} ${f(base - 12)}, ${CX + 1.5} ${f(base - 6)}, ${CX} ${f(base - 1)}`
@@ -282,7 +281,7 @@ export function createThFrontview(container, options = {}) {
     })
     const gapC = contacts.find((q) => q.gap)
     const gw = gapC ? win(gapC.from, gapC.to) : 0
-    gapRing.setAttribute('cx', CX); gapRing.setAttribute('cy', f(UE + 5.5)); gapRing.setAttribute('opacity', f(gw * (0.75 + 0.25 * pulse)))
+    gapRing.setAttribute('cx', CX); gapRing.setAttribute('cy', f(UE + 3.2)); gapRing.setAttribute('opacity', f(gw * (0.75 + 0.25 * pulse)))
 
     // air: θ streams out all around the sandwiched tip; /k/ a rough, scraping burst; /t/ a small clean puff
     const flows = c.flows || []
