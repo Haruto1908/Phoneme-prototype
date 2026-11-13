@@ -71,6 +71,8 @@ export default function App({ user, lang, onLang, theme, onTheme, onLogout, onMa
   /** Sound to practise with the microphone (right half of the pop-up); null for Word Builder playback. */
   const [recTarget, setRecTarget] = useState<RecorderTarget | null>(null)
   const [playingId, setPlayingId] = useState<string | null>(null)
+  /** Bumped by the Home button (Brooke's photo): remounts the dashboard so it starts fresh and replays its entrance. */
+  const [fresh, setFresh] = useState(0)
   const panel = useRef<PlayerHandle>(null)
   const modal = useRef<PlayerHandle>(null)
   /** Per-mode usage counters for this account (shown in the account menu, exported as CSV). */
@@ -161,6 +163,23 @@ export default function App({ user, lang, onLang, theme, onTheme, onLogout, onMa
     openModal(items, word)
   }
 
+  /**
+   * Home (Brooke's photo in the header): back to a fresh start screen without reloading the page — stop anything
+   * playing, close the pop-up, empty the Word Builder, scroll to the top and replay the dashboard's entrance.
+   * Settings (mode, language, sound, Practice, theme) and the login are kept.
+   */
+  function goHome() {
+    panel.current?.stop()
+    modal.current?.stop()
+    setModalOpen(false)
+    setRecTarget(null)
+    setPlayingId(null)
+    setSlots([null, null, null, null])
+    setArmed(null)
+    setFresh((n) => n + 1)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   const avatar = manifest.host.portrait ? asset(manifest.host.portrait) : null
   // Idle stage: the host "says" the hint in a speech bubble — the same voice as the rest of the lesson.
   const idle = (
@@ -193,9 +212,10 @@ export default function App({ user, lang, onLang, theme, onTheme, onLogout, onMa
         usage={usage}
         onLogout={onLogout}
         onManager={onManager}
+        onHome={goHome}
       />
 
-      <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-3">
+      <div key={fresh} className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-3">
         <div className="animate-rise lg:col-span-2 [animation-delay:60ms]">
           <SoundChart manifest={manifest} lang={lang} playingId={playingId} armed={armed !== null} onPress={onCardPress} />
         </div>

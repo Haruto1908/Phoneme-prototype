@@ -197,7 +197,26 @@ export function ChartIcon({ className }: IconProps) {
     </svg>
   )
 }
-/** Two figures: the student list. */
+/** Friendly cartoon face: the Avatar mode. */
+export function FaceIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className ?? 'h-6 w-6'} {...stroke} strokeWidth={2.6} aria-hidden="true">
+      <circle cx="16" cy="16" r="11.5" />
+      <path d="M11 19.5c1.4 1.8 3 2.7 5 2.7s3.6-.9 5-2.7" />
+      <path d="M12 13.2v.6M20 13.2v.6" strokeWidth={3.4} />
+    </svg>
+  )
+}
+/** House: back to a fresh start screen. */
+export function HomeIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className ?? 'h-6 w-6'} {...stroke} strokeWidth={2.8} aria-hidden="true">
+      <path d="M5 15L16 6l11 9" />
+      <path d="M8.5 13v12.5a1.5 1.5 0 001.5 1.5h4.5v-7h3v7H22a1.5 1.5 0 001.5-1.5V13" />
+    </svg>
+  )
+}
+/** Two figures: the student list (also the Both mode). */
 export function PeopleIcon({ className }: IconProps) {
   return (
     <svg viewBox="0 0 32 32" className={className ?? 'h-6 w-6'} {...stroke} strokeWidth={2.8} aria-hidden="true">

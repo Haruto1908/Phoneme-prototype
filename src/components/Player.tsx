@@ -329,7 +329,10 @@ export function Player({ ref, lang, muted, volume, variant, idle, onClose, onPla
           onError={clipFinished}
           onPlaying={armClipTimer}
           onSeeked={armClipTimer}
-          className={`absolute inset-0 h-full w-full object-contain transition-opacity duration-300 ${showTongue ? 'opacity-0' : 'opacity-100'}`}
+          // `cover` so every clip fills the 16:9 stage edge to edge: Brooke's clips are 16:9 already (no change),
+          // Michelle's are ≈4:3 (720×486, non-square pixels) and lose ≈12% top and bottom — forehead and shirt —
+          // while the mouth (≈47% down the frame) stays centred
+          className={`absolute inset-0 h-full w-full object-cover object-[50%_47%] transition-opacity duration-300 ${showTongue ? 'opacity-0' : 'opacity-100'}`}
         />
         {/* side view (left) and front view (right), shown together after "Yes" */}
         <div className={`absolute inset-0 grid grid-cols-2 gap-[3px] bg-line transition-opacity duration-300 ${showTongue ? 'opacity-100' : 'pointer-events-none opacity-0'}`}>

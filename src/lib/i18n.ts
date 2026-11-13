@@ -4,11 +4,16 @@ export type Lang = 'en' | 'jp'
 
 const STRINGS = {
   title: { en: 'phoneme-prototype', jp: 'フォニーム・プロトタイプ' },
-  presenter: { en: 'Who shows the sound', jp: 'だれが見せる？' },
+  presenter: { en: 'Who shows the sound?', jp: 'だれが見せる？' },
+  // header: tapping Brooke's photo starts over with a fresh, empty page
+  home: { en: 'Back to start', jp: 'さいしょに もどる' },
+  greeting: { en: 'Hi! I’m {host}.', jp: 'こんにちは！{host}だよ。' },
   avatar: { en: 'Avatar', jp: 'アバター' },
   human: { en: 'Human', jp: '人' },
   both: { en: 'Both', jp: '両方' },
   subtitle: { en: '{host} will say it with you.', jp: '{host}といっしょに言ってみよう。' },
+  // the small tag under the title in the header
+  lessonTag: { en: 'English Lesson', jp: 'えいごの レッスン' },
   sounds: { en: 'Sounds', jp: 'おと' },
   tapHint: { en: 'Tap a sound to watch and listen.', jp: 'おとをタップすると、見て聞けるよ。' },
   langLabel: { en: 'Language', jp: '言語' },
