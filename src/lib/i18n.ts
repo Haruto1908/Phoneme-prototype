@@ -1,167 +1,60 @@
-/** UI strings. English for the Blast team, Japanese for the expert review; the EN/JP toggle in the top bar switches. */
+/**
+ * Internationalisation. Every account has a primary language (stored on the user, see api/_lib/auth.ts); the UI,
+ * tips, pronunciation feedback, spoken cheers, dates and errors all follow it. The words being taught (the
+ * English sounds and example words) stay in English in every language.
+ *
+ * Adding a language: add a file in ./locales typed `Messages` (the build fails until every key is translated),
+ * an entry in LANGUAGES, its ARTICULATION hints, its reasons in ./pronounce/reasons.ts, and the code in
+ * api/_lib/lang.ts.
+ */
+import { en, type Messages, type StringKey } from './locales/en'
+import { ja } from './locales/ja'
+import { ko } from './locales/ko'
+import { esMX } from './locales/es-MX'
 
-export type Lang = 'en' | 'jp'
+export type { StringKey } from './locales/en'
 
-const STRINGS = {
-  title: { en: 'phoneme-prototype', jp: 'フォニーム・プロトタイプ' },
-  presenter: { en: 'Who shows the sound?', jp: 'だれが見せる？' },
-  // header: tapping Brooke's photo starts over with a fresh, empty page
-  home: { en: 'Back to start', jp: 'さいしょに もどる' },
-  greeting: { en: 'Hi! I’m {host}.', jp: 'こんにちは！{host}だよ。' },
-  avatar: { en: 'Avatar', jp: 'アバター' },
-  human: { en: 'Human', jp: '人' },
-  both: { en: 'Both', jp: '両方' },
-  subtitle: { en: '{host} will say it with you.', jp: '{host}といっしょに言ってみよう。' },
-  // the small tag under the title in the header
-  lessonTag: { en: 'English Lesson', jp: 'えいごの レッスン' },
-  sounds: { en: 'Sounds', jp: 'おと' },
-  tapHint: { en: 'Tap a sound to watch and listen.', jp: 'おとをタップすると、見て聞けるよ。' },
-  langLabel: { en: 'Language', jp: '言語' },
-  soundOn: { en: 'Sound on', jp: 'おと オン' },
-  soundOff: { en: 'Sound off', jp: 'おと オフ' },
-  practice: { en: 'Practice', jp: 'れんしゅう' },
-  practiceHint: { en: 'On: a sound opens in a pop-up. Off: it plays in the side panel.', jp: 'オン: ポップアップで再生。オフ: 右のパネルで再生。' },
-  watch: { en: 'Watch', jp: 'みる' },
-  idlePanel: { en: 'Tap a sound and watch here.', jp: 'おとをタップすると ここで見られるよ。' },
-  wordBuilder: { en: 'Word Builder', jp: 'ことばづくり' },
-  wbHint: { en: 'Drag a sound into a block — or tap a block, then a sound.', jp: 'おとをブロックへドラッグ。または、ブロックをタップしてから おとをタップ。' },
-  wbEmpty: { en: 'Put a sound in a block first.', jp: 'さきに おとを ブロックに入れてね。' },
-  emptyBlock: { en: 'Empty block {n}', jp: 'からのブロック {n}' },
-  blockWith: { en: 'Block {n}: {sound}. Tap to remove.', jp: 'ブロック {n}: {sound}。タップで消す。' },
-  addBlock: { en: 'Add a block', jp: 'ブロックをふやす' },
-  removeBlock: { en: 'Remove a block', jp: 'ブロックをへらす' },
-  clearAll: { en: 'Clear', jp: 'ぜんぶ消す' },
-  quieter: { en: 'Quieter', jp: 'ちいさく' },
-  louder: { en: 'Louder', jp: 'おおきく' },
-  play: { en: 'Play', jp: 'さいせい' },
-  again: { en: 'Again', jp: 'もういちど' },
-  tongueAgain: { en: 'Tongue again', jp: 'したを もういちど' },
-  close: { en: 'Close', jp: 'とじる' },
-  tapToPlay: { en: 'Tap to play', jp: 'タップして さいせい' },
-  mouth: { en: 'Mouth', jp: 'くち' },
-  tongue: { en: 'Tongue', jp: 'した' },
-  footerNote: { en: 'Icons and host portrait are placeholders.', jp: 'アイコンとホストの絵は仮のものです。' },
-  symbols: { en: 'Symbols', jp: '記号' },
-  // question between the mouth close-up and the side + front views (both are shown together after "Yes")
-  askSideView: { en: 'Do you want to see the side and front views in more detail?', jp: '横と 前から見た したの動きを くわしく見てみる？' },
-  sideView: { en: 'Side view', jp: '横から' },
-  frontView: { en: 'Front view', jp: '前から' },
-  yes: { en: 'Yes', jp: 'はい' },
-  no: { en: 'No', jp: 'いいえ' },
-  // recorder (practice pop-up, right side)
-  yourTurn: { en: 'Your turn', jp: 'つぎは きみの ばん' },
-  recHint: { en: 'Tap the microphone and say the sound.', jp: 'マイクをタップして、おとを言ってみよう。' },
-  record: { en: 'Record', jp: 'ろくおん' },
-  recording: { en: 'Listening… tap to stop', jp: 'きいてるよ… タップで ストップ' },
-  analysing: { en: 'Checking…', jp: 'チェック中…' },
-  compare: { en: 'Compare', jp: 'くらべて聞く' },
-  you: { en: 'You', jp: 'きみ' },
-  recordAgain: { en: 'Record again', jp: 'もういちど ろくおん' },
-  micDenied: { en: 'We need the microphone to hear you. Allow it in the browser and try again.', jp: 'マイクが使えません。ブラウザで マイクを ゆるして、もういちど。' },
-  micUnsupported: { en: 'Recording is not supported in this browser.', jp: 'このブラウザでは ろくおんできません。' },
-  tooShort: { en: 'That was too short — try again.', jp: 'みじかすぎたよ。もういちど。' },
-  // cheer under the stars (1–3; there is never a zero)
-  cheer1: { en: 'Nice try!', jp: 'いいかんじ！' },
-  cheer2: { en: 'Great job!', jp: 'すごい！' },
-  cheer3: { en: 'Perfect!', jp: 'かんぺき！' },
-  // theme + account (top bar)
-  themeLight: { en: 'Switch to light mode', jp: 'ライトモードにする' },
-  themeDark: { en: 'Switch to dark mode', jp: 'ダークモードにする' },
-  account: { en: 'Account', jp: 'アカウント' },
-  accountHint: { en: 'Signed in with this email.', jp: 'このメールで ログイン中。' },
-  theme: { en: 'Theme', jp: 'テーマ' },
-  light: { en: 'Light', jp: 'ライト' },
-  dark: { en: 'Dark', jp: 'ダーク' },
-  // session log (account menu)
-  activity: { en: 'Modes used', jp: 'つかったモード' },
-  activityHint: { en: 'times, on this account', jp: 'かい（このアカウント）' },
-  downloadCsv: { en: 'Download session log (CSV)', jp: 'セッションログを ダウンロード (CSV)' },
-  // manager dashboard
-  manager: { en: 'Manager', jp: '管理者' },
-  managerTitle: { en: 'Manager dashboard', jp: '管理ダッシュボード' },
-  managerHint: { en: "Every student's session activity and progress.", jp: 'すべての生徒の利用状況と進捗。' },
-  managerOpen: { en: 'Manager dashboard', jp: '管理ダッシュボード' },
-  managerBack: { en: 'Back to the lesson', jp: 'レッスンにもどる' },
-  students: { en: 'Students', jp: '生徒' },
-  totalAttempts: { en: 'Attempts', jp: 'ろくおん回数' },
-  totalModes: { en: 'Mode changes', jp: 'モード切替' },
-  studentCol: { en: 'Student', jp: '生徒' },
-  lastSeen: { en: 'Last active', jp: '最終利用' },
-  modesCol: { en: 'Avatar / Human / Both', jp: 'アバター / 人 / 両方' },
-  avgStars: { en: 'Avg. stars', jp: '平均スター' },
-  soundsCol: { en: 'Sounds', jp: 'おと' },
-  noStudents: { en: 'No accounts yet. A student appears here after they sign up.', jp: 'まだアカウントがありません。生徒が登録すると ここに表示されます。' },
-  exports: { en: 'Downloads (CSV)', jp: 'ダウンロード (CSV)' },
-  csvStudents: { en: 'All students', jp: '生徒一覧' },
-  csvProgress: { en: 'Progress per sound', jp: 'おとごとの進捗' },
-  csvSessions: { en: 'Session log', jp: 'セッションログ' },
-  csvAttempts: { en: 'Every attempt', jp: 'すべてのろくおん' },
-  progressPerSound: { en: 'Progress per sound', jp: 'おとごとの進捗' },
-  soundCol: { en: 'Sound', jp: 'おと' },
-  baseline: { en: 'Baseline', jp: '基準値' },
-  bestCol: { en: 'Best', jp: 'ベスト' },
-  latestCol: { en: 'Latest', jp: 'さいきん' },
-  improvement: { en: 'Improvement', jp: 'のびしろ' },
-  baselineForming: { en: '{n} of {m} baseline tries', jp: '基準値 {n}/{m} 回' },
-  recentAttempts: { en: 'Recent attempts', jp: 'さいきんのろくおん' },
-  recentSessions: { en: 'Recent mode changes', jp: 'さいきんのモード切替' },
-  selectStudent: { en: 'Choose a student to see their details.', jp: '生徒をえらぶと くわしく見られます。' },
-  noActivity: { en: 'No activity yet.', jp: 'まだ利用がありません。' },
-  refresh: { en: 'Refresh', jp: '更新' },
-  timeCol: { en: 'Time', jp: '時刻' },
-  scoreCol: { en: 'Score', jp: 'スコア' },
-  starsCol: { en: 'Stars', jp: 'スター' },
-  phaseCol: { en: 'Phase', jp: 'だんかい' },
-  phaseBaseline: { en: 'Baseline', jp: '基準づくり' },
-  phaseTracked: { en: 'Tracked', jp: '記録中' },
-  eventCol: { en: 'Event', jp: 'できごと' },
-  eventStart: { en: 'Opened', jp: 'ひらいた' },
-  eventSwitch: { en: 'Changed', jp: 'かえた' },
-  never: { en: 'Never', jp: 'なし' },
-  // sign in
-  signIn: { en: 'Log in', jp: 'ログイン' },
-  signUp: { en: 'Sign up', jp: 'とうろく' },
-  signOut: { en: 'Log out', jp: 'ログアウト' },
-  email: { en: 'Email', jp: 'メールアドレス' },
-  emailPlaceholder: { en: 'you@school.com', jp: 'you@school.com' },
-  password: { en: 'Password', jp: 'パスワード' },
-  passwordHint: { en: 'At least 8 characters.', jp: '8文字いじょう。' },
-  showPassword: { en: 'Show password', jp: 'パスワードを表示' },
-  hidePassword: { en: 'Hide password', jp: 'パスワードをかくす' },
-  haveAccount: { en: 'Already have an account?', jp: 'アカウントを おもちですか？' },
-  noAccount: { en: 'New here?', jp: 'はじめてですか？' },
-  working: { en: 'Please wait…', jp: 'ちょっと まってね…' },
-  welcomeBack: { en: 'Welcome back', jp: 'おかえりなさい' },
-  welcomeBackHint: { en: 'Log in and pick up where you left off.', jp: 'ログインして つづきから はじめよう。' },
-  createAccount: { en: 'Create your account', jp: 'アカウントを つくろう' },
-  createAccountHint: { en: 'Free, and it only takes a moment.', jp: 'むりょうで、すぐに できるよ。' },
-  heroEyebrow: { en: 'English sounds for young learners', jp: 'こどものための えいごの おと' },
-  heroTitle: { en: 'Say it like {host}.', jp: '{host}みたいに 言ってみよう。' },
-  heroSub: { en: 'Watch the mouth up close, peek at the tongue from the side, then record yourself and earn stars — one sound at a time.', jp: 'くちを 近くで見て、したを 横から のぞいて、じぶんの声を ろくおんして ほしをもらおう。ひとつずつ、ね。' },
-  feature1: { en: 'Mouth close-ups', jp: 'くちの クローズアップ' },
-  feature1Hint: { en: 'Avatar or a real teacher', jp: 'アバターか 本物の先生' },
-  feature2: { en: 'Side-view tongue', jp: '横から見た した' },
-  feature2Hint: { en: 'See where the tongue goes', jp: 'したの いちが わかる' },
-  feature3: { en: 'Stars for every try', jp: 'がんばりに ほしを' },
-  feature3Hint: { en: 'Record, compare, improve', jp: 'ろくおん、くらべて、じょうたつ' },
-  authFootnote: { en: 'Made for classrooms and tablets.', jp: 'きょうしつと タブレットのために。' },
-  // server error codes → messages
-  'err.invalid_email': { en: 'Please enter a valid email address.', jp: '正しい メールアドレスを 入力してね。' },
-  'err.weak_password': { en: 'Password must be at least 8 characters.', jp: 'パスワードは 8文字いじょう にしてね。' },
-  'err.email_taken': { en: 'That email is already registered — log in instead.', jp: 'その メールアドレスは とうろくずみです。ログインしてね。' },
-  'err.bad_credentials': { en: 'Wrong email or password.', jp: 'メールアドレスか パスワードが ちがいます。' },
-  'err.forbidden': { en: 'This account does not have manager access.', jp: 'このアカウントには 管理者けんげんが ありません。' },
-  'err.unauthorized': { en: 'Your session has expired. Please log in again.', jp: 'セッションが きれました。もういちど ログインしてね。' },
-  'err.config': { en: 'The server is not fully set up yet (a setting is missing). Please tell the administrator.', jp: 'サーバーの せっていが まだ おわっていません。かんりしゃに つたえてね。' },
-  'err.server': { en: 'Something went wrong. Please try again.', jp: 'エラーが おきました。もういちど ためしてね。' },
-  'err.network': { en: 'Cannot reach the server. Check your connection.', jp: 'サーバーに つながりません。つうしんを かくにんしてね。' },
-} as const
+/** BCP-47 tags, stored as-is on the account. */
+export type Lang = 'en' | 'ja' | 'ko' | 'es-MX'
 
-export type StringKey = keyof typeof STRINGS
+export interface LanguageInfo {
+  code: Lang
+  /** in its own language — what a speaker of it looks for in the picker */
+  name: string
+  /** compact label for the header button */
+  short: string
+  /** <html lang>, Intl formatting and speech synthesis */
+  locale: string
+}
 
-/** t('subtitle', 'en', { host: 'Brooke' }) → "Brooke will say it with you." */
+export const LANGUAGES: readonly LanguageInfo[] = [
+  { code: 'en', name: 'English', short: 'EN', locale: 'en-US' },
+  { code: 'ja', name: '日本語', short: '日本語', locale: 'ja-JP' },
+  { code: 'ko', name: '한국어', short: '한국어', locale: 'ko-KR' },
+  { code: 'es-MX', name: 'Español (México)', short: 'ES', locale: 'es-MX' },
+]
+export const DEFAULT_LANG: Lang = 'en'
+
+const MESSAGES: Record<Lang, Messages> = { en, ja, ko, 'es-MX': esMX }
+
+export const langInfo = (lang: Lang): LanguageInfo => LANGUAGES.find((l) => l.code === lang) ?? LANGUAGES[0]
+
+/**
+ * Any user/URL/stored value → a supported language, or null. Accepts the old 'jp' code, any case, and bare 'es'
+ * (Mexican Spanish is the Spanish we teach in).
+ */
+export function normLang(v: unknown): Lang | null {
+  const s = String(v ?? '').trim().toLowerCase()
+  if (s === 'en' || s.startsWith('en-')) return 'en'
+  if (s === 'ja' || s === 'jp' || s.startsWith('ja-')) return 'ja'
+  if (s === 'ko' || s.startsWith('ko-')) return 'ko'
+  if (s === 'es' || s.startsWith('es-')) return 'es-MX'
+  return null
+}
+
+/** t('subtitle', 'en', { host: 'Brooke' }) → "Brooke will say it with you." Falls back to English per key. */
 export function t(key: StringKey, lang: Lang, vars?: Record<string, string | number>): string {
-  let s: string = STRINGS[key][lang]
+  let s: string = MESSAGES[lang]?.[key] ?? en[key]
   if (vars) for (const [k, v] of Object.entries(vars)) s = s.replaceAll(`{${k}}`, String(v))
   return s
 }
@@ -169,15 +62,40 @@ export function t(key: StringKey, lang: Lang, vars?: Record<string, string | num
 /** Message for a server error code, falling back to the generic one for codes this build does not know. */
 export function errorText(code: string, lang: Lang): string {
   const key = `err.${code}` as StringKey
-  return t(key in STRINGS ? key : 'err.server', lang)
+  return t(key in en ? key : 'err.server', lang)
 }
 
-/** Short "how to make it" line per sound, shown under the player. English comes from the manifest. */
-export const ARTICULATION_JP: Record<string, string> = {
-  th_voiceless: 'したの先を歯で かるく はさんで、まわりから息を出す。声は出さない。',
-  th_voiced: 'おなじように はさんで、声を出してブーッ。',
-  r: 'くちを ひらいてから やさしく すぼめる。したは うしろに引いて、先はどこにもつけない（「ら」とちがう）。',
-  k: 'したの奥を上あごにつけて、はなすと息がこすれて出る。',
-  ae: '口を大きくあけて、したは低く前に。',
-  t: 'したの先で、上の歯のうしろをトンとたたく。',
+/**
+ * Short "how to make it" line per sound, shown under the player. English comes from the manifest (`english`);
+ * the other languages are written here and reviewed by native teachers.
+ */
+const ARTICULATION: Record<Exclude<Lang, 'en'>, Record<string, string>> = {
+  ja: {
+    th_voiceless: 'したの先を歯で かるく はさんで、まわりから息を出す。声は出さない。',
+    th_voiced: 'おなじように はさんで、声を出してブーッ。',
+    r: 'くちを ひらいてから やさしく すぼめる。したは うしろに引いて、先はどこにもつけない（「ら」とちがう）。',
+    k: 'したの奥を上あごにつけて、はなすと息がこすれて出る。',
+    ae: '口を大きくあけて、したは低く前に。',
+    t: 'したの先で、上の歯のうしろをトンとたたく。',
+  },
+  ko: {
+    th_voiceless: '혀끝을 이 사이에 살짝 물고, 혀 둘레로 바람을 불어. 목소리는 안 내.',
+    th_voiced: '똑같이 혀를 물고, 목소리를 내서 부르르 떨어 봐.',
+    r: '입을 벌렸다가 살짝 오므려. 혀는 뒤로 당기고, 혀끝은 아무 데도 닿지 않아 (한국어 ㄹ과 달라).',
+    k: '혀 뒤쪽을 입천장에 붙였다가 떼면, 바람이 긁히듯이 나와.',
+    ae: '입을 크게 벌리고, 혀는 낮게 앞으로.',
+    t: '혀끝으로 윗니 뒤쪽을 톡 쳐.',
+  },
+  'es-MX': {
+    th_voiceless: 'Pon la puntita de la lengua entre los dientes y sopla el aire alrededor. Sin voz.',
+    th_voiced: 'Igual, con la lengua entre los dientes, pero ahora con voz: siente cómo vibra.',
+    r: 'Abre la boca y luego ciérrala suavecito. La lengua va hacia atrás y la punta no toca nada (no es como la "r" del español).',
+    k: 'La parte de atrás de la lengua toca el paladar y luego se suelta: el aire sale raspando.',
+    ae: 'Abre bien la boca, con la lengua abajo y hacia adelante.',
+    t: 'Con la punta de la lengua, toca detrás de los dientes de arriba: ¡tac!',
+  },
+}
+
+export function articulation(id: string, lang: Lang, english: string): string {
+  return lang === 'en' ? english : (ARTICULATION[lang][id] ?? english)
 }

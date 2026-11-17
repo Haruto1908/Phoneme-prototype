@@ -1,4 +1,5 @@
 /** Client for /api/auth (see api/_lib/auth.ts). Sessions live in an httpOnly cookie, so nothing is stored here. */
+import type { Lang } from './i18n'
 
 /** `manager` accounts also get the dashboard over every student's activity (see lib/manager.ts). */
 export type Role = 'student' | 'manager'
@@ -6,6 +7,8 @@ export type Role = 'student' | 'manager'
 export interface User {
   email: string
   role: Role
+  /** primary language; null on an account made before languages were stored (Root then saves the one in use) */
+  lang: Lang | null
 }
 
 /** Thrown for any non-2xx reply; `code` maps to an `err.*` string in i18n. */
@@ -38,7 +41,9 @@ async function call<T>(action: string, method: 'GET' | 'POST', body?: unknown): 
 
 export const auth = {
   me: () => call<{ user: User }>('me', 'GET').then((d) => d.user),
-  signup: (email: string, password: string) => call<{ user: User }>('signup', 'POST', { email, password }).then((d) => d.user),
+  signup: (email: string, password: string, lang: Lang) => call<{ user: User }>('signup', 'POST', { email, password, lang }).then((d) => d.user),
   login: (email: string, password: string) => call<{ user: User }>('login', 'POST', { email, password }).then((d) => d.user),
   logout: () => call<{ ok: true }>('logout', 'POST'),
+  /** Save the account's primary language. */
+  setLanguage: (lang: Lang) => call<{ user: User }>('language', 'POST', { lang }).then((d) => d.user),
 }

@@ -1,6 +1,6 @@
 import type { Manifest, Presenter, Sound, TileColor } from '../types'
 import type { ThSound } from '../animations/th-sideview.js'
-import { ARTICULATION_JP, type Lang } from './i18n'
+import { articulation, type Lang } from './i18n'
 
 export interface Clip {
   video: string
@@ -60,7 +60,7 @@ export function itemFor(manifest: Manifest, id: string, lang: Lang, presenter: P
     color: s.color,
     clips: clipsFor(s, presenter),
     tongue: sideView && s.tongue && s.audio ? { sound: s.tongue.sound, audio: s.audio } : null,
-    hint: lang === 'jp' ? (ARTICULATION_JP[id] ?? s.articulation) : s.articulation,
+    hint: articulation(id, lang, s.articulation),
     seconds,
   }
 }

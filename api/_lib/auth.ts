@@ -1,26 +1,35 @@
 /**
- * Email + password accounts.
+ * Email + password accounts, each with a primary language.
  *
- *   POST /api/auth/signup  { email, password }  → creates the account and starts the session
- *   POST /api/auth/login   { email, password }  → session
+ *   POST /api/auth/signup    { email, password, lang? }  → creates the account and starts the session
+ *   POST /api/auth/login     { email, password }         → session
  *   POST /api/auth/logout
- *   GET  /api/auth/me                           → { user } or 401
+ *   GET  /api/auth/me                                    → { user } or 401
+ *   POST /api/auth/language  { lang }                    → saves the primary language → { user }
  *
- * `user` is `{ email, role }`; the role comes from the email (see session.ts) and decides whether the manager
- * dashboard is offered. Errors are `{ error: code }` with codes the UI translates (see i18n `err.*`).
+ * `user` is `{ email, role, lang }`. The role comes from the email (see session.ts) and decides whether the manager
+ * dashboard is offered. `lang` is the account's primary language (api/_lib/lang.ts) — every system message follows
+ * it — or null on an account made before languages were stored (the client then saves the one in use). Errors are
+ * `{ error: code }` with codes the UI translates (see i18n `err.*`).
  */
 import bcrypt from 'bcryptjs'
-import { users } from './db.ts'
+import { users, type UserDoc } from './db.ts'
 import { dispatch, HttpError, json, readJson, type Req, type Res, type Route } from './http.ts'
+import { normLang } from './lang.ts'
 import { endSession, requireUser, roleOf, startSession } from './session.ts'
 
 const normEmail = (v: unknown) => String(v ?? '').trim().toLowerCase()
 const validEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e) && e.length <= 254
 
+/** What the client is told about an account. */
+const publicUser = (email: string, doc: Pick<UserDoc, 'lang'> | null) => ({ email, role: roleOf(email), lang: normLang(doc?.lang) })
+
 async function signup(req: Req, res: Res) {
   const body = await readJson(req)
   const email = normEmail(body.email)
   const password = String(body.password ?? '')
+  // an unknown or missing language falls back to English rather than refusing the sign-up
+  const lang = normLang(body.lang) ?? 'en'
   if (!validEmail(email)) throw new HttpError(400, 'invalid_email')
   if (password.length < 8 || password.length > 200) throw new HttpError(400, 'weak_password')
   const col = await users()
@@ -29,7 +38,7 @@ async function signup(req: Req, res: Res) {
   const now = new Date()
   let id: string
   try {
-    const r = await col.insertOne({ email, passwordHash, createdAt: now, lastLoginAt: now })
+    const r = await col.insertOne({ email, passwordHash, createdAt: now, lastLoginAt: now, lang, langUpdatedAt: now })
     id = String(r.insertedId)
   } catch (e) {
     // two sign-ups raced on the unique index
@@ -37,7 +46,7 @@ async function signup(req: Req, res: Res) {
     throw e
   }
   await startSession(req, res, { id, email })
-  json(res, 200, { user: { email, role: roleOf(email) } })
+  json(res, 200, { user: publicUser(email, { lang }) })
 }
 
 async function login(req: Req, res: Res) {
@@ -50,7 +59,7 @@ async function login(req: Req, res: Res) {
   if (!user || !ok) throw new HttpError(401, 'bad_credentials')
   await col.updateOne({ email }, { $set: { lastLoginAt: new Date() } })
   await startSession(req, res, { id: String(user._id), email })
-  json(res, 200, { user: { email, role: roleOf(email) } })
+  json(res, 200, { user: publicUser(email, user) })
 }
 
 async function logout(req: Req, res: Res) {
@@ -60,7 +69,18 @@ async function logout(req: Req, res: Res) {
 
 async function me(req: Req, res: Res) {
   const user = await requireUser(req)
-  json(res, 200, { user: { email: user.email, role: user.role } })
+  const doc = await (await users()).findOne({ email: user.email }, { projection: { lang: 1 } })
+  json(res, 200, { user: publicUser(user.email, doc) })
+}
+
+/** Change the signed-in account's primary language. */
+async function language(req: Req, res: Res) {
+  const user = await requireUser(req)
+  const body = await readJson(req)
+  const lang = normLang(body.lang)
+  if (!lang) throw new HttpError(400, 'bad_lang')
+  await (await users()).updateOne({ email: user.email }, { $set: { lang, langUpdatedAt: new Date() } })
+  json(res, 200, { user: publicUser(user.email, { lang }) })
 }
 
 const ROUTES: Record<string, Route> = {
@@ -68,6 +88,7 @@ const ROUTES: Record<string, Route> = {
   login: { method: 'POST', run: login },
   logout: { method: 'POST', run: logout },
   me: { method: 'GET', run: me },
+  language: { method: 'POST', run: language },
 }
 
 /** Dispatch one auth action; used by api/auth/[action].ts on Vercel and by the Vite dev middleware. */

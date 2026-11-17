@@ -18,6 +18,12 @@
         document.documentElement.classList.toggle('dark', t === 'dark')
         document.documentElement.style.colorScheme = t
       } catch (e) {}
+      // and the last-used language, so Japanese / Korean text gets the right glyphs and fonts from the first paint
+      try {
+        var l = String((JSON.parse(localStorage.getItem('soundchart.settings') || '{}') || {}).lang || '').toLowerCase()
+        var tag = l === 'ja' || l === 'jp' ? 'ja-JP' : l === 'ko' ? 'ko-KR' : l.indexOf('es') === 0 ? 'es-MX' : ''
+        if (tag) document.documentElement.lang = tag
+      } catch (e) {}
     </script>
   </head>
   <body>

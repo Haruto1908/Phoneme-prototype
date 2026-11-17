@@ -5,7 +5,7 @@ import type { Theme } from '../lib/theme'
 import type { Sound } from '../types'
 import { cardLabel } from '../lib/plan'
 import { palette } from './palette'
-import { LangToggle, ThemeToggle } from './controls'
+import { LangPicker, ThemeToggle } from './controls'
 import { CheckIcon, EyeIcon, LockIcon, MailIcon, MicIcon, MouthIcon, TongueIcon } from './icons'
 
 interface AuthPageProps {
@@ -65,7 +65,7 @@ export function AuthPage({ lang, onLang, theme, onTheme, host, avatar, sounds, o
     setBusy(true)
     setError(null)
     try {
-      onSignedIn(view === 'login' ? await auth.login(email, password) : await auth.signup(email, password))
+      onSignedIn(view === 'login' ? await auth.login(email, password) : await auth.signup(email, password, lang))
     } catch (err) {
       setError(errorKey(err))
       setBusy(false)
@@ -143,7 +143,7 @@ export function AuthPage({ lang, onLang, theme, onTheme, host, avatar, sounds, o
             <Brand avatar={avatar} host={host} lang={lang} compact />
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <LangToggle lang={lang} onLang={onLang} />
+            <LangPicker lang={lang} onLang={onLang} />
             <ThemeToggle theme={theme} onTheme={onTheme} lang={lang} />
           </div>
         </div>
@@ -211,6 +211,16 @@ export function AuthPage({ lang, onLang, theme, onTheme, host, avatar, sounds, o
                   required
                 />
               </Field>
+              {/* sign-up only: the account's primary language (also switches this page, so the choice is visible) */}
+              {view === 'signup' && (
+                <div>
+                  <span className="mb-1.5 block text-sm font-extrabold text-ink">{t('primaryLanguage', lang)}</span>
+                  <div className="flex items-center gap-3 rounded-2xl bg-panel-strong px-3 py-2 ring-1 ring-line">
+                    <LangPicker lang={lang} onLang={onLang} align="left" />
+                    <span className="min-w-0 text-xs font-semibold leading-snug text-muted">{t('primaryLanguageHint', lang)}</span>
+                  </div>
+                </div>
+              )}
             </div>
 
             {error && (

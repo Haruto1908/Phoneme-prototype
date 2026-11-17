@@ -33,6 +33,34 @@ cookie for 30 days. The account button in the top bar shows the email, language 
 switches, the mode-usage counters with the CSV download, and Log out — plus, for a manager, a
 button back to the dashboard (see [Manager role](#manager-role)).
 
+## Languages (primary language per account)
+
+Every account has a **primary language** — English (`en`), Japanese (`ja`), Korean (`ko`) or
+Spanish as spoken in Mexico (`es-MX`) — stored as `lang` on the user in `UsersTable`. All system
+messages follow it: menus, tips under the player, the side/front-view question, pronunciation
+feedback (written and spoken), errors, the manager dashboard and its date format. The English
+sounds and example words being taught stay in English in every language.
+
+- **Chosen at sign-up** (the *Primary language* field, defaulting to the sign-in page's language,
+  which itself starts from `?lang=`, then this device's last choice, then the browser language).
+- **Follows the account across devices:** after login the account's language replaces the
+  device's. Changing language in the header or the account menu saves it to the account
+  (`POST /api/auth/language`). Accounts made before this existed adopt the language in use on
+  their next login.
+- **Manager view:** each student's language is shown in the dashboard and exported in the
+  students CSV (`language` column). Session/attempt logs record the UI language at the time;
+  rows from before this change say `jp` where new rows say `ja`.
+- **Fonts and voice:** `<html lang>` follows the language, so Japanese and Korean use their own
+  system fonts and glyph forms (`index.css`). Spoken feedback uses a voice for that language; if a
+  device has none, the line is shown but not spoken (never read in the wrong accent).
+
+Strings live in `src/lib/locales/` (`en.ts` defines the keys; `ja.ts`, `ko.ts`, `es-MX.ts` are
+typed so the build fails if any key is missing). Per-sound tips are in `articulation()`
+(`src/lib/i18n.ts`) and feedback lines in `src/lib/pronounce/reasons.ts`. **The Korean and
+Spanish texts need a review by native teachers**, as the Japanese did. To add a language: a new
+locale file, an entry in `LANGUAGES` and `ARTICULATION`, its feedback lines, and its code in
+`api/_lib/lang.ts`.
+
 Local: put these in `phoneme-prototype/.env.local` (git-ignored). On Vercel: Project →
 Settings → Environment Variables. Never commit the values.
 

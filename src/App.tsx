@@ -109,8 +109,8 @@ export default function App({ user, lang, onLang, theme, onTheme, onLogout, onMa
     setModalOpen(false)
   }, [])
 
-  if (state.status === 'loading') return <Centered>Loading…</Centered>
-  if (state.status === 'error') return <Centered>Could not load the sound chart ({state.message}).</Centered>
+  if (state.status === 'loading') return <Centered>{t('loading', lang)}</Centered>
+  if (state.status === 'error') return <Centered>{t('loadError', lang, { message: state.message })}</Centered>
 
   const { manifest } = state
   const { presenter, muted, volume, practice } = settings

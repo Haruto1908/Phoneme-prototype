@@ -15,6 +15,7 @@
 import { row, safeName, sendCsv, stamp } from './csv.ts'
 import { attempts, BASELINE_ATTEMPTS, events, progress, usage, users, type EventDoc, type ModeCounts, type SoundProgress } from './db.ts'
 import { dispatch, HttpError, json, type Req, type Res, type Route } from './http.ts'
+import { normLang } from './lang.ts'
 import { requireManager, roleOf, type Role } from './session.ts'
 import { ATTEMPTS_CSV_HEADER, attemptCsvLine } from './attempts.ts'
 import { normCounts, SESSION_CSV_HEADER, sessionCsvLines } from './log.ts'
@@ -39,6 +40,8 @@ interface SoundRow {
 interface StudentRow {
   email: string
   role: Role
+  /** primary language (api/_lib/lang.ts), null if never set */
+  lang: string | null
   createdAt: string | null
   lastLoginAt: string | null
   /** most recent sign of life: login, mode switch or attempt */
@@ -76,7 +79,7 @@ function soundRow(p: SoundProgress): SoundRow {
 async function buildRows(): Promise<StudentRow[]> {
   const [usersCol, usageCol, progressCol, attemptsCol] = await Promise.all([users(), usage(), progress(), attempts()])
   const [accounts, counters, progressDocs, attemptTotals] = await Promise.all([
-    usersCol.find({}, { projection: { email: 1, createdAt: 1, lastLoginAt: 1 } }).limit(MAX_STUDENTS).toArray(),
+    usersCol.find({}, { projection: { email: 1, createdAt: 1, lastLoginAt: 1, lang: 1 } }).limit(MAX_STUDENTS).toArray(),
     usageCol.find({}).limit(MAX_STUDENTS).toArray(),
     progressCol.find({}).limit(MAX_STUDENTS).toArray(),
     attemptsCol
@@ -99,6 +102,7 @@ async function buildRows(): Promise<StudentRow[]> {
     return {
       email: a.email,
       role: roleOf(a.email),
+      lang: normLang(a.lang),
       createdAt: iso(a.createdAt),
       lastLoginAt: iso(a.lastLoginAt),
       lastSeenAt: iso(latest(a.lastLoginAt, modeDoc?.lastAt, att?.lastAt)),
@@ -169,9 +173,9 @@ type Kind = (typeof KINDS)[number]
 async function studentsCsv(): Promise<string[]> {
   const rows = await buildRows()
   return [
-    'email,role,signed_up_utc,last_login_utc,last_seen_utc,mode_avatar,mode_human,mode_both,mode_total,last_mode,attempts,avg_stars,sounds_practised,last_attempt_utc',
+    'email,role,language,signed_up_utc,last_login_utc,last_seen_utc,mode_avatar,mode_human,mode_both,mode_total,last_mode,attempts,avg_stars,sounds_practised,last_attempt_utc',
     ...rows.map((r) =>
-      row([r.email, r.role, r.createdAt ?? '', r.lastLoginAt ?? '', r.lastSeenAt ?? '', r.modes.avatar, r.modes.human, r.modes.both, r.modeTotal, r.lastMode ?? '', r.attempts, r.avgStars === null ? '' : r.avgStars.toFixed(2), Object.keys(r.sounds).length, r.lastAttemptAt ?? '']),
+      row([r.email, r.role, r.lang ?? '', r.createdAt ?? '', r.lastLoginAt ?? '', r.lastSeenAt ?? '', r.modes.avatar, r.modes.human, r.modes.both, r.modeTotal, r.lastMode ?? '', r.attempts, r.avgStars === null ? '' : r.avgStars.toFixed(2), Object.keys(r.sounds).length, r.lastAttemptAt ?? '']),
     ),
   ]
 }

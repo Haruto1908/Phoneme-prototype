@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { t, type Lang } from '../lib/i18n'
+import { LANGUAGES, langInfo, t, type Lang } from '../lib/i18n'
 import type { Theme } from '../lib/theme'
 import { CSV_URL, type ModeCounts } from '../lib/log'
 import type { Role } from '../lib/auth'
 import type { Presenter } from '../types'
-import { ChartIcon, DownloadIcon, LogoutIcon, MoonIcon, SunIcon } from './icons'
+import { ChartIcon, CheckIcon, ChevronDownIcon, DownloadIcon, GlobeIcon, LogoutIcon, MoonIcon, SunIcon } from './icons'
 
 /** Round, raised icon button used across the top bar. */
 export function IconButton({ label, pressed, onClick, className, children }: { label: string; pressed?: boolean; onClick: () => void; className?: string; children: ReactNode }) {
@@ -41,24 +41,83 @@ export function SectionTitle({ icon, tone, children }: { icon: ReactNode; tone: 
   )
 }
 
-/** EN / JP segmented control. */
-export function LangToggle({ lang, onLang, size = 'md' }: { lang: Lang; onLang: (l: Lang) => void; size?: 'sm' | 'md' }) {
-  const h = size === 'sm' ? 'h-9 min-w-11 text-xs' : 'h-9 min-w-12 text-sm'
+/**
+ * Language picker: a globe button with the current language that opens a short menu listing every language in
+ * its own script (so a Korean parent finds 한국어 even when the page is in English). Choosing one while signed in
+ * changes the account's primary language (Root.tsx).
+ */
+export function LangPicker({ lang, onLang, size = 'md', align = 'right' }: { lang: Lang; onLang: (l: Lang) => void; size?: 'sm' | 'md'; align?: 'left' | 'right' }) {
+  const [open, setOpen] = useState(false)
+  const box = useRef<HTMLDivElement>(null)
+  useDismiss(box, open, () => setOpen(false))
+  const cur = langInfo(lang)
   return (
-    <div className="no-select flex rounded-full bg-sunk p-1 ring-1 ring-line" role="group" aria-label={t('langLabel', lang)}>
-      {(['en', 'jp'] as const).map((l) => (
-        <button
-          key={l}
-          type="button"
-          aria-pressed={lang === l}
-          onClick={() => onLang(l)}
-          className={`${h} rounded-full px-3 font-extrabold uppercase tracking-wide transition-all ${lang === l ? 'bg-panel-strong text-ink shadow-raise' : 'text-muted hover:text-ink'}`}
+    <div ref={box} className="no-select relative">
+      <button
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label={`${t('chooseLanguage', lang)}: ${cur.name}`}
+        title={t('chooseLanguage', lang)}
+        onClick={() => setOpen((o) => !o)}
+        className={`flex ${size === 'sm' ? 'h-9 text-xs' : 'h-11 text-sm'} items-center gap-1.5 rounded-full bg-panel-strong pl-2.5 pr-2 font-extrabold text-ink shadow-raise ring-1 ring-line transition-transform hover:-translate-y-px active:translate-y-[2px] ${open ? 'ring-2 ring-accent/50' : ''}`}
+      >
+        <GlobeIcon className={`${size === 'sm' ? 'h-4 w-4' : 'h-5 w-5'} text-sky-ink`} />
+        <span lang={cur.locale} className="whitespace-nowrap">
+          {cur.short}
+        </span>
+        <ChevronDownIcon className={`h-3.5 w-3.5 text-muted transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <ul
+          role="menu"
+          aria-label={t('chooseLanguage', lang)}
+          className={`animate-pop absolute top-full z-50 mt-2 min-w-[12.5rem] rounded-2xl bg-panel-strong p-1.5 shadow-float ring-1 ring-line ${align === 'right' ? 'right-0 origin-top-right' : 'left-0 origin-top-left'}`}
         >
-          {l === 'en' ? 'EN' : 'JP'}
-        </button>
-      ))}
+          {LANGUAGES.map((l) => {
+            const on = l.code === lang
+            return (
+              <li key={l.code} role="none">
+                <button
+                  type="button"
+                  role="menuitemradio"
+                  aria-checked={on}
+                  lang={l.locale}
+                  onClick={() => {
+                    setOpen(false)
+                    if (!on) onLang(l.code)
+                  }}
+                  className={`flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-extrabold transition-colors ${on ? 'bg-sky-bg text-sky-ink' : 'text-ink hover:bg-sunk'}`}
+                >
+                  {l.name}
+                  {on && <CheckIcon className="h-4 w-4" />}
+                </button>
+              </li>
+            )
+          })}
+        </ul>
+      )}
     </div>
   )
+}
+
+/** Close a popover on a tap outside it or on Escape. */
+function useDismiss(box: { current: HTMLElement | null }, open: boolean, close: () => void) {
+  useEffect(() => {
+    if (!open) return
+    const onDown = (e: PointerEvent) => {
+      if (!box.current?.contains(e.target as Node)) close()
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') close()
+    }
+    window.addEventListener('pointerdown', onDown)
+    window.addEventListener('keydown', onKey)
+    return () => {
+      window.removeEventListener('pointerdown', onDown)
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [box, open, close])
 }
 
 /** Sun / moon switch; the icon swaps with a small turn. */
@@ -163,9 +222,10 @@ export function AccountMenu({ email, role, lang, theme, usage, onTheme, onLang, 
 
           <div className="my-4 h-px bg-line" />
 
-          <Row label={t('langLabel', lang)}>
-            <LangToggle lang={lang} onLang={onLang} size="sm" />
+          <Row label={t('primaryLanguage', lang)}>
+            <LangPicker lang={lang} onLang={onLang} size="sm" />
           </Row>
+          <p className="-mt-0.5 mb-1 text-xs font-medium text-muted">{t('primaryLanguageHint', lang)}</p>
           <Row label={t('theme', lang)}>
             <div className="no-select flex rounded-full bg-sunk p-1 ring-1 ring-line" role="group" aria-label={t('theme', lang)}>
               {(['light', 'dark'] as const).map((th) => (

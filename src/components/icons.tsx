@@ -207,6 +207,23 @@ export function FaceIcon({ className }: IconProps) {
     </svg>
   )
 }
+/** Globe: the language picker. */
+export function GlobeIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className ?? 'h-6 w-6'} {...stroke} strokeWidth={2.4} aria-hidden="true">
+      <circle cx="16" cy="16" r="11.5" />
+      <path d="M4.5 16h23M16 4.5c3.2 3.2 4.8 7 4.8 11.5S19.2 24.3 16 27.5M16 4.5c-3.2 3.2-4.8 7-4.8 11.5s1.6 8.3 4.8 11.5" />
+    </svg>
+  )
+}
+/** Small down chevron for menus. */
+export function ChevronDownIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className ?? 'h-4 w-4'} {...stroke} strokeWidth={3.4} aria-hidden="true">
+      <path d="M9 13l7 7 7-7" />
+    </svg>
+  )
+}
 /** House: back to a fresh start screen. */
 export function HomeIcon({ className }: IconProps) {
   return (

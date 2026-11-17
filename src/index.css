@@ -79,8 +79,23 @@
 }
 
 /* ---------- expose the tokens to Tailwind (text-ink, bg-panel, shadow-raise, bg-mint-bg …) ---------- */
+/*
+ * Nunito covers English and Spanish (latin-ext). Japanese and Korean fall back to the system's CJK fonts, chosen
+ * by <html lang> (set from the user's primary language) so each gets its own forms: rounded Hiragino / Yu Gothic
+ * for Japanese, Apple SD Gothic Neo / Malgun Gothic for Korean.
+ */
+:root {
+  --font-cjk: 'Hiragino Maru Gothic ProN', 'Hiragino Sans', 'Yu Gothic UI', 'Meiryo', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans CJK JP';
+}
+:root:lang(ja) {
+  --font-cjk: 'Hiragino Maru Gothic ProN', 'Hiragino Sans', 'Yu Gothic UI', 'Meiryo', 'Noto Sans JP', 'Noto Sans CJK JP';
+}
+:root:lang(ko) {
+  --font-cjk: 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', 'Noto Sans CJK KR', 'Nanum Gothic';
+}
+
 @theme inline {
-  --font-sans: 'Nunito', 'Segoe UI Rounded', 'Quicksand', 'Trebuchet MS', ui-rounded, system-ui, sans-serif;
+  --font-sans: 'Nunito', var(--font-cjk), 'Segoe UI Rounded', 'Quicksand', 'Trebuchet MS', ui-rounded, system-ui, sans-serif;
   --font-ipa: 'Charis SIL', 'Doulos SIL', 'Gentium Plus', 'Segoe UI', serif;
 
   --color-ink: var(--ink);

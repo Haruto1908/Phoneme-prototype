@@ -7,7 +7,7 @@ import { asset } from './lib/media'
 import { readLang, writeLang } from './lib/settings'
 import { applyTheme, readTheme, writeTheme, type Theme } from './lib/theme'
 import { useManifest } from './lib/useManifest'
-import { t, type Lang } from './lib/i18n'
+import { langInfo, t, type Lang } from './lib/i18n'
 
 /**
  * Gate: ask the server who is logged in; show the sign-in page until there is a user, then the app — or, for a
@@ -24,24 +24,48 @@ export default function Root() {
     let cancelled = false
     auth
       .me()
-      .then((u) => !cancelled && setUser(u))
+      .then((u) => !cancelled && signedIn(u))
       .catch(() => !cancelled && setUser(null))
     return () => {
       cancelled = true
     }
+    // runs once on load; signedIn only reads the current language for accounts without one
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
     document.title = t('title', lang)
+    // the right glyphs (Japanese vs Korean forms), fonts (index.css :lang rules) and screen-reader voice
+    document.documentElement.lang = langInfo(lang).locale
   }, [lang])
+
+  /**
+   * A user arrived (session restored, logged in or signed up): their primary language wins on every device.
+   * Accounts made before languages were stored adopt the language in use now.
+   */
+  function signedIn(u: User) {
+    if (u.lang) {
+      setLang(u.lang)
+      writeLang(u.lang)
+      setUser(u)
+    } else {
+      setUser({ ...u, lang })
+      auth.setLanguage(lang).catch(() => {})
+    }
+  }
 
   useEffect(() => {
     applyTheme(theme)
   }, [theme])
 
+  /** Changing the language while signed in changes the account's primary language (saved on the server). */
   function onLang(l: Lang) {
     setLang(l)
     writeLang(l)
+    if (user) {
+      setUser({ ...user, lang: l })
+      auth.setLanguage(l).catch(() => {})
+    }
   }
 
   function onTheme(th: Theme) {
@@ -73,7 +97,7 @@ export default function Root() {
         host={host?.name ?? 'Brooke'}
         avatar={host?.portrait ? asset(host.portrait) : null}
         sounds={manifest.status === 'ready' ? manifest.manifest.sounds : []}
-        onSignedIn={setUser}
+        onSignedIn={signedIn}
       />
     )
   }

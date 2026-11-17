@@ -13,6 +13,9 @@ export interface UserDoc {
   passwordHash: string
   createdAt: Date
   lastLoginAt?: Date
+  /** primary language (api/_lib/lang.ts); absent on accounts made before languages were stored */
+  lang?: string
+  langUpdatedAt?: Date
 }
 
 /** Presenter modes, mirrored from src/types.ts (the API must not import browser code). */

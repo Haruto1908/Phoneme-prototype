@@ -17,6 +17,8 @@ export interface SoundRow {
 export interface StudentRow {
   email: string
   role: Role
+  /** primary language code ('en', 'ja', 'ko', 'es-MX'), null if never set */
+  lang: string | null
   createdAt: string | null
   lastLoginAt: string | null
   lastSeenAt: string | null

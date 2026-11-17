@@ -5,7 +5,7 @@ import type { Theme } from '../lib/theme'
 import type { ModeCounts } from '../lib/log'
 import type { Role } from '../lib/auth'
 import { FaceIcon, HomeIcon, MicIcon, PeopleIcon, SpeakerIcon, UserIcon } from './icons'
-import { AccountMenu, IconButton, LangToggle, ThemeToggle } from './controls'
+import { AccountMenu, IconButton, LangPicker, ThemeToggle } from './controls'
 
 interface TopBarProps {
   hostName: string
@@ -124,7 +124,7 @@ export function TopBar({ hostName, avatar, lang, onLang, theme, onTheme, present
       {/* controls: one soft toolbar + the account button */}
       <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-2.5 md:flex-nowrap md:justify-end">
         <div className="flex items-center gap-1.5 rounded-full bg-sunk/70 p-1.5 ring-1 ring-line">
-          <LangToggle lang={lang} onLang={onLang} />
+          <LangPicker lang={lang} onLang={onLang} />
           <IconButton label={muted ? t('soundOff', lang) : t('soundOn', lang)} pressed={!muted} onClick={() => onMuted(!muted)} className={muted ? 'text-accent' : ''}>
             <SpeakerIcon level={muted ? 0 : 2} className="h-6 w-6" />
           </IconButton>

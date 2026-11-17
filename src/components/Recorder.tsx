@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import type { Sound, TileColor } from '../types'
 import { palette } from './palette'
-import { t, type Lang } from '../lib/i18n'
+import { langInfo, t, type Lang } from '../lib/i18n'
 import { asset } from '../lib/media'
 import { scoreRecording, unlockAudio } from '../lib/pronounce/analyze'
 import { allReferences, preloadReferences } from '../lib/pronounce/references'
@@ -49,17 +49,26 @@ interface Result {
   blob: Blob
 }
 
-/** Speak a line in the lesson language; silently does nothing where speech synthesis is unavailable. */
+/**
+ * Speak a line in the user's primary language. Prefers a voice for the exact locale (es-MX before other Spanish).
+ * If the device has voices but none for this language, stay silent rather than read Korean or Japanese text in an
+ * English accent — the stars and the written line are still shown. Does nothing without speech synthesis.
+ */
 function say(text: string, lang: Lang, volume: number): void {
   const synth = typeof window !== 'undefined' ? window.speechSynthesis : undefined
   if (!synth) return
   synth.cancel()
+  const locale = langInfo(lang).locale
+  const base = locale.split('-')[0]
+  const norm = (v: SpeechSynthesisVoice) => v.lang.replace('_', '-').toLowerCase()
+  const voices = synth.getVoices()
+  const voice = voices.find((v) => norm(v) === locale.toLowerCase()) ?? voices.find((v) => norm(v).startsWith(base))
+  if (voices.length && !voice) return
   const u = new SpeechSynthesisUtterance(text)
-  u.lang = lang === 'jp' ? 'ja-JP' : 'en-US'
+  u.lang = locale
   u.rate = 0.95
   u.pitch = 1.1
   u.volume = volume
-  const voice = synth.getVoices().find((v) => v.lang.replace('_', '-').toLowerCase().startsWith(lang === 'jp' ? 'ja' : 'en'))
   if (voice) u.voice = voice
   synth.speak(u)
 }

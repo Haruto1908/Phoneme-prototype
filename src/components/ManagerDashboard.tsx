@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { errorText, t, type Lang } from '../lib/i18n'
+import { errorText, langInfo, normLang, t, type Lang } from '../lib/i18n'
 import type { Theme } from '../lib/theme'
 import type { User } from '../lib/auth'
 import type { Sound } from '../types'
@@ -73,7 +73,7 @@ export function ManagerDashboard({ user, lang, onLang, theme, onTheme, onLogout,
   // the detail belongs to whoever is selected now; a stale one from the previous row must not flash up
   const shown = detail && detail.student.email === selected ? detail : null
 
-  const time = useMemo(() => new Intl.DateTimeFormat(lang === 'jp' ? 'ja-JP' : 'en-GB', { dateStyle: 'short', timeStyle: 'short' }), [lang])
+  const time = useMemo(() => new Intl.DateTimeFormat(langInfo(lang).locale, { dateStyle: 'short', timeStyle: 'short' }), [lang])
   const when = (iso: string | null) => (iso ? time.format(new Date(iso)) : t('never', lang))
 
   return (
@@ -150,6 +150,7 @@ export function ManagerDashboard({ user, lang, onLang, theme, onTheme, onLogout,
                 <thead>
                   <tr className="text-xs font-extrabold uppercase tracking-wide text-muted">
                     <Th>{t('studentCol', lang)}</Th>
+                    <Th>{t('langCol', lang)}</Th>
                     <Th>{t('lastSeen', lang)}</Th>
                     <Th align="center">{t('modesCol', lang)}</Th>
                     <Th align="right">{t('totalAttempts', lang)}</Th>
@@ -186,6 +187,7 @@ export function ManagerDashboard({ user, lang, onLang, theme, onTheme, onLogout,
                             )}
                           </span>
                         </Td>
+                        <Td className="whitespace-nowrap font-semibold text-ink">{langName(r.lang)}</Td>
                         <Td className="whitespace-nowrap text-muted">{when(r.lastSeenAt)}</Td>
                         <Td align="center" className="whitespace-nowrap tabular-nums font-semibold text-ink">
                           {r.modes.avatar} / {r.modes.human} / {r.modes.both}
@@ -379,6 +381,12 @@ function Delta({ value }: { value: number | null }) {
 
 type Align = 'left' | 'right' | 'center'
 /** Written out rather than interpolated, so Tailwind sees the class names. */
+/** A student's primary language in its own script (e.g. 한국어), or a dash when never set. */
+function langName(code: string | null): string {
+  const l = normLang(code)
+  return l ? langInfo(l).name : '—'
+}
+
 const ALIGN: Record<Align, string> = { left: 'text-left', right: 'text-right', center: 'text-center' }
 
 function Th({ children, align = 'left' }: { children: ReactNode; align?: Align }) {
