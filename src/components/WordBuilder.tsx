@@ -161,7 +161,8 @@ export function WordBuilder({ manifest, lang, slots, onSlots, armed, onArmed, vo
         </div>
       </div>
 
-      <p className="text-xs font-medium text-muted">{t('wbHint', lang)}</p>
+      {/* mt-auto: when the panel is stretched to line up with the Sounds panel, the hint sits at its bottom */}
+      <p className="mt-auto text-xs font-medium text-muted">{t('wbHint', lang)}</p>
     </section>
   )
 }

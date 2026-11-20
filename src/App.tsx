@@ -221,7 +221,9 @@ export default function App({ user, lang, onLang, theme, onTheme, onLogout, onCh
       />
 
       <div key={fresh} className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-3">
-        <div className="animate-rise lg:col-span-2 [animation-delay:60ms]">
+        {/* lg: the Sounds panel takes the row's height (set by the right column, at least the screen's free height)
+            and scrolls its cards inside, so both columns end on the same line */}
+        <div className="animate-rise relative lg:col-span-2 lg:min-h-[max(32rem,calc(100dvh-14rem))] [animation-delay:60ms]">
           <SoundChart manifest={manifest} lang={lang} playingId={playingId} armed={armed !== null} onPress={onCardPress} />
         </div>
         <div className="flex flex-col gap-4 sm:gap-5">
@@ -240,7 +242,8 @@ export default function App({ user, lang, onLang, theme, onTheme, onLogout, onCh
               }}
             />
           </section>
-          <div className="animate-rise [animation-delay:180ms]">
+          {/* stretches to the bottom of the row, level with the Sounds panel */}
+          <div className="animate-rise flex flex-1 flex-col [animation-delay:180ms] [&>section]:flex-1">
             <WordBuilder
               manifest={manifest}
               lang={lang}
