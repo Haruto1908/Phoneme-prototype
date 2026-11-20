@@ -5,7 +5,7 @@
  *
  *   import { createThSideview } from './th-sideview.js'
  *   const anim = createThSideview(document.querySelector('#stage'), {
- *     sound: 'θ',                               // 'θ' | 'ð' | 'ɹ' | 'k' | 'æ' | 't'
+ *     sound: 'θ',                               // 'θ' | 'ð' | 'ɹ' | 'k' | 'æ' | 't' | 'l' | 'd'
  *     audio: { 'θ': 'audio/θ.mp3', 'ð': 'audio/ð.mp3' },
  *     portrait: PORTRAIT_GIRL,                  // photo-real face with a soft cutaway window (or null for the flat diagram)
  *     onTime: (t) => {}, onEnd: () => {},
@@ -185,6 +185,14 @@ const HOLD_T = [
   [118.5, 136.5], [114.5, 140.5], [110.5, 145.5], [106.5, 151.0], [103.0, 157.5], [99.5, 163.0], [100.5, 169.5],
   [107.0, 171.5], [117.0, 167.0], [126.5, 160.5], [135.0, 153.5], [141.5, 147.0], [145.5, 140.5], [148.0, 134.0],
 ]
+// /l/: jaw +1.5°. Same tip contact as /t/ — the tip presses the alveolar ridge just behind the upper incisors — but
+// HELD, and the body behind the tip sits lower (the classic clear-/l/ dip): the tongue rises as a column to the ridge
+// while its sides drop, so voiced air flows out around the sides of the tongue (shown in the front view).
+const HOLD_L = [
+  [146.4, 128.6], [143.6, 128.8], [140.4, 131.0], [136.8, 133.4], [132.4, 134.6], [127.6, 135.2], [122.8, 136.4],
+  [118.2, 138.6], [114.2, 141.8], [110.4, 146.0], [106.5, 151.2], [103.0, 157.5], [99.5, 163.0], [100.5, 169.5],
+  [107.0, 171.5], [117.0, 167.0], [126.5, 160.5], [135.0, 153.5], [141.5, 147.0], [145.5, 140.5], [148.0, 134.0],
+]
 // /k/: jaw +2.5°. See-saw: the tip stays down behind the lower incisors and the front half of the tongue sinks
 // *below* its rest height, so a wide dark pocket (13–18 mm) opens between the blade and the roof, while the back
 // humps up and seals against the velum end of the roof (points 6–9 lie ~0.4 mm inside CAVITY_OVAL's roof,
@@ -323,6 +331,41 @@ export const SOUNDS = {
     steps: [['Ready', 'Mouth relaxed, tongue inside.'], ['Tip up', 'The tongue TIP presses the bump behind the top teeth.'], ['Tap!', 'The tip lets go — a quick puff of air.'], ['Back', 'Tongue relaxes.']],
     stepsJa: [['じゅんび', 'くちを らくに して、したは なかに。'], ['さきを あげる', 'したの「さき」を、うえの はの うらの でっぱりに つける。'], ['トン！', 'さきが はなれて、いきが すばやく でる。'], ['もどす', 'したを らくに する。']],
   },
+  // /d/: the voiced partner of /t/ — the same tip-on-the-ridge closure, but the VOICE comes on while the tip is still
+  // pressed on the ridge (the throat buzzes before the release), and the release is a softer puff than /t/'s.
+  // Audio middle_3s/d.mp3 (10 ms envelope): voiced closure 1.35–1.44 s, release burst 1.45 s, short vowel to 1.66 s.
+  'd': {
+    voiced: true, word: 'dog', kind: 'stop', oval: CAVITY_OVAL, front: { cx: 154.5, cy: 139.7, rx: 6.5, ry: 2.8 },
+    hint: 'TIP on the bump behind the top teeth — hum, then let go: “d”.',
+    hintJa: 'したの「さき」を うえの はの うらの でっぱりに つけて、のどを ふるわせながら はなす。「ドッ」。',
+    // the tip is on the ridge well before the voice starts, stays there through the voiced closure, then lets go
+    keys: [[0.95, 'rest'], [1.17, 'hold'], [1.45, 'hold'], [1.54, 'rel'], [1.85, 'rel'], [2.25, 'rest']],
+    poses: { hold: { pts: HOLD_T, jaw: 1, p: 1 }, rel: T_REL },
+    timing: { soundOn: 1.35, soundOff: 1.66, release: 1.45, end: 2.7 },
+    stepTimes: [0.95, 1.35, 1.70],
+    contacts: [{ at: [146.0, 128.9], from: 1.15, to: 1.46 }],
+    // a gentler puff than /t/ (fewer, slower particles), only after the release
+    flows: [{ d: 'M 145.6 131.2 C 146.6 134, 147.6 136.8, 149.4 138.6 C 152 140, 156 140.2, 161 140 C 166 139.8, 171 139.4, 176 139', n: 3, speed: 1.6, from: 1.45, to: 1.62 }],
+    steps: [['Ready', 'Mouth relaxed, tongue inside.'], ['Tip up', 'The tongue TIP presses the bump behind the top teeth.'], ['Hum + let go', 'Voice on while the tip is still up — feel the buzz — then the tip lets go: “d”.'], ['Back', 'Tongue relaxes.']],
+    stepsJa: [['じゅんび', 'くちを らくに して、したは なかに。'], ['さきを あげる', 'したの「さき」を、うえの はの うらの でっぱりに つける。'], ['ぶるっ＋はなす', 'さきを つけたまま のどを ぶるぶる、それから はなして「ドッ」。（t との ちがいは のどの ふるえ）'], ['もどす', 'したを らくに する。']],
+  },
+  // /l/: the tip goes up to the ridge (as for /t/) and STAYS there for the whole sound while the voice flows out
+  // around the sides of the tongue (the front view shows the two side channels). Audio middle_3s/l.mp3: audible
+  // 1.233-1.771 s. The contrast with /ɹ/ ("the tip touches nothing") is the key lesson for Japanese/Korean learners.
+  'l': {
+    voiced: true, word: 'leg', kind: 'hold', oval: CAVITY_OVAL, front: { cx: 154.5, cy: 140.0, rx: 6.5, ry: 3.2 },
+    hint: 'Keep the TIP on the bump behind the top teeth and hum “lll”.',
+    hintJa: 'したの「さき」を うえの はの うらの でっぱりに つけたまま、「lll」と こえを だそう。',
+    keys: [[0.90, 'rest'], [1.18, 'hold'], [1.80, 'hold'], [2.20, 'rest']],
+    poses: { hold: { pts: HOLD_L, jaw: 1.5, p: 1 } },
+    timing: { soundOn: 1.233, soundOff: 1.771, end: 2.7 },
+    stepTimes: [0.90, 1.233, 1.80],
+    contacts: [{ at: [146.0, 128.9], from: 1.16, to: 1.82 }],
+    // voice passing the raised tip on its way out (around the sides of the tongue, which a side view cannot show)
+    flows: [{ d: 'M 120 133.2 C 127 132.2, 134 131.6, 139.2 133.2 C 142.6 135, 144.8 138.2, 147.8 139.6 C 151.2 140.6, 156 140.7, 161 140.5 C 166 140.3, 171 139.9, 177 139.5', n: 6, speed: 1.3 }],
+    steps: [['Ready', 'Mouth relaxed, tongue inside.'], ['Tip up', 'The tongue TIP touches the bump behind the top teeth and stays there.'], ['Lll', 'Voice on! The sound flows out around the SIDES of the tongue.'], ['Back', 'Tongue relaxes.']],
+    stepsJa: [['じゅんび', 'くちを らくに して、したは なかに。'], ['さきを つける', 'したの「さき」を、うえの はの うらの でっぱりに つけて、そのまま。'], ['「lll」', 'こえを だす。こえは したの よこから でるよ。（「ら」みたいに はじかない）'], ['もどす', 'したを らくに する。']],
+  },
 }
 for (const s in SOUNDS) {
   const c = SOUNDS[s]
@@ -454,7 +497,7 @@ function el(name, attrs = {}, parent) {
 /**
  * @param {HTMLElement} container
  * @param {object} [options]
- * @param {'θ'|'ð'|'ɹ'|'k'|'æ'|'t'} [options.sound]
+ * @param {'θ'|'ð'|'ɹ'|'k'|'æ'|'t'|'l'|'d'} [options.sound]
  * @param {Record<string,string>} [options.audio]   sound → audio URL (3 s clips)
  * @param {HTMLAudioElement} [options.audioElement] element to play through (pass one unlocked by a tap on iOS)
  * @param {object|null} [options.portrait]          PORTRAIT_GIRL-style preset, or null for the flat diagram

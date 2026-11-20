@@ -4,6 +4,7 @@ import { t, type Lang } from '../lib/i18n'
 import type { Theme } from '../lib/theme'
 import type { ModeCounts } from '../lib/log'
 import type { Role } from '../lib/auth'
+import type { ChildChoice } from '../lib/children'
 import { FaceIcon, HomeIcon, MicIcon, PeopleIcon, SpeakerIcon, UserIcon } from './icons'
 import { AccountMenu, IconButton, LangPicker, ThemeToggle } from './controls'
 
@@ -30,6 +31,9 @@ interface TopBarProps {
   onManager?: () => void
   /** Brooke's photo: start over with a fresh, empty dashboard. */
   onHome: () => void
+  /** Side-view child (account menu). */
+  child: ChildChoice
+  onChild: (c: ChildChoice) => void
 }
 
 const PRESENTERS: Presenter[] = ['avatar', 'human', 'both']
@@ -45,7 +49,7 @@ const PRESENTER_ICON: Record<Presenter, ReactNode> = {
  * Right: one soft toolbar (language · sound · Practice · theme) and the account button.
  * Below xl (1280 px, e.g. iPad landscape) the mode switch drops to its own full-width row, so the title never truncates.
  */
-export function TopBar({ hostName, avatar, lang, onLang, theme, onTheme, presenter, onPresenter, muted, onMuted, practice, onPractice, email, role, usage, onLogout, onManager, onHome }: TopBarProps) {
+export function TopBar({ hostName, avatar, lang, onLang, theme, onTheme, presenter, onPresenter, muted, onMuted, practice, onPractice, email, role, usage, onLogout, onManager, onHome, child, onChild }: TopBarProps) {
   const selected = PRESENTERS.indexOf(presenter)
   // bumps on every Home tap so the photo plays its little hop each time
   const [hop, setHop] = useState(0)
@@ -87,7 +91,7 @@ export function TopBar({ hostName, avatar, lang, onLang, theme, onTheme, present
           </p>
         </div>
         <div className="ml-auto shrink-0 md:hidden">
-          <AccountMenu email={email} role={role} lang={lang} theme={theme} usage={usage} onTheme={onTheme} onLang={onLang} onLogout={onLogout} onManager={onManager} />
+          <AccountMenu email={email} role={role} lang={lang} theme={theme} usage={usage} onTheme={onTheme} onLang={onLang} onLogout={onLogout} onManager={onManager} child={child} onChild={onChild} />
         </div>
       </div>
 
@@ -146,7 +150,7 @@ export function TopBar({ hostName, avatar, lang, onLang, theme, onTheme, present
           <ThemeToggle theme={theme} onTheme={onTheme} lang={lang} />
         </div>
         <div className="hidden md:block">
-          <AccountMenu email={email} role={role} lang={lang} theme={theme} usage={usage} onTheme={onTheme} onLang={onLang} onLogout={onLogout} onManager={onManager} />
+          <AccountMenu email={email} role={role} lang={lang} theme={theme} usage={usage} onTheme={onTheme} onLang={onLang} onLogout={onLogout} onManager={onManager} child={child} onChild={onChild} />
         </div>
       </div>
     </header>

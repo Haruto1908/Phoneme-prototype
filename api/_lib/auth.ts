@@ -6,8 +6,10 @@
  *   POST /api/auth/logout
  *   GET  /api/auth/me                                    → { user } or 401
  *   POST /api/auth/language  { lang }                    → saves the primary language → { user }
+ *   POST /api/auth/child     { child }                   → saves the side-view child ('auto' | region) → { user }
  *
- * `user` is `{ email, role, lang }`. The role comes from the email (see session.ts) and decides whether the manager
+ * `user` is `{ email, role, lang, child }`. `child` is 'auto' (pick the child from `lang`) or a region id
+ * (api/_lib/child.ts). The role comes from the email (see session.ts) and decides whether the manager
  * dashboard is offered. `lang` is the account's primary language (api/_lib/lang.ts) — every system message follows
  * it — or null on an account made before languages were stored (the client then saves the one in use). Errors are
  * `{ error: code }` with codes the UI translates (see i18n `err.*`).
@@ -16,13 +18,19 @@ import bcrypt from 'bcryptjs'
 import { users, type UserDoc } from './db.ts'
 import { dispatch, HttpError, json, readJson, type Req, type Res, type Route } from './http.ts'
 import { normLang } from './lang.ts'
+import { normChild } from './child.ts'
 import { endSession, requireUser, roleOf, startSession } from './session.ts'
 
 const normEmail = (v: unknown) => String(v ?? '').trim().toLowerCase()
 const validEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e) && e.length <= 254
 
 /** What the client is told about an account. */
-const publicUser = (email: string, doc: Pick<UserDoc, 'lang'> | null) => ({ email, role: roleOf(email), lang: normLang(doc?.lang) })
+const publicUser = (email: string, doc: Pick<UserDoc, 'lang' | 'child'> | null) => ({
+  email,
+  role: roleOf(email),
+  lang: normLang(doc?.lang),
+  child: normChild(doc?.child) ?? 'auto',
+})
 
 async function signup(req: Req, res: Res) {
   const body = await readJson(req)
@@ -69,7 +77,7 @@ async function logout(req: Req, res: Res) {
 
 async function me(req: Req, res: Res) {
   const user = await requireUser(req)
-  const doc = await (await users()).findOne({ email: user.email }, { projection: { lang: 1 } })
+  const doc = await (await users()).findOne({ email: user.email }, { projection: { lang: 1, child: 1 } })
   json(res, 200, { user: publicUser(user.email, doc) })
 }
 
@@ -79,8 +87,22 @@ async function language(req: Req, res: Res) {
   const body = await readJson(req)
   const lang = normLang(body.lang)
   if (!lang) throw new HttpError(400, 'bad_lang')
-  await (await users()).updateOne({ email: user.email }, { $set: { lang, langUpdatedAt: new Date() } })
-  json(res, 200, { user: publicUser(user.email, { lang }) })
+  const col = await users()
+  await col.updateOne({ email: user.email }, { $set: { lang, langUpdatedAt: new Date() } })
+  const doc = await col.findOne({ email: user.email }, { projection: { child: 1 } })
+  json(res, 200, { user: publicUser(user.email, { lang, child: doc?.child }) })
+}
+
+/** Choose the side-view child: 'auto' (follows the primary language) or one region's child. */
+async function child(req: Req, res: Res) {
+  const user = await requireUser(req)
+  const body = await readJson(req)
+  const choice = normChild(body.child)
+  if (!choice) throw new HttpError(400, 'bad_child')
+  const col = await users()
+  await col.updateOne({ email: user.email }, { $set: { child: choice } })
+  const doc = await col.findOne({ email: user.email }, { projection: { lang: 1 } })
+  json(res, 200, { user: publicUser(user.email, { lang: doc?.lang, child: choice }) })
 }
 
 const ROUTES: Record<string, Route> = {
@@ -89,6 +111,7 @@ const ROUTES: Record<string, Route> = {
   logout: { method: 'POST', run: logout },
   me: { method: 'GET', run: me },
   language: { method: 'POST', run: language },
+  child: { method: 'POST', run: child },
 }
 
 /** Dispatch one auth action; used by api/auth/[action].ts on Vercel and by the Vite dev middleware. */

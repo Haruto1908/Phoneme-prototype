@@ -16,6 +16,8 @@ export interface UserDoc {
   /** primary language (api/_lib/lang.ts); absent on accounts made before languages were stored */
   lang?: string
   langUpdatedAt?: Date
+  /** side-view child (api/_lib/child.ts): 'auto' follows `lang`; absent = 'auto' */
+  child?: string
 }
 
 /** Presenter modes, mirrored from src/types.ts (the API must not import browser code). */

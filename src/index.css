@@ -39,6 +39,7 @@
   --sun-bg: #fff2c2;       --sun-ink: #a3730a;       --sun-edge: #f1d98a;
   --sky-bg: #d9ecff;       --sky-ink: #1f5fa8;       --sky-edge: #a9cdf5;
   --peach-bg: #ffe6cc;     --peach-ink: #b35c12;     --peach-edge: #f5c89a;
+  --rose-bg: #ffe0ef;      --rose-ink: #b02a6b;      --rose-edge: #f5b5d3;
 }
 
 /* ---------- design tokens: dark ---------- */
@@ -76,6 +77,7 @@
   --sun-bg: #3c3011;       --sun-ink: #f5d366;       --sun-edge: #261e09;
   --sky-bg: #16293f;       --sky-ink: #92c4ff;       --sky-edge: #0d1a29;
   --peach-bg: #3d2613;     --peach-ink: #ffbb7c;     --peach-edge: #26180a;
+  --rose-bg: #3f1a2c;      --rose-ink: #ff9ccb;      --rose-edge: #27101b;
 }
 
 /* ---------- expose the tokens to Tailwind (text-ink, bg-panel, shadow-raise, bg-mint-bg …) ---------- */
@@ -117,6 +119,7 @@
   --color-sun-bg: var(--sun-bg);            --color-sun-ink: var(--sun-ink);            --color-sun-edge: var(--sun-edge);
   --color-sky-bg: var(--sky-bg);            --color-sky-ink: var(--sky-ink);            --color-sky-edge: var(--sky-edge);
   --color-peach-bg: var(--peach-bg);        --color-peach-ink: var(--peach-ink);        --color-peach-edge: var(--peach-edge);
+  --color-rose-bg: var(--rose-bg);          --color-rose-ink: var(--rose-ink);          --color-rose-edge: var(--rose-edge);
 
   --shadow-panel: var(--shadow-panel);
   --shadow-raise: var(--shadow-raise);

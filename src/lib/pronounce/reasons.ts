@@ -17,6 +17,8 @@ export const SOUND_META: Record<string, SoundMeta> = {
   k: { id: 'k', voiced: false, held: false },
   ae: { id: 'ae', voiced: true, held: true },
   t: { id: 't', voiced: false, held: false },
+  l: { id: 'l', voiced: true, held: true },
+  d: { id: 'd', voiced: true, held: false },
 }
 
 /** Feedback lines in every UI language ({host} = the model speaker). Children's register: short and warm. */

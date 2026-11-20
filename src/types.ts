@@ -3,7 +3,7 @@
 /** Whose mouth close-up plays: the avatar, the human teacher, or both one after the other. */
 export type Presenter = 'avatar' | 'human' | 'both'
 
-export type TileColor = 'mint' | 'teal' | 'coral' | 'lavender' | 'sun' | 'sky' | 'peach'
+export type TileColor = 'mint' | 'teal' | 'coral' | 'lavender' | 'sun' | 'sky' | 'peach' | 'rose'
 
 export interface SymbolSystem {
   id: string
@@ -18,7 +18,7 @@ export interface Sound {
   /** Simple pronunciation label for the card, without slashes ("th", "r", "æ"). Falls back to `ipa`. */
   card?: string
   exampleWord: string
-  /** Picture-cue name (three, feather, rabbit, cat, apple, ten). */
+  /** Picture-cue name (three, feather, rabbit, cat, apple, ten, leg, dog). */
   cue: string
   /** Picture shown on the card for the cue. */
   figure?: string | null
@@ -56,7 +56,7 @@ export interface ScoreRef {
 }
 
 export interface TongueView {
-  /** The side-view module (src/animations/th-sideview.js) covers all six prototype sounds. */
+  /** The side-view module (src/animations/th-sideview.js) covers every sound in the chart. */
   module: 'th'
   sound: 'θ' | 'ð' | 'ɹ' | 'k' | 'æ' | 't'
 }

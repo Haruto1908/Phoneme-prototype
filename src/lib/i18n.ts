@@ -77,6 +77,8 @@ const ARTICULATION: Record<Exclude<Lang, 'en'>, Record<string, string>> = {
     k: 'したの奥を上あごにつけて、はなすと息がこすれて出る。',
     ae: '口を大きくあけて、したは低く前に。',
     t: 'したの先で、上の歯のうしろをトンとたたく。',
+    l: 'したの先を 上の歯のうしろに つけたまま、声を出す。声は したの よこから出る（「ら」みたいに はじかない）。',
+    d: 't と おなじ ばしょに したの先を つけて、のどを ふるわせながら はなす。「ドッ」。',
   },
   ko: {
     th_voiceless: '혀끝을 이 사이에 살짝 물고, 혀 둘레로 바람을 불어. 목소리는 안 내.',
@@ -85,6 +87,8 @@ const ARTICULATION: Record<Exclude<Lang, 'en'>, Record<string, string>> = {
     k: '혀 뒤쪽을 입천장에 붙였다가 떼면, 바람이 긁히듯이 나와.',
     ae: '입을 크게 벌리고, 혀는 낮게 앞으로.',
     t: '혀끝으로 윗니 뒤쪽을 톡 쳐.',
+    l: '혀끝을 윗니 뒤쪽에 붙인 채로 목소리를 내. 소리는 혀 양옆으로 나와 (ㄹ처럼 튕기지 않아).',
+    d: 't와 같은 곳에 혀끝을 대고, 목을 떨면서 떼. "드".',
   },
   'es-MX': {
     th_voiceless: 'Pon la puntita de la lengua entre los dientes y sopla el aire alrededor. Sin voz.',
@@ -93,6 +97,8 @@ const ARTICULATION: Record<Exclude<Lang, 'en'>, Record<string, string>> = {
     k: 'La parte de atrás de la lengua toca el paladar y luego se suelta: el aire sale raspando.',
     ae: 'Abre bien la boca, con la lengua abajo y hacia adelante.',
     t: 'Con la punta de la lengua, toca detrás de los dientes de arriba: ¡tac!',
+    l: 'La punta de la lengua se queda detrás de los dientes de arriba y la voz sale por los lados de la lengua.',
+    d: 'Como la t, pero con voz: la punta de la lengua detrás de los dientes de arriba, siente la vibración y suelta.',
   },
 }
 

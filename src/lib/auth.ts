@@ -1,5 +1,6 @@
 /** Client for /api/auth (see api/_lib/auth.ts). Sessions live in an httpOnly cookie, so nothing is stored here. */
 import type { Lang } from './i18n'
+import type { ChildChoice } from './children'
 
 /** `manager` accounts also get the dashboard over every student's activity (see lib/manager.ts). */
 export type Role = 'student' | 'manager'
@@ -9,6 +10,8 @@ export interface User {
   role: Role
   /** primary language; null on an account made before languages were stored (Root then saves the one in use) */
   lang: Lang | null
+  /** side-view child: 'auto' (follows `lang`) or a region (see lib/children.ts) */
+  child: ChildChoice
 }
 
 /** Thrown for any non-2xx reply; `code` maps to an `err.*` string in i18n. */
@@ -46,4 +49,6 @@ export const auth = {
   logout: () => call<{ ok: true }>('logout', 'POST'),
   /** Save the account's primary language. */
   setLanguage: (lang: Lang) => call<{ user: User }>('language', 'POST', { lang }).then((d) => d.user),
+  /** Save the side-view child ('auto' or a region). */
+  setChild: (child: ChildChoice) => call<{ user: User }>('child', 'POST', { child }).then((d) => d.user),
 }

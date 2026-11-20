@@ -8,6 +8,7 @@ import { readLang, writeLang } from './lib/settings'
 import { applyTheme, readTheme, writeTheme, type Theme } from './lib/theme'
 import { useManifest } from './lib/useManifest'
 import { langInfo, t, type Lang } from './lib/i18n'
+import { normChild, type ChildChoice } from './lib/children'
 
 /**
  * Gate: ask the server who is logged in; show the sign-in page until there is a user, then the app — or, for a
@@ -43,7 +44,8 @@ export default function Root() {
    * A user arrived (session restored, logged in or signed up): their primary language wins on every device.
    * Accounts made before languages were stored adopt the language in use now.
    */
-  function signedIn(u: User) {
+  function signedIn(signed: User) {
+    const u = { ...signed, child: normChild(signed.child) ?? 'auto' }
     if (u.lang) {
       setLang(u.lang)
       writeLang(u.lang)
@@ -52,6 +54,13 @@ export default function Root() {
       setUser({ ...u, lang })
       auth.setLanguage(lang).catch(() => {})
     }
+  }
+
+  /** The side-view child is saved on the account too, so it follows the user to every device. */
+  function onChild(child: ChildChoice) {
+    if (!user) return
+    setUser({ ...user, child })
+    auth.setChild(child).catch(() => {})
   }
 
   useEffect(() => {
@@ -127,6 +136,7 @@ export default function Root() {
       theme={theme}
       onTheme={onTheme}
       onLogout={logout}
+      onChild={onChild}
       onManager={isManager ? () => setManagerView(true) : undefined}
     />
   )

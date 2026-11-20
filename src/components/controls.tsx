@@ -4,6 +4,8 @@ import type { Theme } from '../lib/theme'
 import { CSV_URL, type ModeCounts } from '../lib/log'
 import type { Role } from '../lib/auth'
 import type { Presenter } from '../types'
+import { CHILDREN, DEFAULT_REGION, childEntry, childReady, resolveChild, type ChildChoice, type Region } from '../lib/children'
+import { asset } from '../lib/media'
 import { ChartIcon, CheckIcon, ChevronDownIcon, DownloadIcon, GlobeIcon, LogoutIcon, MoonIcon, SunIcon } from './icons'
 
 /** Round, raised icon button used across the top bar. */
@@ -101,6 +103,86 @@ export function LangPicker({ lang, onLang, size = 'md', align = 'right' }: { lan
   )
 }
 
+/** Round crop of a side-view portrait around the face (portraits share the 864×1152 frame, face at x 520–800). */
+export function ChildFace({ region, className }: { region: Region; className?: string }) {
+  const src = childEntry(childReady(region) ? region : DEFAULT_REGION).src as string
+  return (
+    <span className={`relative block shrink-0 overflow-hidden rounded-full bg-sky-bg ring-2 ring-panel-strong ${className ?? 'h-8 w-8'}`} aria-hidden="true">
+      <img src={asset(src)} alt="" draggable={false} className="absolute max-w-none" style={{ width: '309%', left: '-186%', top: '-136%' }} />
+    </span>
+  )
+}
+
+/**
+ * Side-view child picker: "Auto" (the child for the primary language) or one region's child. Regions whose
+ * portrait is not made yet are listed as "Coming soon". Saved on the account (Root.tsx).
+ */
+export function ChildPicker({ child, onChild, lang, size = 'md', align = 'right', faceOnly = false }: { child: ChildChoice; onChild: (c: ChildChoice) => void; lang: Lang; size?: 'sm' | 'md'; align?: 'left' | 'right'; faceOnly?: boolean }) {
+  const [open, setOpen] = useState(false)
+  const box = useRef<HTMLDivElement>(null)
+  useDismiss(box, open, () => setOpen(false))
+  const shown = resolveChild(child, lang)
+  const current = child === 'auto' ? t('childAuto', lang) : t(childEntry(child).label, lang)
+  const item = (on: boolean, disabled = false) =>
+    `flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-sm font-extrabold transition-colors ${on ? 'bg-sky-bg text-sky-ink' : disabled ? 'cursor-not-allowed text-muted opacity-60' : 'text-ink hover:bg-sunk'}`
+  const pick = (c: ChildChoice) => {
+    setOpen(false)
+    if (c !== child) onChild(c)
+  }
+  return (
+    <div ref={box} className="no-select relative">
+      <button
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label={`${t('sideChild', lang)}: ${current}`}
+        title={t('sideChild', lang)}
+        onClick={() => setOpen((o) => !o)}
+        className={`flex ${size === 'sm' ? 'h-9 text-xs' : 'h-11 text-sm'} items-center gap-1.5 rounded-full bg-panel-strong py-1 pl-1 pr-2 font-extrabold text-ink shadow-raise ring-1 ring-line transition-transform hover:-translate-y-px active:translate-y-[2px] ${open ? 'ring-2 ring-accent/50' : ''}`}
+      >
+        <ChildFace region={shown} className={size === 'sm' ? 'h-7 w-7' : 'h-9 w-9'} />
+        {!faceOnly && <span className="whitespace-nowrap">{current}</span>}
+        <ChevronDownIcon className={`h-3.5 w-3.5 text-muted transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <ul
+          role="menu"
+          aria-label={t('sideChild', lang)}
+          className={`animate-pop absolute top-full z-50 mt-2 w-[15.5rem] rounded-2xl bg-panel-strong p-1.5 shadow-float ring-1 ring-line ${align === 'right' ? 'right-0 origin-top-right' : 'left-0 origin-top-left'}`}
+        >
+          <li role="none">
+            <button type="button" role="menuitemradio" aria-checked={child === 'auto'} onClick={() => pick('auto')} className={item(child === 'auto')}>
+              <ChildFace region={resolveChild('auto', lang)} />
+              <span className="min-w-0 flex-1">
+                {t('childAuto', lang)}
+                <span className="block truncate text-xs font-semibold text-muted">{t(childEntry(resolveChild('auto', lang)).label, lang)}</span>
+              </span>
+              {child === 'auto' && <CheckIcon className="h-4 w-4" />}
+            </button>
+          </li>
+          <li role="separator" className="mx-2 my-1 h-px bg-line" />
+          {CHILDREN.map((c) => {
+            const on = child === c.region
+            const ready = !!c.src
+            return (
+              <li key={c.region} role="none">
+                <button type="button" role="menuitemradio" aria-checked={on} aria-disabled={!ready} disabled={!ready} onClick={() => pick(c.region)} className={item(on, !ready)}>
+                  {ready ? <ChildFace region={c.region} /> : <span className="h-8 w-8 shrink-0 rounded-full bg-sunk ring-2 ring-panel-strong" aria-hidden="true" />}
+                  <span className="min-w-0 flex-1">
+                    {t(c.label, lang)}
+                    {!ready && <span className="block text-xs font-semibold">{t('comingSoon', lang)}</span>}
+                  </span>
+                  {on && <CheckIcon className="h-4 w-4" />}
+                </button>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+    </div>
+  )
+}
+
 /** Close a popover on a tap outside it or on Escape. */
 function useDismiss(box: { current: HTMLElement | null }, open: boolean, close: () => void) {
   useEffect(() => {
@@ -157,6 +239,9 @@ interface AccountMenuProps {
   onLogout: () => void
   /** Offered to managers only: open the dashboard over every student. */
   onManager?: () => void
+  /** Side-view child; the row is hidden when not given (manager dashboard). */
+  child?: ChildChoice
+  onChild?: (c: ChildChoice) => void
 }
 
 const MODE_TONES: Record<Presenter, string> = {
@@ -166,7 +251,7 @@ const MODE_TONES: Record<Presenter, string> = {
 }
 
 /** Account button in the top bar: opens a sheet with the email, language, theme, mode usage + CSV, and Log out. */
-export function AccountMenu({ email, role, lang, theme, usage, onTheme, onLang, onLogout, onManager }: AccountMenuProps) {
+export function AccountMenu({ email, role, lang, theme, usage, onTheme, onLang, onLogout, onManager, child, onChild }: AccountMenuProps) {
   const [open, setOpen] = useState(false)
   const box = useRef<HTMLDivElement>(null)
 
@@ -226,6 +311,14 @@ export function AccountMenu({ email, role, lang, theme, usage, onTheme, onLang, 
             <LangPicker lang={lang} onLang={onLang} size="sm" />
           </Row>
           <p className="-mt-0.5 mb-1 text-xs font-medium text-muted">{t('primaryLanguageHint', lang)}</p>
+          {child && onChild && (
+            <>
+              <Row label={t('sideChild', lang)}>
+                <ChildPicker child={child} onChild={onChild} lang={lang} size="sm" />
+              </Row>
+              <p className="-mt-0.5 mb-1 text-xs font-medium text-muted">{t('sideChildHint', lang)}</p>
+            </>
+          )}
           <Row label={t('theme', lang)}>
             <div className="no-select flex rounded-full bg-sunk p-1 ring-1 ring-line" role="group" aria-label={t('theme', lang)}>
               {(['light', 'dark'] as const).map((th) => (

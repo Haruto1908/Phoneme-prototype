@@ -3,10 +3,11 @@ import { palette } from './palette'
 import { asset, mediaUrl } from '../lib/media'
 import { t, type Lang } from '../lib/i18n'
 import { clipWindow, type PlayItem } from '../lib/plan'
-import { createThSideview, PORTRAIT_GIRL, type ThSideview, type ThSound } from '../animations/th-sideview.js'
+import { createThSideview, type ThSideview, type ThSound } from '../animations/th-sideview.js'
 import { createThFrontview, type ThFrontview } from '../animations/th-frontview.js'
+import { childPortrait, resolveChild, type ChildChoice } from '../lib/children'
 import { CloseIcon, MouthIcon, PlayIcon, ReplayIcon, TongueIcon } from './icons'
-import { SectionTitle } from './controls'
+import { ChildPicker, SectionTitle } from './controls'
 
 export interface PlayerHandle {
   /** Must be called from the tap handler itself: iOS only lets media start with sound inside a user gesture. */
@@ -22,7 +23,8 @@ type Phase = 'idle' | 'mouth' | 'ask' | 'tongue' | 'done'
  * (right), driven by the same audio clock. Each view gets an 8:9 window so `slice` never crops the mouth.
  */
 // side view (image px): nose to throat around the cutaway, with room in front of the lips for the air
-const PORTRAIT = { ...PORTRAIT_GIRL, src: asset('assets/girl_profile.jpg'), view: [440, 405, 384, 432] }
+// eyebrows to throat (8:9, like the stage half): the whole face around the mouth, not just nose to chin
+const SIDE_VIEW: [number, number, number, number] = [392, 305, 464, 522]
 // front view (its own units): lips, both rows of teeth and the voice arcs beside the mouth
 const FRONT_VIEWBOX = '126 94 148 166'
 
@@ -32,6 +34,9 @@ interface PlayerProps {
   muted: boolean
   /** 0–1; applied to the close-up video and the tongue view's audio. */
   volume: number
+  /** Side-view child ('auto' = the child for `lang`); changing it replays the side view with the new child. */
+  child: ChildChoice
+  onChild: (c: ChildChoice) => void
   /** `panel`: lives in the page (shows an idle message); `modal`: inside the pop-up (has a close button). */
   variant: 'panel' | 'modal'
   /** Shown while nothing plays (panel only). */
@@ -46,7 +51,9 @@ interface PlayerProps {
  * side-view tongue animation with the sound again. One <video> and one <audio> element live for the whole
  * session so that, once unlocked by the first tap, every later clip can start without another gesture.
  */
-export function Player({ ref, lang, muted, volume, variant, idle, onClose, onPlaying }: PlayerProps) {
+export function Player({ ref, lang, muted, volume, child, onChild, variant, idle, onClose, onPlaying }: PlayerProps) {
+  const region = resolveChild(child, lang)
+  const regionRef = useRef(region)
   const videoRef = useRef<HTMLVideoElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
   const frontStageRef = useRef<HTMLDivElement>(null)
@@ -176,15 +183,18 @@ export function Player({ ref, lang, muted, volume, variant, idle, onClose, onPla
     const audio: Partial<Record<ThSound, string>> = {}
     audio[item.tongue.sound] = mediaUrl(item.tongue.audio)
     // front view first: the side view renders its first frame (and calls onTime) while it is being created
-    const front = createThFrontview(frontBox, { sound: item.tongue.sound })
+    const portrait = childPortrait(regionRef.current, SIDE_VIEW)
+    // the front view takes the same child's skin tone as the side-view photo
+    const front = createThFrontview(frontBox, { sound: item.tongue.sound, skin: portrait.skin })
     front.el.setAttribute('viewBox', FRONT_VIEWBOX)
     front.el.setAttribute('preserveAspectRatio', 'xMidYMid slice')
     frontRef.current = front
     const anim = createThSideview(box, {
+      theme: portrait.theme,
       sound: item.tongue.sound,
       audio,
       audioElement: tongueAudio(),
-      portrait: PORTRAIT,
+      portrait,
       onTime: (time) => front.render(time),   // one clock (the audio) for both views
       onEnd: () => {
         if (animRef.current === anim) nextItem()
@@ -290,6 +300,16 @@ export function Player({ ref, lang, muted, volume, variant, idle, onClose, onPla
 
   useImperativeHandle(ref, () => ({ start, stop }))
 
+  // Another child chosen (picker, account menu or a language change under "Auto"): if the side view is on screen,
+  // play it again with the new child so the change is seen at once.
+  useEffect(() => {
+    if (regionRef.current === region) return
+    regionRef.current = region
+    if (showTongue && animRef.current) startTongue()
+    // startTongue reads refs only; re-running on its identity would replay on every render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [region])
+
   const item = items[index] ?? null
   const c = palette[item?.color ?? 'mint']
   const compact = variant === 'panel'
@@ -311,7 +331,13 @@ export function Player({ ref, lang, muted, volume, variant, idle, onClose, onPla
             {index + 1} / {items.length}
           </span>
         )}
-        <Steps className={`ml-auto ${c.ink}`} phase={phase} showTongue={showTongue} hasTongue={!!item?.tongue} compact={compact} />
+        {/* side-view child: offered while the side view is on screen (outside the stage, so its menu is not clipped) */}
+        {showTongue && (
+          <div className="ml-auto">
+            <ChildPicker child={child} onChild={onChild} lang={lang} size="sm" faceOnly={compact} />
+          </div>
+        )}
+        <Steps className={`${showTongue ? '' : 'ml-auto'} ${c.ink}`} phase={phase} showTongue={showTongue} hasTongue={!!item?.tongue} compact={compact} />
         {onClose && (
           <RoundButton label={t('close', lang)} onClick={onClose} className={c.ink}>
             <CloseIcon />

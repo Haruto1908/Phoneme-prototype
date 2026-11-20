@@ -13,6 +13,7 @@ import { Recorder, type RecorderTarget } from './components/Recorder'
 import { SETTINGS_KEY } from './lib/settings'
 import type { Theme } from './lib/theme'
 import type { User } from './lib/auth'
+import type { ChildChoice } from './lib/children'
 import { usageLog, ZERO_COUNTS, type ModeCounts } from './lib/log'
 
 interface Settings {
@@ -56,11 +57,13 @@ interface AppProps {
   theme: Theme
   onTheme: (t: Theme) => void
   onLogout: () => void
+  /** Choose the side-view child ('auto' follows the language); saved on the account. */
+  onChild: (c: ChildChoice) => void
   /** Managers only: open the dashboard over every student. */
   onManager?: () => void
 }
 
-export default function App({ user, lang, onLang, theme, onTheme, onLogout, onManager }: AppProps) {
+export default function App({ user, lang, onLang, theme, onTheme, onLogout, onChild, onManager }: AppProps) {
   const state = useManifest()
   const [settings, setSettings] = useState<Settings>(loadSettings)
   const [slots, setSlots] = useState<Array<string | null>>([null, null, null, null])
@@ -213,6 +216,8 @@ export default function App({ user, lang, onLang, theme, onTheme, onLogout, onMa
         onLogout={onLogout}
         onManager={onManager}
         onHome={goHome}
+        child={user.child}
+        onChild={onChild}
       />
 
       <div key={fresh} className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-3">
@@ -227,6 +232,8 @@ export default function App({ user, lang, onLang, theme, onTheme, onLogout, onMa
               lang={lang}
               muted={muted}
               volume={volume}
+              child={user.child}
+              onChild={onChild}
               idle={idle}
               onPlaying={(id) => {
                 if (!modalOpen) setPlayingId(id)
@@ -259,7 +266,7 @@ export default function App({ user, lang, onLang, theme, onTheme, onLogout, onMa
 
       <Modal open={modalOpen} label={modalLabel} color={modalColor} onClose={closeModal} wide={!!recTarget}>
         <div className={recTarget ? 'grid gap-4 lg:grid-cols-[3fr_2fr]' : ''}>
-          <Player ref={modal} variant="modal" lang={lang} muted={muted} volume={volume} onClose={closeModal} onPlaying={setPlayingId} />
+          <Player ref={modal} variant="modal" lang={lang} muted={muted} volume={volume} child={user.child} onChild={onChild} onClose={closeModal} onPlaying={setPlayingId} />
           {recTarget && modalOpen && <Recorder key={recTarget.id} lang={lang} host={manifest.host.name} target={recTarget} sounds={manifest.sounds} muted={muted} volume={volume} />}
         </div>
       </Modal>

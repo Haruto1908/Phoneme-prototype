@@ -11,4 +11,5 @@ export interface ThFrontview {
 }
 
 export function frontPoseAt(t: number, sound?: ThSound): Record<string, number>
-export function createThFrontview(container: Element, options?: { sound?: ThSound }): ThFrontview
+/** `skin`: base skin tone (#rrggbb) so the front view matches the side-view child; omitted = default. */
+export function createThFrontview(container: Element, options?: { sound?: ThSound; skin?: string }): ThFrontview

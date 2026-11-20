@@ -19,7 +19,8 @@ import { SOUNDS, evalKeys } from './th-sideview.js'
 const CX = 200, CY = 176
 const UE = CY - 1                      // upper incisor biting edge (fixed)
 const NS = 'http://www.w3.org/2000/svg'
-const C = {
+const C_BASE = {
+  skinTop: '#f8dccc', skinBottom: '#efc2ac',
   bg: '#cfe5f1', skin: '#f6d2bf', skinShade: '#e2ab95', skinDeep: '#c98a76', blush: '#ff9d9c',
   lipU: '#c9737a', lipUTop: '#b9646c', lipL: '#de8f90', lipLine: '#8f3f4a',
   cavity: '#7c3646', cavityDeep: '#3a121d', tongue: '#f09da0', tongueTop: '#f7b7b6', tongueDeep: '#cf6d77',
@@ -27,15 +28,27 @@ const C = {
   tooth: '#fffdf8', toothShade: '#eadccd', toothLine: '#d4bfae', gum: '#eb9ea6',
   air: '#dff4ff', airLine: '#4aa8e0', buzz: '#ff7fa3',
 }
+const SKIN_KEYS = ['skinTop', 'skin', 'skinBottom', 'skinShade', 'skinDeep']
+const hexRgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16))
+const rgbHex = (c) => '#' + c.map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('')
+/**
+ * The skin family (highlight, base, lower tone, shading, deep shading) for another skin tone: every tone keeps its
+ * per-channel ratio to the base, so the lighting stays the same and only the skin changes.
+ */
+function skinPalette(skin) {
+  const base = hexRgb(C_BASE.skin), want = hexRgb(skin)
+  return Object.fromEntries(SKIN_KEYS.map((k) => [k, rgbHex(hexRgb(C_BASE[k]).map((v, i) => (v * want[i]) / base[i]))]))
+}
 
 /**
  * Front poses (px). open: jaw opening (lower lip drop = 1.45·open, lower teeth drop = 0.62·open) · up: upper-lip
  * lift (shows the upper teeth) · W: half mouth width · round: lip rounding 0–1 · smile: corner lift ·
  * tOut: tongue tip out between the teeth 0–1 (θ ð) · tW: tongue half width · tTop: tongue surface relative to
  * the lower teeth edge · tipUp: tip raised behind the upper teeth (t) · rTip: /ɹ/ tip raised but NOT touching ·
- * hump: back of the tongue raised to the roof (k).
+ * hump: back of the tongue raised to the roof (k) · lat: /l/ — the raised tongue is narrower, so the voice escapes through
+ * dark channels on both sides of it.
  */
-const REST = { open: 0, up: 0, W: 50, round: 0, smile: 2, tOut: 0, tW: 28, tTop: 6, tipUp: 0, rTip: 0, hump: 0 }
+const REST = { open: 0, up: 0, W: 50, round: 0, smile: 2, tOut: 0, tW: 28, tTop: 6, tipUp: 0, rTip: 0, hump: 0, lat: 0 }
 const P = (o) => Object.assign({}, REST, o)
 export const FRONT_POSES = {
   'θ': { out: P({ open: 22, up: 11, W: 54, tOut: 1, smile: 1 }), hold: P({ open: 15, up: 11, W: 54, tOut: 1, smile: 1 }) },
@@ -51,6 +64,11 @@ export const FRONT_POSES = {
   'k': { hold: P({ open: 19, up: 7, W: 52, hump: 1, tTop: 3 }), rel: P({ open: 15, up: 5, W: 51, hump: 0.25, tTop: 3 }) },
   'æ': { hold: P({ open: 34, up: 12, W: 64, tTop: -10, tW: 36, smile: 3 }) },
   't': { hold: P({ open: 12, up: 8, W: 52, tipUp: 1, tTop: 2 }), rel: P({ open: 12, up: 6, W: 52, tipUp: 0.2, tTop: 3 }) },
+  // /d/: the same mouth as /t/ (the difference is the voice, shown by the buzz arcs during the closure)
+  'd': { hold: P({ open: 12, up: 8, W: 52, tipUp: 1, tTop: 2 }), rel: P({ open: 12, up: 6, W: 52, tipUp: 0.2, tTop: 3 }) },
+  // /l/: like /t/ the tip is up behind the upper teeth, but the mouth is a little more open and the raised tongue is
+  // narrower, leaving a dark channel on each side where the voice flows out
+  'l': { hold: P({ open: 15, up: 8, W: 53, tipUp: 1, lat: 1, tTop: 2, smile: 1 }) },
 }
 /** Where things touch in the front view, and the air: same time windows as the side view's contacts / flows. */
 const FRONT_MARKS = {
@@ -60,6 +78,8 @@ const FRONT_MARKS = {
   // no front glow for /k/: the seal is at the back of the mouth, and a glow under the front teeth would read as /t/
   'k': { air: 'scrape' },
   't': { touch: [[CX, UE - 0.5]], air: 'puff' },
+  'd': { touch: [[CX, UE - 0.5]], air: 'puff' },
+  'l': { touch: [[CX, UE - 0.5]], air: 'sides' },   // tip contact in the middle, voice out of both side channels
   'æ': {},
 }
 
@@ -88,10 +108,12 @@ export function frontPoseAt(t, sound = 'θ') {
 
 /**
  * @param {HTMLElement} container
- * @param {{ sound?: string }} [options]
+ * @param {{ sound?: string, skin?: string }} [options]  skin: '#rrggbb' base skin tone
  */
 export function createThFrontview(container, options = {}) {
   let sound = options.sound && SOUNDS[options.sound] ? options.sound : 'θ'
+  // options.skin: the child's skin tone (matches the side-view portrait); omitted = the default palette
+  const C = Object.assign({}, C_BASE, /^#[0-9a-f]{6}$/i.test(options.skin || '') ? skinPalette(options.skin) : {})
   const uid = 'fv' + Math.random().toString(36).slice(2, 8)
   const svg = el('svg', { xmlns: NS, viewBox: '100 96 200 160', role: 'img', 'aria-label': 'Front view of the mouth: lips, teeth and tongue' })
   svg.style.display = 'block'; svg.style.width = '100%'; svg.style.height = 'auto'
@@ -100,7 +122,7 @@ export function createThFrontview(container, options = {}) {
   const rad = (id, cx, cy, r, stops, user) => { const g = el('radialGradient', Object.assign({ id: uid + id, cx, cy, r }, user ? { gradientUnits: 'userSpaceOnUse' } : {}), defs); stops.forEach(([o, c, a]) => el('stop', { offset: o, 'stop-color': c, 'stop-opacity': a === undefined ? 1 : a }, g)); return g }
   const blur = (id, sd) => { const fl = el('filter', { id: uid + id, x: '-50%', y: '-50%', width: '200%', height: '200%' }, defs); el('feGaussianBlur', { stdDeviation: sd }, fl); return `url(#${uid}${id})` }
 
-  const gSkin = lin('skin', 0, 0, 0, 1, [[0, '#f8dccc'], [0.55, C.skin], [1, '#efc2ac']])
+  const gSkin = lin('skin', 0, 0, 0, 1, [[0, C.skinTop], [0.55, C.skin], [1, C.skinBottom]])
   const gLipU = lin('lipU', 0, 0, 0, 1, [[0, C.lipUTop], [1, C.lipU]])
   const gLipL = lin('lipL', 0, 0, 0, 1, [[0, '#c9767c'], [0.35, C.lipL], [1, '#e9a6a2']])
   const gCav = rad('cav', CX, CY + 18, 80, [[0, C.cavity], [1, C.cavityDeep]], true)
@@ -243,7 +265,7 @@ export function createThFrontview(container, options = {}) {
     if (colUp > 0.01) {
       const retro = p.rTip > p.tipUp
       const colTop = retro ? lerp(bodyTop, UE + 6.5, p.rTip) : lerp(bodyTop, UE - 7, p.tipUp)
-      const hw = retro ? 17 : 23, base = bodyTop + 10
+      const hw = retro ? 17 : lerp(23, 13, p.lat), base = bodyTop + 10   // /l/ narrows it to open the side channels
       column.setAttribute('d', `M ${CX - hw - 6} ${f(base)} C ${CX - hw} ${f(colTop + 16)}, ${CX - hw * 0.75} ${f(colTop)}, ${CX} ${f(colTop)} C ${CX + hw * 0.75} ${f(colTop)}, ${CX + hw} ${f(colTop + 16)}, ${CX + hw + 6} ${f(base)} Z`)
       columnLine.setAttribute('d', retro
         ? `M ${CX} ${f(Math.max(colTop + 6, UE + 1))} C ${CX - 1.5} ${f(base - 12)}, ${CX + 1.5} ${f(base - 6)}, ${CX} ${f(base - 1)}`
@@ -287,6 +309,15 @@ export function createThFrontview(container, options = {}) {
     const flows = c.flows || []
     const aw = flows.length ? win(flows[0].from, flows[0].to + 0.1, 0.08) : 0
     airDots.forEach((d, k) => {
+      if (m.air === 'sides' && aw) {
+        // /l/: four particles per side, leaving the channel beside the raised tongue and flowing toward the corner
+        if (k >= 8) { d.setAttribute('opacity', '0'); return }
+        const side = k < 4 ? -1 : 1, v = ((t - flows[0].from) * 1.3 + (k % 4) / 4) % 1
+        const x = CX + side * (15 + v * 34), y = UE + 9 + v * 6
+        d.setAttribute('transform', `translate(${f(x)} ${f(y)}) rotate(${side > 0 ? 8 : 172})`)
+        d.setAttribute('opacity', f(aw * Math.min(1, v * 5) * (1 - v)))
+        return
+      }
       if (m.air !== 'around' || !aw) { d.setAttribute('opacity', '0'); return }
       const n = c.voiced ? 6 : 12
       if (k >= n) { d.setAttribute('opacity', '0'); return }
