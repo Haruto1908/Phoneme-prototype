@@ -34,6 +34,10 @@ function apiDev(): Plugin {
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss(), apiDev()],
-  server: { host: true, port: 5173 }, // host:true so an iPad on the same Wi-Fi can open the dev URL
+  // The dev server listens on this computer only. It runs the API with the real database credentials and is not
+  // hardened for a network (GHSA-p4f5-76q4-ffq7 let a crafted request run code in an exposed Vite dev server), so
+  // opening it to the Wi-Fi (e.g. to test on an iPad) is a deliberate, temporary step: `npm run dev:lan`, on a
+  // trusted network only, and stopped afterwards.
+  server: { host: 'localhost', port: 5173 },
   preview: { port: 4173 },
 })
