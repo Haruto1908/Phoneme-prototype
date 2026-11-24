@@ -5,7 +5,7 @@
  *
  *   import { createThSideview } from './th-sideview.js'
  *   const anim = createThSideview(document.querySelector('#stage'), {
- *     sound: 'θ',                               // 'θ' | 'ð' | 'ɹ' | 'k' | 'æ' | 't' | 'l' | 'd'
+ *     sound: 'θ',                               // 'θ' | 'ð' | 'ɹ' | 'k' | 'æ' | 't' | 'l' | 'd' | 'n'
  *     audio: { 'θ': 'audio/θ.mp3', 'ð': 'audio/ð.mp3' },
  *     portrait: PORTRAIT_GIRL,                  // photo-real face with a soft cutaway window (or null for the flat diagram)
  *     onTime: (t) => {}, onEnd: () => {},
@@ -231,7 +231,7 @@ const TONGUE_HI_INSET = 1.4
 // timing: soundOn/soundOff bracket the audible part of the 3 s clip (measured with ffmpeg silencedetect, −40 dB),
 // release = the burst of a stop, end = clip length shown. stepTimes = when caption steps 2, 3 and 4 begin.
 // contacts: glowing "touch here" points ({at, from, to}) or a dashed "touches nothing" ring ({gap: true, …}).
-// flows: animated air paths in diagram mm ({d, from, to, n, speed, rough}): particles stream along each path.
+// flows: animated air paths in diagram mm ({d, dPhoto?, from, to, n, speed, rough}; dPhoto replaces d over a portrait): particles stream along each path.
 // One dark oral cavity for every sound, so the inside of the mouth never changes shape or place between sounds;
 // only the small lip opening in front (`front`) differs per sound, following how far the jaw opens.
 const CAVITY_OVAL = { cx: 124, cy: 147.5, a: 31, b: 21, deg: 36 }
@@ -366,6 +366,28 @@ export const SOUNDS = {
     steps: [['Ready', 'Mouth relaxed, tongue inside.'], ['Tip up', 'The tongue TIP touches the bump behind the top teeth and stays there.'], ['Lll', 'Voice on! The sound flows out around the SIDES of the tongue.'], ['Back', 'Tongue relaxes.']],
     stepsJa: [['じゅんび', 'くちを らくに して、したは なかに。'], ['さきを つける', 'したの「さき」を、うえの はの うらの でっぱりに つけて、そのまま。'], ['「lll」', 'こえを だす。こえは したの よこから でるよ。（「ら」みたいに はじかない）'], ['もどす', 'したを らくに する。']],
   },
+  // /n/: the same tip-on-the-ridge closure as /t/ and /d/, held for the whole sound — the mouth stays sealed, so the
+  // voice goes up behind the soft palate and out through the NOSE (the air stream runs through the nasal cavity
+  // to the nostril). Audio middle_3s/n.mp3 (10 ms envelope, within 25 dB of the peak): 1.28–1.69 s.
+  'n': {
+    voiced: true, word: 'nest', kind: 'hold', oval: CAVITY_OVAL, front: { cx: 154.5, cy: 139.8, rx: 6.5, ry: 3.0 },
+    hint: 'Keep the TIP on the bump behind the top teeth and hum “nnn” — the sound comes out of your nose.',
+    hintJa: 'したの「さき」を うえの はの うらの でっぱりに つけたまま、「nnn」。こえは はなから でるよ。',
+    keys: [[0.90, 'rest'], [1.16, 'hold'], [1.78, 'hold'], [2.20, 'rest']],
+    poses: { hold: { pts: HOLD_T, jaw: 1.2, p: 1 } },
+    timing: { soundOn: 1.28, soundOff: 1.69, end: 2.7 },
+    stepTimes: [0.90, 1.28, 1.78],
+    contacts: [{ at: [146.0, 128.9], from: 1.14, to: 1.80 }],
+    // throat → up behind the soft palate → forward along the nasal floor → out of the nostril. `d` follows the
+    // Simple drawing's nose; `dPhoto` the portraits' nostril (image px ≈ 727–750, 525–532 on the reference photo).
+    flows: [{
+      d: 'M 95 170 C 94.2 158, 94.2 145, 95.4 134 C 96.6 124, 100.6 118, 108 116.4 C 120 114, 138 114.6, 150 113.8 C 156 113.4, 160 112.6, 164 112.4 C 168 112.4, 171 114, 174 117.2',
+      dPhoto: 'M 95 170 C 94.2 158, 94.2 145, 95.4 134 C 96.6 124, 100.6 116.5, 108.5 113.4 C 120 108.8, 137 104.6, 148 100.6 C 154 98.4, 159 96.4, 163.5 95.8 C 166.5 95.4, 168.2 96.6, 169.4 98.4 C 171 101, 174 103.4, 178.5 105.6',
+      n: 7, speed: 1.2,
+    }],
+    steps: [['Ready', 'Mouth relaxed, tongue inside.'], ['Tip up', 'The tongue TIP touches the bump behind the top teeth and stays there.'], ['Nnn', 'Voice on! The mouth is closed off, so the sound comes out of your NOSE.'], ['Back', 'Tongue relaxes.']],
+    stepsJa: [['じゅんび', 'くちを らくに して、したは なかに。'], ['さきを つける', 'したの「さき」を、うえの はの うらの でっぱりに つけて、そのまま。'], ['「nnn」', 'こえを だす。くちは ふさがって いるので、こえは はなから でるよ。（はなを つまむと でない）'], ['もどす', 'したを らくに する。']],
+  },
 }
 for (const s in SOUNDS) {
   const c = SOUNDS[s]
@@ -497,7 +519,7 @@ function el(name, attrs = {}, parent) {
 /**
  * @param {HTMLElement} container
  * @param {object} [options]
- * @param {'θ'|'ð'|'ɹ'|'k'|'æ'|'t'|'l'|'d'} [options.sound]
+ * @param {'θ'|'ð'|'ɹ'|'k'|'æ'|'t'|'l'|'d'|'n'} [options.sound]
  * @param {Record<string,string>} [options.audio]   sound → audio URL (3 s clips)
  * @param {HTMLAudioElement} [options.audioElement] element to play through (pass one unlocked by a tap on iOS)
  * @param {object|null} [options.portrait]          PORTRAIT_GIRL-style preset, or null for the flat diagram
@@ -800,7 +822,7 @@ export function createThSideview(container, options = {}) {
   function buildMarks() {
     while (marks.firstChild) marks.removeChild(marks.firstChild)
     flowEls = (cfg().flows || []).map((fl) => {
-      const guide = el('path', { d: fl.d, fill: 'none', stroke: AIR.guide, 'stroke-width': 0.55, 'stroke-dasharray': '1.2 1.6', 'stroke-linecap': 'round', opacity: 0 }, marks)
+      const guide = el('path', { d: portrait && fl.dPhoto ? fl.dPhoto : fl.d, fill: 'none', stroke: AIR.guide, 'stroke-width': 0.55, 'stroke-dasharray': '1.2 1.6', 'stroke-linecap': 'round', opacity: 0 }, marks)
       const dots = Array.from({ length: fl.n }, (_, k) => el('ellipse', { rx: 1.05 - 0.04 * k, ry: 0.72 - 0.03 * k, fill: AIR.fill, stroke: AIR.stroke, 'stroke-width': 0.28, opacity: 0 }, marks))
       return { fl, guide, dots, len: 0 }
     })

@@ -13,4 +13,5 @@ export const palette: Record<TileColor, { bg: string; ink: string; border: strin
   sky: { bg: 'bg-sky-bg', ink: 'text-sky-ink', border: 'border-sky-edge', edgeVar: 'var(--color-sky-edge)' },
   peach: { bg: 'bg-peach-bg', ink: 'text-peach-ink', border: 'border-peach-edge', edgeVar: 'var(--color-peach-edge)' },
   rose: { bg: 'bg-rose-bg', ink: 'text-rose-ink', border: 'border-rose-edge', edgeVar: 'var(--color-rose-edge)' },
+  lime: { bg: 'bg-lime-bg', ink: 'text-lime-ink', border: 'border-lime-edge', edgeVar: 'var(--color-lime-edge)' },
 }

@@ -70,7 +70,16 @@ export const CHILDREN: readonly ChildEntry[] = [
     cut: [[636, 589], [620, 573], [606, 553], [598, 700], [590, 900]],
     theme: { body: '#f9dccf', line: '#d9ab9b' },
   },
-  { region: 'mx', label: 'childMx', src: null },
+  {
+    region: 'mx',
+    label: 'childMx',
+    src: 'assets/children/mx.jpg',
+    bg: '#fdfdfd',
+    // her cheek is a shade warmer than the US child's, so the default tissue tone fits
+    skin: '#fdd2bd',
+    seam: [[731, 599.5], [700, 597], [675, 598.5], [648, 596]],
+    cut: [[632, 588], [616, 573], [602, 553], [594, 700], [588, 900]],
+  },
 ]
 
 export const DEFAULT_REGION: Region = 'us'

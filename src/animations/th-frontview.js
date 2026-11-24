@@ -69,6 +69,8 @@ export const FRONT_POSES = {
   // /l/: like /t/ the tip is up behind the upper teeth, but the mouth is a little more open and the raised tongue is
   // narrower, leaving a dark channel on each side where the voice flows out
   'l': { hold: P({ open: 15, up: 8, W: 53, tipUp: 1, lat: 1, tTop: 2, smile: 1 }) },
+  // /n/: the /t/ tip-up seal, held with the lips just apart; nothing comes out of the mouth (the voice goes out the nose)
+  'n': { hold: P({ open: 10, up: 7, W: 51, tipUp: 1, tTop: 2 }) },
 }
 /** Where things touch in the front view, and the air: same time windows as the side view's contacts / flows. */
 const FRONT_MARKS = {
@@ -80,6 +82,7 @@ const FRONT_MARKS = {
   't': { touch: [[CX, UE - 0.5]], air: 'puff' },
   'd': { touch: [[CX, UE - 0.5]], air: 'puff' },
   'l': { touch: [[CX, UE - 0.5]], air: 'sides' },   // tip contact in the middle, voice out of both side channels
+  'n': { touch: [[CX, UE - 0.5]], air: 'nose' },    // tip contact; the voice leaves through the nostrils, above the frame
   'æ': {},
 }
 
@@ -315,6 +318,16 @@ export function createThFrontview(container, options = {}) {
         const side = k < 4 ? -1 : 1, v = ((t - flows[0].from) * 1.3 + (k % 4) / 4) % 1
         const x = CX + side * (15 + v * 34), y = UE + 9 + v * 6
         d.setAttribute('transform', `translate(${f(x)} ${f(y)}) rotate(${side > 0 ? 8 : 172})`)
+        d.setAttribute('opacity', f(aw * Math.min(1, v * 5) * (1 - v)))
+        return
+      }
+      if (m.air === 'nose' && aw) {
+        // /n/: the mouth is sealed, so the stream rises from under the nose (above the upper lip) and out at the top of
+        // the frame, where the nostrils are: three particles per nostril, drifting up and slightly outward
+        if (k >= 6) { d.setAttribute('opacity', '0'); return }
+        const side = k < 3 ? -1 : 1, v = ((t - flows[0].from) * 1.2 + (k % 3) / 3) % 1
+        const x = CX + side * (13 + v * 7), y = 128 - v * 34
+        d.setAttribute('transform', `translate(${f(x)} ${f(y)}) rotate(${side > 0 ? -72 : -108})`)
         d.setAttribute('opacity', f(aw * Math.min(1, v * 5) * (1 - v)))
         return
       }

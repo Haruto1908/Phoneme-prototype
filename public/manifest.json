@@ -178,6 +178,27 @@
       "humanPoster": "video/human_d.jpg",
       "humanSpeech": [0.91, 1.04],
       "tongue": { "module": "th", "sound": "d" }
+    },
+    {
+      "id": "n",
+      "ipa": "n",
+      "card": "n",
+      "symbols": { "blast": "n", "alt1": "n", "alt2": "n" },
+      "exampleWord": "nest",
+      "cue": "nest",
+      "figure": "assets/figures/nest.jpg",
+      "color": "lime",
+      "audio": "audio/n.mp3",
+      "audioWindow": [1.0, 2.0],
+      "articulation": "Tongue tip stays on the ridge behind the upper teeth; hum, and the sound comes out of the nose.",
+      "voiced": true,
+      "video": "video/avatar_n.mp4",
+      "poster": "video/avatar_n.jpg",
+      "speech": [1.28, 1.69],
+      "humanVideo": "video/human_n.mp4",
+      "humanPoster": "video/human_n.jpg",
+      "humanSpeech": [0.49, 1.02],
+      "tongue": { "module": "th", "sound": "n" }
     }
   ],
   "words": [

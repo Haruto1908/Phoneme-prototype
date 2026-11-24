@@ -1,6 +1,6 @@
 /** Types for th-sideview.js (copied from Others/videos/tongue_anim, where it is developed and previewed). */
 
-export type ThSound = 'θ' | 'ð' | 'ɹ' | 'k' | 'æ' | 't' | 'l' | 'd'
+export type ThSound = 'θ' | 'ð' | 'ɹ' | 'k' | 'æ' | 't' | 'l' | 'd' | 'n'
 
 export interface ThPortrait {
   src: string
