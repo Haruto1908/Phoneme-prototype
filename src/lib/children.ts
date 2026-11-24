@@ -59,7 +59,17 @@ export const CHILDREN: readonly ChildEntry[] = [
     // paler, pinker skin: lighter tissue around the cutaway
     theme: { body: '#f9dccf', line: '#d9ab9b' },
   },
-  { region: 'kr', label: 'childKr', src: null },
+  {
+    region: 'kr',
+    label: 'childKr',
+    src: 'assets/children/kr.jpg',
+    bg: '#fefefe',
+    // her cheek measures within a few levels of the Japanese child's, so she shares that skin and tissue tone
+    skin: '#fee8e1',
+    seam: [[731, 600.5], [700, 599.5], [675, 599.5], [652, 598]],
+    cut: [[636, 589], [620, 573], [606, 553], [598, 700], [590, 900]],
+    theme: { body: '#f9dccf', line: '#d9ab9b' },
+  },
   { region: 'mx', label: 'childMx', src: null },
 ]
 
