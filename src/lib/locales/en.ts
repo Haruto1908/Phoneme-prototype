@@ -42,6 +42,7 @@ export const en = {
   play: 'Play',
   again: 'Again',
   tongueAgain: 'Tongue again',
+  speed: 'Speed',
   close: 'Close',
   tapToPlay: 'Tap to play',
   mouth: 'Mouth',

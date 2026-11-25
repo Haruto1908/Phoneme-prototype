@@ -41,6 +41,7 @@
   --peach-bg: #ffe6cc;     --peach-ink: #b35c12;     --peach-edge: #f5c89a;
   --rose-bg: #ffe0ef;      --rose-ink: #b02a6b;      --rose-edge: #f5b5d3;
   --lime-bg: #ecf7cc;      --lime-ink: #4f7a12;      --lime-edge: #cde49a;
+  --plum-bg: #f6def8;      --plum-ink: #8b2a9e;      --plum-edge: #e3b3ea;
 }
 
 /* ---------- design tokens: dark ---------- */
@@ -80,6 +81,7 @@
   --peach-bg: #3d2613;     --peach-ink: #ffbb7c;     --peach-edge: #26180a;
   --rose-bg: #3f1a2c;      --rose-ink: #ff9ccb;      --rose-edge: #27101b;
   --lime-bg: #2a3812;      --lime-ink: #c2ea7c;      --lime-edge: #19230a;
+  --plum-bg: #3a1a40;      --plum-ink: #eba8f5;      --plum-edge: #241028;
 }
 
 /* ---------- expose the tokens to Tailwind (text-ink, bg-panel, shadow-raise, bg-mint-bg …) ---------- */
@@ -123,6 +125,7 @@
   --color-peach-bg: var(--peach-bg);        --color-peach-ink: var(--peach-ink);        --color-peach-edge: var(--peach-edge);
   --color-rose-bg: var(--rose-bg);          --color-rose-ink: var(--rose-ink);          --color-rose-edge: var(--rose-edge);
   --color-lime-bg: var(--lime-bg);          --color-lime-ink: var(--lime-ink);          --color-lime-edge: var(--lime-edge);
+  --color-plum-bg: var(--plum-bg);          --color-plum-ink: var(--plum-ink);          --color-plum-edge: var(--plum-edge);
 
   --shadow-panel: var(--shadow-panel);
   --shadow-raise: var(--shadow-raise);
@@ -213,6 +216,54 @@ body {
   overscroll-behavior: none;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
+
+/* speed slider (practice pop-up): a thick track and a big round thumb in the card's colour (currentColor) */
+.speed-range {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 32px;
+  background: transparent;
+  cursor: pointer;
+  touch-action: pan-y;
+}
+.speed-range:focus-visible { outline: none; }
+.speed-range::-webkit-slider-runnable-track {
+  height: 10px;
+  border-radius: 999px;
+  /* filled up to the thumb (--fill, set by the component), tinted after it */
+  background: linear-gradient(to right, currentColor 0 var(--fill, 0%), color-mix(in oklab, currentColor 22%, transparent) var(--fill, 0%));
+}
+.speed-range::-moz-range-progress {
+  height: 10px;
+  border-radius: 999px;
+  background: currentColor;
+}
+.speed-range::-moz-range-track {
+  height: 10px;
+  border-radius: 999px;
+  background: color-mix(in oklab, currentColor 22%, transparent);
+}
+.speed-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 28px;
+  height: 28px;
+  margin-top: -9px;
+  border-radius: 999px;
+  background: currentColor;
+  border: 4px solid var(--color-panel-strong);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.25);
+}
+.speed-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: currentColor;
+  border: 4px solid var(--color-panel-strong);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.25);
+}
+.speed-range:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px color-mix(in oklab, currentColor 35%, transparent); }
+.speed-range:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 4px color-mix(in oklab, currentColor 35%, transparent); }
 
 /* prevent accidental text selection while kids tap around */
 .no-select {

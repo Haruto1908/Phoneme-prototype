@@ -1,6 +1,6 @@
 /** Types for th-sideview.js (copied from Others/videos/tongue_anim, where it is developed and previewed). */
 
-export type ThSound = 'θ' | 'ð' | 'ɹ' | 'k' | 'æ' | 't' | 'l' | 'd' | 'n'
+export type ThSound = 'θ' | 'ð' | 'ɹ' | 'k' | 'æ' | 't' | 'l' | 'd' | 'n' | 'g'
 
 export interface ThPortrait {
   src: string
@@ -17,6 +17,8 @@ export interface ThSideviewOptions {
   theme?: Record<string, string | number>
   onTime?: (t: number) => void
   onEnd?: () => void
+  /** Playback speed, 1 = normal (0.25 / 0.5 / 0.75 slow the animation and its sound down). */
+  rate?: number
 }
 
 export interface ThSideview {
@@ -26,6 +28,10 @@ export interface ThSideview {
   readonly playing: boolean
   /** End of the current sound's timeline (seconds). */
   readonly duration: number
+  /** Current playback speed. */
+  readonly rate: number
+  /** Change the playback speed; takes effect at once, also mid-play. */
+  setRate(rate: number): void
   setSound(s: ThSound): void
   play(): void
   stop(): void

@@ -45,6 +45,7 @@ export const esMX: Messages = {
   play: 'Reproducir',
   again: 'Otra vez',
   tongueAgain: 'Ver la lengua otra vez',
+  speed: 'Velocidad',
   close: 'Cerrar',
   tapToPlay: 'Toca para reproducir',
   mouth: 'Boca',

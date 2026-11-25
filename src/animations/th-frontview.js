@@ -71,6 +71,8 @@ export const FRONT_POSES = {
   'l': { hold: P({ open: 15, up: 8, W: 53, tipUp: 1, lat: 1, tTop: 2, smile: 1 }) },
   // /n/: the /t/ tip-up seal, held with the lips just apart; nothing comes out of the mouth (the voice goes out the nose)
   'n': { hold: P({ open: 10, up: 7, W: 51, tipUp: 1, tTop: 2 }) },
+  // /g/: the same mouth as /k/ (tip down, back of the tongue up); the voice shows as buzz arcs during the closure
+  'g': { hold: P({ open: 19, up: 7, W: 52, hump: 1, tTop: 3 }), rel: P({ open: 15, up: 5, W: 51, hump: 0.25, tTop: 3 }) },
 }
 /** Where things touch in the front view, and the air: same time windows as the side view's contacts / flows. */
 const FRONT_MARKS = {
@@ -83,6 +85,7 @@ const FRONT_MARKS = {
   'd': { touch: [[CX, UE - 0.5]], air: 'puff' },
   'l': { touch: [[CX, UE - 0.5]], air: 'sides' },   // tip contact in the middle, voice out of both side channels
   'n': { touch: [[CX, UE - 0.5]], air: 'nose' },    // tip contact; the voice leaves through the nostrils, above the frame
+  'g': { air: 'puff' },                              // like /k/ no front glow (the seal is at the back); a softer puff
   'æ': {},
 }
 

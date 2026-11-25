@@ -199,6 +199,27 @@
       "humanPoster": "video/human_n.jpg",
       "humanSpeech": [0.49, 1.02],
       "tongue": { "module": "th", "sound": "n" }
+    },
+    {
+      "id": "g",
+      "ipa": "g",
+      "card": "g",
+      "symbols": { "blast": "g", "alt1": "g", "alt2": "g" },
+      "exampleWord": "grape",
+      "cue": "grape",
+      "figure": "assets/figures/grape.jpg",
+      "color": "plum",
+      "audio": "audio/g.mp3",
+      "audioWindow": [1.0, 2.0],
+      "articulation": "Like k, but hum: the back of the tongue presses the soft roof, voice on, then let go.",
+      "voiced": true,
+      "video": "video/avatar_g.mp4",
+      "poster": "video/avatar_g.jpg",
+      "speech": [1.33, 1.68],
+      "humanVideo": "video/human_g.mp4",
+      "humanPoster": "video/human_g.jpg",
+      "humanSpeech": [0.77, 1.00],
+      "tongue": { "module": "th", "sound": "g" }
     }
   ],
   "words": [

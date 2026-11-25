@@ -5,12 +5,12 @@
  *
  *   import { createThSideview } from './th-sideview.js'
  *   const anim = createThSideview(document.querySelector('#stage'), {
- *     sound: 'θ',                               // 'θ' | 'ð' | 'ɹ' | 'k' | 'æ' | 't' | 'l' | 'd' | 'n'
+ *     sound: 'θ',                               // 'θ' | 'ð' | 'ɹ' | 'k' | 'æ' | 't' | 'l' | 'd' | 'n' | 'g'
  *     audio: { 'θ': 'audio/θ.mp3', 'ð': 'audio/ð.mp3' },
  *     portrait: PORTRAIT_GIRL,                  // photo-real face with a soft cutaway window (or null for the flat diagram)
  *     onTime: (t) => {}, onEnd: () => {},
  *   })
- *   anim.play(); anim.stop(); anim.seek(1.5); anim.setSound('ð'); anim.destroy()
+ *   anim.play(); anim.stop(); anim.seek(1.5); anim.setSound('ð'); anim.setRate(0.5); anim.destroy()
  *
  * React:
  *   useEffect(() => { const a = createThSideview(ref.current, opts); return () => a.destroy() }, [])
@@ -388,6 +388,25 @@ export const SOUNDS = {
     steps: [['Ready', 'Mouth relaxed, tongue inside.'], ['Tip up', 'The tongue TIP touches the bump behind the top teeth and stays there.'], ['Nnn', 'Voice on! The mouth is closed off, so the sound comes out of your NOSE.'], ['Back', 'Tongue relaxes.']],
     stepsJa: [['じゅんび', 'くちを らくに して、したは なかに。'], ['さきを つける', 'したの「さき」を、うえの はの うらの でっぱりに つけて、そのまま。'], ['「nnn」', 'こえを だす。くちは ふさがって いるので、こえは はなから でるよ。（はなを つまむと でない）'], ['もどす', 'したを らくに する。']],
   },
+  // /g/: the voiced partner of /k/ — the same BACK-of-the-tongue closure against the soft palate, but the VOICE comes
+  // on while the back is still pressed up (the throat buzzes before the release), and the release is a softer puff
+  // than /k/'s scrape (as /d/ is to /t/). Audio middle_3s/g.mp3 (updated recording, 10 ms envelope): voiced closure
+  // 1.33–1.45 s, release burst 1.46 s, vowel to 1.68 s.
+  'g': {
+    voiced: true, word: 'grape', kind: 'stop', oval: CAVITY_OVAL, front: { cx: 154.5, cy: 140.3, rx: 6.5, ry: 3.6 },
+    hint: 'The BACK of the tongue presses the roof — hum, then let go: “g”.',
+    hintJa: 'したの「おく」を うわあごに つけて、のどを ふるわせながら はなす。「グッ」。',
+    // the back is up well before the voice starts, stays there through the voiced closure, then lets go
+    keys: [[0.95, 'rest'], [1.17, 'hold'], [1.46, 'hold'], [1.55, 'rel'], [1.85, 'rel'], [2.25, 'rest']],
+    poses: { hold: { pts: HOLD_K, jaw: 2.5, p: 1 }, rel: K_REL },
+    timing: { soundOn: 1.33, soundOff: 1.68, release: 1.46, end: 2.7 },
+    stepTimes: [0.95, 1.33, 1.72],
+    contacts: [{ at: [118.6, 126.6], from: 1.15, to: 1.47 }],
+    // a gentler, smoother burst than /k/ (fewer, slower particles, less rough), only after the release
+    flows: [{ d: 'M 117 128.4 C 124 127.6, 131 127.4, 137.5 128.2 C 143 129, 147 132.4, 149.6 137.6 C 151.5 139.6, 155 140.2, 160 140.2 C 166 140.2, 171 139.8, 177 139.2', n: 4, speed: 1.6, rough: 0.2, from: 1.46, to: 1.64 }],
+    steps: [['Ready', 'Mouth relaxed, tongue inside.'], ['Lift', 'The BACK of the tongue lifts and presses the soft roof at the back.'], ['Hum + let go', 'Voice on while the back is still up — feel the buzz — then it lets go: “g”.'], ['Back', 'Tongue relaxes.']],
+    stepsJa: [['じゅんび', 'くちを らくに して、したは なかに。'], ['もちあげる', 'したの「おく」を もちあげて、うわあごの おくに くっつける。'], ['ぶるっ＋はなす', 'おくを つけたまま のどを ぶるぶる、それから はなして「グッ」。（k との ちがいは のどの ふるえ）'], ['もどす', 'したを らくに する。']],
+  },
 }
 for (const s in SOUNDS) {
   const c = SOUNDS[s]
@@ -519,9 +538,10 @@ function el(name, attrs = {}, parent) {
 /**
  * @param {HTMLElement} container
  * @param {object} [options]
- * @param {'θ'|'ð'|'ɹ'|'k'|'æ'|'t'|'l'|'d'|'n'} [options.sound]
+ * @param {'θ'|'ð'|'ɹ'|'k'|'æ'|'t'|'l'|'d'|'n'|'g'} [options.sound]
  * @param {Record<string,string>} [options.audio]   sound → audio URL (3 s clips)
  * @param {HTMLAudioElement} [options.audioElement] element to play through (pass one unlocked by a tap on iOS)
+ * @param {number} [options.rate] playback speed, 1 = normal (0.25 / 0.5 / 0.75 slow it down); change it with setRate()
  * @param {object|null} [options.portrait]          PORTRAIT_GIRL-style preset, or null for the flat diagram
  * @param {object} [options.theme]                  colour overrides
  * @param {(t:number)=>void} [options.onTime]
@@ -924,7 +944,15 @@ export function createThSideview(container, options = {}) {
     const src = audioMap[sound]
     if (src) { audio.src = src; audio.load() } else audio.removeAttribute('src')
   }
-  let raf = 0, t0 = 0, playing = false
+  // playback speed (1 = normal; 0.25 / 0.5 / 0.75 slow the whole animation down). With audio the clock is the
+  // audio element (its playbackRate); without audio it is the wall clock scaled by the rate from `base` at `t0`.
+  let raf = 0, t0 = 0, base = 0, playing = false, rate = options.rate > 0 ? options.rate : 1
+  function applyRate() {
+    audio.defaultPlaybackRate = rate   // survives load() (setting src resets playbackRate to the default)
+    audio.playbackRate = rate
+    if ('preservesPitch' in audio) audio.preservesPitch = true
+  }
+  applyRate()
   function stop() {
     playing = false
     cancelAnimationFrame(raf)
@@ -932,7 +960,7 @@ export function createThSideview(container, options = {}) {
   }
   function tick() {
     if (!playing) return
-    const t = audio.paused ? (performance.now() - t0) / 1000 : audio.currentTime
+    const t = audio.paused ? base + ((performance.now() - t0) / 1000) * rate : audio.currentTime
     const end = cfg().timing.end
     render(Math.min(t, end))
     if (t >= end) { stop(); render(0); if (options.onEnd) options.onEnd(); return }
@@ -942,8 +970,9 @@ export function createThSideview(container, options = {}) {
     stop()
     playing = true
     let started = false
-    const start = () => { if (started || !playing) return; started = true; t0 = performance.now(); raf = requestAnimationFrame(tick) }
+    const start = () => { if (started || !playing) return; started = true; t0 = performance.now(); base = 0; raf = requestAnimationFrame(tick) }
     if (audio.getAttribute('src')) {
+      applyRate()
       audio.currentTime = 0
       audio.addEventListener('playing', start, { once: true })
       audio.play().then(start).catch(() => { audio.removeEventListener('playing', start); start() })
@@ -960,6 +989,14 @@ export function createThSideview(container, options = {}) {
     get time() { return curT },
     get playing() { return playing },
     get duration() { return cfg().timing.end },
+    get rate() { return rate },
+    /** Playback speed (e.g. 0.25, 0.5, 0.75, 1); takes effect at once, also mid-play. */
+    setRate(r) {
+      if (!(r > 0) || r === rate) return
+      if (playing && audio.paused) { base = curT; t0 = performance.now() }   // wall clock: continue from here
+      rate = r
+      applyRate()
+    },
     setSound(s) { if (SOUNDS[s]) { stop(); sound = s; applySound(); buildMarks(); loadAudio(); render(Math.min(curT, cfg().timing.end)) } },
     play,
     stop,

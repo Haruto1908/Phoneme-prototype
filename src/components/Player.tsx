@@ -1,4 +1,4 @@
-import { useEffect, useImperativeHandle, useRef, useState, type ReactNode, type Ref } from 'react'
+import { useEffect, useImperativeHandle, useRef, useState, type CSSProperties, type ReactNode, type Ref } from 'react'
 import { palette } from './palette'
 import { asset, mediaUrl } from '../lib/media'
 import { t, type Lang } from '../lib/i18n'
@@ -27,6 +27,16 @@ type Phase = 'idle' | 'mouth' | 'ask' | 'tongue' | 'done'
 const SIDE_VIEW: [number, number, number, number] = [392, 305, 464, 522]
 // front view (its own units): lips, both rows of teeth and the voice arcs beside the mouth
 const FRONT_VIEWBOX = '126 94 148 166'
+/** Speed range of the side/front animation (practice pop-up): any value from ½× to 1×, so a child can slow it to follow the tongue. */
+const SPEED_MIN = 0.5
+const SPEED_MAX = 1
+const SPEED_STEP = 0.01
+/** Tappable marks under the slider. */
+const SPEED_MARKS: [number, string][] = [
+  [0.5, '½×'],
+  [0.75, '¾×'],
+  [1, '1×'],
+]
 
 interface PlayerProps {
   ref: Ref<PlayerHandle>
@@ -44,6 +54,8 @@ interface PlayerProps {
   onClose?: () => void
   /** Reports which item is playing (null when idle/done) so the chart can highlight the card. */
   onPlaying?: (id: string | null) => void
+  /** Show the speed slider (¼× ½× ¾× 1×) under the side and front views (practice mode). */
+  speedControl?: boolean
 }
 
 /**
@@ -51,7 +63,7 @@ interface PlayerProps {
  * side-view tongue animation with the sound again. One <video> and one <audio> element live for the whole
  * session so that, once unlocked by the first tap, every later clip can start without another gesture.
  */
-export function Player({ ref, lang, muted, volume, child, onChild, variant, idle, onClose, onPlaying }: PlayerProps) {
+export function Player({ ref, lang, muted, volume, child, onChild, variant, idle, onClose, onPlaying, speedControl = false }: PlayerProps) {
   const region = resolveChild(child, lang)
   const regionRef = useRef(region)
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -75,6 +87,15 @@ export function Player({ ref, lang, muted, volume, child, onChild, variant, idle
   const [showTongue, setShowTongue] = useState(false)
   const [needsTap, setNeedsTap] = useState(false)
   const [who, setWho] = useState<'avatar' | 'human' | null>(null)
+  /** Animation speed; kept for the whole session (the next sound plays at the speed the child chose). */
+  const [speed, setSpeed] = useState(1)
+  const speedRef = useRef(speed)
+
+  // a new speed applies at once, also while the animation is playing (the sound slows down with it)
+  useEffect(() => {
+    speedRef.current = speed
+    animRef.current?.setRate(speed)
+  }, [speed])
 
   function tongueAudio(): HTMLAudioElement {
     if (!audioRef.current) {
@@ -195,6 +216,7 @@ export function Player({ ref, lang, muted, volume, child, onChild, variant, idle
       audio,
       audioElement: tongueAudio(),
       portrait,
+      rate: speedControl ? speedRef.current : 1,
       onTime: (time) => front.render(time),   // one clock (the audio) for both views
       onEnd: () => {
         if (animRef.current === anim) nextItem()
@@ -416,6 +438,8 @@ export function Player({ ref, lang, muted, volume, child, onChild, variant, idle
         )}
       </div>
 
+      {speedControl && showTongue && <SpeedSlider speed={speed} onSpeed={setSpeed} lang={lang} className={c.ink} />}
+
       <div className="no-select flex min-h-14 flex-wrap items-center gap-3">
         <p className="min-w-0 flex-1 basis-40 text-sm font-medium text-muted">{item?.hint ?? ''}</p>
         {phase === 'done' && item && (
@@ -430,6 +454,56 @@ export function Player({ ref, lang, muted, volume, child, onChild, variant, idle
             )}
           </div>
         )}
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Speed of the side/front animation: a smooth slider from ½× to 1× (any value in between, shown as e.g. "0.85×"),
+ * with ½× ¾× 1× as tappable marks underneath, big enough for small fingers. The card's colour (currentColor) fills
+ * the thumb, the track up to the thumb and the mark the speed sits on.
+ */
+function SpeedSlider({ speed, onSpeed, lang, className }: { speed: number; onSpeed: (s: number) => void; lang: Lang; className?: string }) {
+  const value = Math.min(SPEED_MAX, Math.max(SPEED_MIN, speed))
+  const fill = ((value - SPEED_MIN) / (SPEED_MAX - SPEED_MIN)) * 100
+  const text = `${value.toFixed(2)}×`
+  return (
+    <div className={`no-select flex items-center gap-3 rounded-[20px] bg-panel-strong/80 px-4 py-2 ring-1 ring-line ${className ?? ''}`}>
+      <span className="flex shrink-0 flex-col items-center leading-tight">
+        <span className="text-sm font-extrabold text-ink" id="speed-label">
+          {t('speed', lang)}
+        </span>
+        <span className="font-mono text-sm font-extrabold tabular-nums" aria-hidden="true">
+          {text}
+        </span>
+      </span>
+      <div className="min-w-0 flex-1">
+        <input
+          type="range"
+          className="speed-range block"
+          style={{ '--fill': `${fill}%` } as CSSProperties}
+          min={SPEED_MIN}
+          max={SPEED_MAX}
+          step={SPEED_STEP}
+          value={value}
+          onChange={(e) => onSpeed(Number(Number(e.target.value).toFixed(2)))}
+          aria-labelledby="speed-label"
+          aria-valuetext={text}
+        />
+        {/* marks, centred under their thumb positions (the thumb is 28 px wide, so the end marks sit 14 px in) */}
+        <div className="flex justify-between px-[14px]">
+          {SPEED_MARKS.map(([v, label]) => {
+            const on = Math.abs(value - v) < SPEED_STEP / 2
+            return (
+              <button key={label} type="button" tabIndex={-1} onClick={() => onSpeed(v)} className="flex w-0 justify-center">
+                <span className={`whitespace-nowrap rounded-full px-2 py-0.5 text-sm font-extrabold transition-colors ${on ? 'bg-current' : 'text-muted'}`}>
+                  <span className={on ? 'text-panel-strong' : ''}>{label}</span>
+                </span>
+              </button>
+            )
+          })}
+        </div>
       </div>
     </div>
   )

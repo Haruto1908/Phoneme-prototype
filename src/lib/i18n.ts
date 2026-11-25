@@ -80,6 +80,7 @@ const ARTICULATION: Record<Exclude<Lang, 'en'>, Record<string, string>> = {
     l: 'したの先を 上の歯のうしろに つけたまま、声を出す。声は したの よこから出る（「ら」みたいに はじかない）。',
     d: 't と おなじ ばしょに したの先を つけて、のどを ふるわせながら はなす。「ドッ」。',
     n: 'したの先を 上の歯のうしろに つけたまま、「ンー」と声を出す。声は はなから出る（はなを つまむと 出ないよ）。',
+    g: 'k と おなじ ばしょ（したの奥を 上あごの奥）に つけて、のどを ふるわせながら はなす。「グッ」。',
   },
   ko: {
     th_voiceless: '혀끝을 이 사이에 살짝 물고, 혀 둘레로 바람을 불어. 목소리는 안 내.',
@@ -91,6 +92,7 @@ const ARTICULATION: Record<Exclude<Lang, 'en'>, Record<string, string>> = {
     l: '혀끝을 윗니 뒤쪽에 붙인 채로 목소리를 내. 소리는 혀 양옆으로 나와 (ㄹ처럼 튕기지 않아).',
     d: 't와 같은 곳에 혀끝을 대고, 목을 떨면서 떼. "드".',
     n: '혀끝을 윗니 뒤쪽에 붙인 채로 "은-" 하고 목소리를 내. 소리는 코로 나와 (코를 막으면 안 나와).',
+    g: 'k와 같이 혀 뒤쪽을 입천장 뒤쪽에 붙이고, 목을 떨면서 떼. "그".',
   },
   'es-MX': {
     th_voiceless: 'Pon la puntita de la lengua entre los dientes y sopla el aire alrededor. Sin voz.',
@@ -102,6 +104,7 @@ const ARTICULATION: Record<Exclude<Lang, 'en'>, Record<string, string>> = {
     l: 'La punta de la lengua se queda detrás de los dientes de arriba y la voz sale por los lados de la lengua.',
     d: 'Como la t, pero con voz: la punta de la lengua detrás de los dientes de arriba, siente la vibración y suelta.',
     n: 'La punta de la lengua se queda detrás de los dientes de arriba y haces "nnn": la voz sale por la nariz.',
+    g: 'Como la k, pero con voz: la parte de atrás de la lengua toca el paladar, siente la vibración y suelta.',
   },
 }
 

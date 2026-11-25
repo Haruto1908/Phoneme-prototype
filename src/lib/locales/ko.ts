@@ -44,6 +44,7 @@ export const ko: Messages = {
   play: '재생',
   again: '다시',
   tongueAgain: '혀 다시 보기',
+  speed: '속도',
   close: '닫기',
   tapToPlay: '눌러서 재생',
   mouth: '입',

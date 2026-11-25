@@ -269,7 +269,7 @@ export default function App({ user, lang, onLang, theme, onTheme, onLogout, onCh
 
       <Modal open={modalOpen} label={modalLabel} color={modalColor} onClose={closeModal} wide={!!recTarget}>
         <div className={recTarget ? 'grid gap-4 lg:grid-cols-[3fr_2fr]' : ''}>
-          <Player ref={modal} variant="modal" lang={lang} muted={muted} volume={volume} child={user.child} onChild={onChild} onClose={closeModal} onPlaying={setPlayingId} />
+          <Player ref={modal} variant="modal" speedControl lang={lang} muted={muted} volume={volume} child={user.child} onChild={onChild} onClose={closeModal} onPlaying={setPlayingId} />
           {recTarget && modalOpen && <Recorder key={recTarget.id} lang={lang} host={manifest.host.name} target={recTarget} sounds={manifest.sounds} muted={muted} volume={volume} />}
         </div>
       </Modal>

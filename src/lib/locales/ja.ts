@@ -41,6 +41,7 @@ export const ja: Messages = {
   play: 'さいせい',
   again: 'もういちど',
   tongueAgain: 'したを もういちど',
+  speed: 'はやさ',
   close: 'とじる',
   tapToPlay: 'タップして さいせい',
   mouth: 'くち',
